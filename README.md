@@ -11,7 +11,6 @@
   <img src="https://img.shields.io/badge/Python-3.10+-blue" alt="Python">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Phase-7%2F7%20Complete-brightgreen" alt="Progress">
   <img src="https://img.shields.io/badge/Tools-16-orange" alt="Tools">
   <img src="https://img.shields.io/badge/Version-3.0-lightgrey" alt="Version">
 </p>
