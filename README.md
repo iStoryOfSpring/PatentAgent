@@ -304,6 +304,6 @@ Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，�
 
 - [项目与论文审计](docs/project-audit.md) — 数据质量、论文适用条件、优势/弱点和法律边界
 - [16 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
-- [DII 基准数据状态](my_patents/dii_benchmark_20260719/README.md) — 检索式、授权核验和导入审计方法
+- DII 基准数据状态 — 检索式、授权核验和导入审计方法（随专利数据目录提供，不包含在源码仓库中）
 - [软件说明书](软件说明书.txt) — 架构设计、功能详解、技术栈、版本历史
 - [操作指南](操作指南.txt) — 从零开始的手把手教程，含环境配置、工具使用、常见问题

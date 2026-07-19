@@ -781,6 +781,9 @@ export default function App() {
               </div>
             </div>
             <div className="text-center mt-3 text-[11px] text-slate-400">
+              <a href="https://github.com/iStoryOfSpring/PatentAgent" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-white hover:text-slate-600 transition-colors">
+                <ExternalLink className="w-3 h-3" /> Source
+              </a>
               <button onClick={() => setResponseMode(responseMode === "detailed" ? "concise" : "detailed")}
                 className="mr-3 px-2 py-1 rounded bg-white border border-slate-200 text-slate-600">
                 回复：{responseMode === "detailed" ? "详细" : "简洁"}
