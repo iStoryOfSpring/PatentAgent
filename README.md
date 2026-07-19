@@ -61,10 +61,9 @@ python mcp_server.py
 - **结果可追溯** — 图表、结构化摘要、方法、字段覆盖率、警告、参数和耗时统一返回
 - **原生可视化** — React/ECharts 优先读取结构化结果，支持原始尺寸、适应窗格、全屏、PNG/JSON 导出与数据表切换
 - **多供应商 LLM** — Claude / OpenAI / DeepSeek，支持本地模型隐私模式
-- **极速加载** — 8 线程并行解析 + Pickle 缓存，首次 10s，缓存命中 0.3s
+- **极速加载** — 多线程并行解析 + Pickle 缓存，首次 10s，缓存命中 0.3s
 - **报告导出** — HTML 报告（含完整中文排版），CSV 数据导出
 - **MCP 协议支持** — 标准 MCP (Model Context Protocol) stdio/HTTP 服务器，Claude Code / VS Code / Cursor 可直接调用全部工具
-- **中英双语** — 顶栏一键切换界面语言
 - **算法证据登记表** — 16 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
 
 ## 工具清单
