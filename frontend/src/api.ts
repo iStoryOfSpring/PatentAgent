@@ -1,0 +1,238 @@
+// All backend API calls. Vite proxy forwards /api → localhost:8000.
+import type {
+  HealthResponse, DataSummary, Tool, ToolResult, LLMConfig, SSEEvent,
+  SessionSummary, SessionDetail,
+  ProviderCredentials, ProviderProfile, ProviderProfileInput, ProviderProbeResult,
+} from "./types";
+
+const BASE = "/api";
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(BASE + path, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { detail?: string }).detail || res.statusText);
+  }
+  return res.json();
+}
+
+// ── Health ──
+
+export function fetchHealth(): Promise<HealthResponse> {
+  return request<HealthResponse>("/health");
+}
+
+// ── Data ──
+
+export function fetchDataSummary(): Promise<DataSummary> {
+  return request<DataSummary>("/data/summary");
+}
+
+export function loadData(inputDir: string): Promise<DataSummary> {
+  return request<DataSummary>("/data/load", {
+    method: "POST",
+    body: JSON.stringify({ input_dir: inputDir }),
+  });
+}
+
+// ── Tools ──
+
+export function fetchTools(): Promise<{ tools: Tool[] }> {
+  return request<{ tools: Tool[] }>("/tools");
+}
+
+export function runTool(name: string, params: Record<string, unknown> = {}, sessionId?: string): Promise<ToolResult> {
+  return request<ToolResult>(`/tools/${name}`, {
+    method: "POST",
+    body: JSON.stringify({ params, session_id: sessionId }),
+  });
+}
+
+// ── LLM Config ──
+
+export function configureLLM(config: LLMConfig): Promise<{
+  status: string; provider: string; model: string; probe: string; tool_roundtrip: boolean;
+  structured_output: boolean;
+}> {
+  return request("/agent/config", {
+    method: "POST",
+    body: JSON.stringify(config),
+  });
+}
+
+export function fetchProviderProfiles(): Promise<{ profiles: ProviderProfile[] }> {
+  return request<{ profiles: ProviderProfile[] }>("/llm/profiles");
+}
+
+export function createProviderProfile(profile: ProviderProfileInput): Promise<ProviderProfile> {
+  return request<ProviderProfile>("/llm/profiles", {
+    method: "POST", body: JSON.stringify(profile),
+  });
+}
+
+export function updateProviderProfile(
+  id: string, profile: Partial<ProviderProfileInput>,
+): Promise<ProviderProfile> {
+  return request<ProviderProfile>(`/llm/profiles/${id}`, {
+    method: "PATCH", body: JSON.stringify(profile),
+  });
+}
+
+export function deleteProviderProfile(id: string): Promise<{ status: string }> {
+  return request<{ status: string }>(`/llm/profiles/${id}`, { method: "DELETE" });
+}
+
+export function probeProviderProfile(
+  id: string, credentials: ProviderCredentials,
+): Promise<ProviderProbeResult> {
+  return request<ProviderProbeResult>(`/llm/profiles/${id}/probe`, {
+    method: "POST", body: JSON.stringify(credentials),
+  });
+}
+
+export function activateProviderProfile(
+  id: string, credentials: ProviderCredentials,
+): Promise<ProviderProbeResult> {
+  return request<ProviderProbeResult>(`/llm/profiles/${id}/activate`, {
+    method: "POST", body: JSON.stringify(credentials),
+  });
+}
+
+export function discoverProviderModels(
+  id: string, credentials: ProviderCredentials,
+): Promise<{ models: string[]; latency_ms: number; manual_entry_allowed: boolean }> {
+  return request(`/llm/profiles/${id}/models`, {
+    method: "POST", body: JSON.stringify(credentials),
+  });
+}
+
+export function disconnectLLM(): Promise<{ status: string }> {
+  return request<{ status: string }>("/llm/disconnect", { method: "POST" });
+}
+
+// ── Persistent sessions ──
+
+export function createSession(name = "新会话"): Promise<SessionSummary> {
+  return request<SessionSummary>("/sessions", {
+    method: "POST", body: JSON.stringify({ name }),
+  });
+}
+
+export function fetchSessions(): Promise<{ sessions: SessionSummary[] }> {
+  return request<{ sessions: SessionSummary[] }>("/sessions");
+}
+
+export function fetchSession(id: string): Promise<SessionDetail> {
+  return request<SessionDetail>(`/sessions/${id}`);
+}
+
+export function renameSession(id: string, name: string): Promise<SessionSummary> {
+  return request<SessionSummary>(`/sessions/${id}`, {
+    method: "PATCH", body: JSON.stringify({ name }),
+  });
+}
+
+export function deleteSession(id: string): Promise<{ status: string }> {
+  return request<{ status: string }>(`/sessions/${id}`, { method: "DELETE" });
+}
+
+export function resynthesizeTurn(
+  sessionId: string, turnId: string, responseMode: "detailed" | "concise",
+): Promise<{
+  text: string; final_status: "completed" | "partial"; answer_present: boolean;
+  evidence_refs?: string[]; followup_suggestions?: import("./types").FollowupSuggestion[];
+  followup_questions?: string[];
+}> {
+  return request(`/sessions/${sessionId}/turns/${turnId}/resynthesize`, {
+    method: "POST", body: JSON.stringify({ response_mode: responseMode }),
+  });
+}
+
+// ── SSE streaming chat ──
+
+export function streamChat(
+  message: string,
+  sessionId: string,
+  responseMode: "detailed" | "concise",
+  onEvent: (event: SSEEvent) => void,
+  onDone: () => void,
+  onError: (err: Error) => void,
+  replyToTurnId?: string,
+): AbortController {
+  const controller = new AbortController();
+
+  (async () => {
+    try {
+      const response = await fetch(BASE + "/agent/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, session_id: sessionId, response_mode: responseMode, reply_to_turn_id: replyToTurnId }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error((body as { detail?: string }).detail || response.statusText);
+      }
+
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let sawDone = false;
+
+      const emit = (raw: string) => {
+        let event: SSEEvent;
+        try {
+          event = JSON.parse(raw) as SSEEvent;
+        } catch {
+          throw new Error("服务器返回了无法解析的 SSE 事件");
+        }
+        if (event.type === "done") sawDone = true;
+        onEvent(event);
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("data: ")) {
+            emit(trimmed.slice(6));
+          }
+        }
+      }
+
+      // Process remaining buffer
+      const trimmed = buffer.trim();
+      if (trimmed.startsWith("data: ")) {
+        emit(trimmed.slice(6));
+      }
+
+      if (!sawDone) throw new Error("对话流在最终完成事件之前中断");
+      onDone();
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        onError(err as Error);
+      }
+    }
+  })();
+
+  return controller;
+}
+
+// ── Report export ──
+
+export function exportReport(messages: { role: string; content: string }[], title: string): Promise<string> {
+  return fetch(BASE + "/report/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages, title }),
+  }).then(res => res.text());
+}

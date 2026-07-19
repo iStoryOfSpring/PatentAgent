@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "registry_version": "2026.07.19",
+  "evidence_types": {
+    "descriptive_statistic": "Direct descriptive statistic with no paper-method claim",
+    "paper_exact": "Formula and data conditions reproduced and independently tested",
+    "paper_adapted": "Paper-informed implementation with declared deviations",
+    "engineering_screening": "Engineering proxy; not the cited paper's full method"
+  },
+  "tools": {
+    "analyze_patent_trend": {
+      "algorithm_id": "publication_count_trend", "version": "2.0", "evidence_type": "descriptive_statistic",
+      "formula": "count(records) grouped by publication year/month",
+      "fields": {"publication_date": 0.9}, "sources": [],
+      "conditions": ["PD is interpreted as publication date", "incomplete tail years are flagged"],
+      "prohibited_claims": ["application trend", "technology decline", "technology lifecycle"]
+    },
+    "analyze_lifecycle": {
+      "algorithm_id": "publication_growth_summary", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "annual publication count, cumulative count, year-over-year change",
+      "fields": {"publication_date": 0.9}, "sources": [],
+      "conditions": ["describes publication growth only"],
+      "prohibited_claims": ["S-curve lifecycle stage", "decline stage", "technology maturity"]
+    },
+    "analyze_ipc_distribution": {
+      "algorithm_id": "ipc_publication_matrix", "version": "2.0", "evidence_type": "descriptive_statistic",
+      "formula": "count all normalized multi-value IPC assignments by year and selected granularity",
+      "fields": {"publication_date": 0.9, "ipc": 0.9}, "sources": [],
+      "conditions": ["one patent may contribute to multiple IPC cells"],
+      "prohibited_claims": ["exclusive technology share"]
+    },
+    "generate_wordcloud": {
+      "algorithm_id": "derwent_phrase_frequency", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "document-aware cleaned phrase frequency",
+      "fields": {"title": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
+      "conditions": ["Derwent template noise is removed", "frequency is not importance"],
+      "prohibited_claims": ["paper-exact text mining pipeline", "technology value"]
+    },
+    "analyze_burst_terms": {
+      "algorithm_id": "recent_document_frequency_growth", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "smoothed recent-vs-history document-frequency ratio with minimum support",
+      "fields": {"publication_date": 0.9, "title": 0.8, "abstract": 0.8}, "sources": [],
+      "conditions": ["at least 5 complete years", "at least 50 records in each included year"],
+      "prohibited_claims": ["Kleinberg burst detection", "validated emerging technology forecast"]
+    },
+    "analyze_yearly_keywords": {
+      "algorithm_id": "yearly_phrase_frequency", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "cleaned phrase document frequency by publication year",
+      "fields": {"publication_date": 0.9, "title": 0.8}, "sources": [],
+      "conditions": ["tail-year completeness is shown"],
+      "prohibited_claims": ["causal technology migration"]
+    },
+    "analyze_co_network": {
+      "algorithm_id": "co_applicant_network", "version": "2.0", "evidence_type": "descriptive_statistic",
+      "formula": "undirected edge for each pair of co-applicants on the same record",
+      "fields": {"applicants": 0.9}, "sources": [],
+      "conditions": ["at least 30 multi-applicant patents", "multi-applicant rate at least 1%"],
+      "prohibited_claims": ["alliance", "technology transfer", "co-invention"]
+    },
+    "analyze_country_distribution": {
+      "algorithm_id": "primary_publication_office_count", "version": "2.0", "evidence_type": "descriptive_statistic",
+      "formula": "country prefix of primary PN",
+      "fields": {"patent_number": 0.9}, "sources": [],
+      "conditions": ["primary PN office only"],
+      "prohibited_claims": ["family market coverage", "market attractiveness"]
+    },
+    "analyze_tech_roadmap": {
+      "algorithm_id": "annual_theme_timeline", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "annual themes and representative records; citation paths only when resolved",
+      "fields": {"publication_date": 0.9, "title": 0.8, "patent_number": 0.9}, "sources": [],
+      "conditions": ["internal citation scope is disclosed"],
+      "prohibited_claims": ["complete invention genealogy", "causal technology route"]
+    },
+    "get_dataset_summary": {
+      "algorithm_id": "dataset_field_audit", "version": "2.0", "evidence_type": "descriptive_statistic",
+      "formula": "record counts, field coverage, batch manifest and network coverage",
+      "fields": {}, "sources": [], "conditions": [], "prohibited_claims": []
+    },
+    "search_patents": {
+      "algorithm_id": "tfidf_cosine_retrieval", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "cosine similarity in word/phrase TF-IDF space",
+      "fields": {"title": 0.8, "abstract": 0.8, "patent_number": 0.9}, "sources": [],
+      "conditions": ["lexical retrieval, not semantic embedding"],
+      "prohibited_claims": ["vector embedding", "legal novelty search", "exhaustive prior-art search"]
+    },
+    "read_patent_details": {
+      "algorithm_id": "structured_record_lookup", "version": "2.0", "evidence_type": "descriptive_statistic",
+      "formula": "exact lookup of parsed source fields",
+      "fields": {"patent_number": 0.9}, "sources": [],
+      "conditions": ["Derwent abstract is not the full specification"],
+      "prohibited_claims": ["full specification", "complete claims", "legal status conclusion"]
+    },
+    "analyze_tech_matrix": {
+      "algorithm_id": "derwent_abstract_proxy_te_matrix", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "co-occurrence of technology phrases from NOVELTY with use/effect phrases from USE/ADVANTAGE",
+      "fields": {"abstract": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
+      "conditions": ["category cues must be present", "minimum support is required", "zero cells require record review"],
+      "prohibited_claims": ["blue ocean", "validated white space", "paper-exact function matrix"]
+    },
+    "analyze_clustering": {
+      "algorithm_id": "tfidf_kmeans_cc05_labels", "version": "2.0", "evidence_type": "paper_adapted",
+      "formula": "K-means in TF-IDF space; silhouette selects k; CC0.5 labels require cluster DF > 50% and document-level phi correlation",
+      "fields": {"title": 0.8, "abstract": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
+      "conditions": ["at least 100 valid texts", "only CC0.5 label criterion is paper-derived"],
+      "prohibited_claims": ["complete Tseng multi-stage pipeline", "ground-truth technology taxonomy"]
+    },
+    "analyze_patent_valuation": {
+      "algorithm_id": "patent_family_citation_screening", "version": "3.0", "evidence_type": "paper_adapted",
+      "formula": "robust percentile screening; SS diagnostic = RO + BC only when family/network gates pass",
+      "fields": {"patent_number": 0.9, "publication_date": 0.9, "ipc": 0.9},
+      "sources": ["von Wartburg, Teichert & Rost 2005, Research Policy 34, 1591-1607", "Kim & Bae 2017, Technological Forecasting and Social Change 117, 228-237"],
+      "conditions": ["family nodes", "citation direction citing-to-cited", "European-style share and network closure disclosed", "triadic means US+EP+JP"],
+      "prohibited_claims": ["financial valuation", "market value", "universal patent quality", "paper_exact unless manually verified"]
+    },
+    "analyze_competitor_evolution": {
+      "algorithm_id": "ipc_profile_evolution", "version": "2.0", "evidence_type": "engineering_screening",
+      "formula": "IPC entropy, dominant IPC share and year-to-year cosine distance",
+      "fields": {"publication_date": 0.9, "applicants": 0.9, "ipc": 0.9},
+      "sources": ["Tang et al. 2012, KDD PatentMiner"],
+      "conditions": ["metrics are engineering descriptors at IPC subclass/main-group level"],
+      "prohibited_claims": ["PatentMiner DICT", "heterogeneous-network co-ranking", "paper-exact competitor evolution"]
+    }
+  }
+}

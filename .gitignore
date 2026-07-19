@@ -1,0 +1,61 @@
+# Bytecode / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python test / profiling
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+
+# Patent data — large downloaded datasets, not source code
+my_patents/
+
+# Generated output — charts, CSVs, rendered HTML
+output/
+
+# Session database — contains conversation history and credentials
+.patentagent/
+
+# Vector database (Chroma)
+data/chroma_db/
+
+# Claude Code local config
+.claude/
+.playwright-cli/
+
+# Empty placeholder directories
+.files/
+
+# Environment / secrets
+.env
+.env.*
+*.local
+
+# macOS extended attributes
+._*

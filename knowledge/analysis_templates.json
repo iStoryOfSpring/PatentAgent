@@ -1,0 +1,95 @@
+[
+  {
+    "template_name": "技术领域全景分析",
+    "description": "对某个技术领域进行全面的专利分析，了解发展态势、技术构成、主要玩家和热点方向",
+    "trigger_keywords": ["全景", "概览", "整体了解", "全面分析", "专利地图"],
+    "analysis_steps": [
+      {"step": 1, "tool": "analyze_patent_trend", "params": {}, "label": "公开趋势"},
+      {"step": 2, "tool": "analyze_ipc_distribution", "params": {}, "label": "技术构成"},
+      {"step": 3, "tool": "analyze_country_distribution", "params": {}, "label": "地域分布"},
+      {"step": 4, "tool": "analyze_applicant_ranking", "params": {"top_n": 10}, "label": "主要申请人"},
+      {"step": 5, "tool": "analyze_yearly_keywords", "params": {}, "label": "热点演变"},
+      {"step": 6, "tool": "analyze_lifecycle", "params": {}, "label": "公开增长概况"},
+      {"step": 7, "tool": "analyze_burst_terms", "params": {}, "label": "新兴技术词"}
+    ],
+    "estimated_time": "3-5 分钟"
+  },
+  {
+    "template_name": "竞争对手对比分析",
+    "description": "对比两家或多家公司的专利布局、技术侧重和竞争力",
+    "trigger_keywords": ["竞争", "对比", "对手", "比较", "竞争态势", "竞对"],
+    "analysis_steps": [
+      {"step": 1, "tool": "analyze_patent_trend", "params": {"by_applicant": true}, "label": "公开趋势对比"},
+      {"step": 2, "tool": "analyze_ipc_distribution", "params": {"by_applicant": true}, "label": "技术布局对比"},
+      {"step": 3, "tool": "analyze_country_distribution", "params": {"by_applicant": true}, "label": "市场布局对比"},
+      {"step": 4, "tool": "analyze_co_network", "params": {}, "label": "合作网络"},
+      {"step": 5, "tool": "analyze_patent_valuation", "params": {}, "label": "专利价值对比"},
+      {"step": 6, "tool": "analyze_tech_matrix", "params": {}, "label": "技术功效侧重"}
+    ],
+    "estimated_time": "4-7 分钟"
+  },
+  {
+    "template_name": "技术路线图分析",
+    "description": "描绘某技术领域的发展路径和关键技术节点",
+    "trigger_keywords": ["技术路线", "发展路径", "演进", "代际", "路线图"],
+    "analysis_steps": [
+      {"step": 1, "tool": "search_patents", "params": {}, "label": "TF-IDF 相关专利筛查"},
+      {"step": 2, "tool": "analyze_patent_trend", "params": {}, "label": "公开趋势"},
+      {"step": 3, "tool": "analyze_tech_roadmap", "params": {}, "label": "技术路线图"},
+      {"step": 4, "tool": "read_patent_details", "params": {"max_patents": 5}, "label": "关键专利深读"},
+      {"step": 5, "tool": "analyze_citation_network", "params": {}, "label": "引证演进路径"}
+    ],
+    "estimated_time": "5-10 分钟"
+  },
+  {
+    "template_name": "技术创新机会发现",
+    "description": "通过技术功效矩阵分析发现技术空白点和潜在创新方向",
+    "trigger_keywords": ["创新", "空白点", "机会", "突破", "潜力方向", "技术缺口"],
+    "analysis_steps": [
+      {"step": 1, "tool": "search_patents", "params": {}, "label": "检索技术领域专利"},
+      {"step": 2, "tool": "analyze_tech_matrix", "params": {}, "label": "构建功效矩阵"},
+      {"step": 3, "tool": "analyze_clustering", "params": {}, "label": "技术主题聚类"},
+      {"step": 4, "tool": "analyze_burst_terms", "params": {}, "label": "新兴方向识别"},
+      {"step": 5, "tool": "generate_innovation_suggestions", "params": {}, "label": "创新方向建议"}
+    ],
+    "estimated_time": "5-10 分钟"
+  },
+  {
+    "template_name": "专利价值评估",
+    "description": "对一组专利进行多维度价值评分和排名",
+    "trigger_keywords": ["价值", "评估", "排名", "核心专利", "重要专利", "质量"],
+    "analysis_steps": [
+      {"step": 1, "tool": "analyze_patent_valuation", "params": {}, "label": "多维度评分"},
+      {"step": 2, "tool": "analyze_citation_network", "params": {}, "label": "引证指标"},
+      {"step": 3, "tool": "read_patent_details", "params": {"max_patents": 10}, "label": "高价值专利深读"},
+      {"step": 4, "tool": "generate_valuation_report", "params": {}, "label": "价值评估报告"}
+    ],
+    "estimated_time": "5-10 分钟"
+  },
+  {
+    "template_name": "技术引进/合作尽调",
+    "description": "评估技术引进标的或潜在合作伙伴的专利实力",
+    "trigger_keywords": ["引进", "尽调", "合作", "购买", "许可", "转让"],
+    "analysis_steps": [
+      {"step": 1, "tool": "analyze_patent_trend", "params": {"by_applicant": true}, "label": "专利实力概览"},
+      {"step": 2, "tool": "analyze_patent_valuation", "params": {}, "label": "专利价值评估"},
+      {"step": 3, "tool": "analyze_tech_matrix", "params": {}, "label": "技术布局分析"},
+      {"step": 4, "tool": "analyze_citation_network", "params": {}, "label": "技术影响力"},
+      {"step": 5, "tool": "analyze_legal_status", "params": {}, "label": "法律状态核查"},
+      {"step": 6, "tool": "analyze_co_network", "params": {}, "label": "合作网络背景"}
+    ],
+    "estimated_time": "5-10 分钟"
+  },
+  {
+    "template_name": "快速概览",
+    "description": "对一组专利数据进行快速的统计概览，适合初次接触数据集时使用",
+    "trigger_keywords": ["快速", "概览", "总结", "先看看", "大概", "基本情况"],
+    "analysis_steps": [
+      {"step": 1, "tool": "get_dataset_summary", "params": {}, "label": "数据集概况"},
+      {"step": 2, "tool": "analyze_patent_trend", "params": {}, "label": "趋势一览"},
+      {"step": 3, "tool": "analyze_ipc_distribution", "params": {"top_n": 5}, "label": "主要IPC"},
+      {"step": 4, "tool": "analyze_applicant_ranking", "params": {"top_n": 5}, "label": "主要申请人"}
+    ],
+    "estimated_time": "1-2 分钟"
+  }
+]

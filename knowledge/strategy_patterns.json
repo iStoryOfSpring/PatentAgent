@@ -1,0 +1,118 @@
+[
+  {
+    "pattern_id": "emerging_tech_invest",
+    "name": "新兴技术投资决策",
+    "description": "当某项技术处于萌芽期或爆发早期，判断是否值得投入资源",
+    "conditions": {
+      "lifecycle_stage": ["萌芽期", "爆发期"],
+      "trend_growth": "positive",
+      "applicant_count": "< 50"
+    },
+    "positive_signals": [
+      "年增长率 > 20%",
+      "突发词中出现该技术关键词",
+      "代理功效矩阵中有大量低共现组合（需逐件复核）",
+      "Top 申请人尚未形成垄断"
+    ],
+    "negative_signals": [
+      "年增长率 < 5% 且持续下降",
+      "功效矩阵中热点已经密集（红海）",
+      "Top 3 申请人占比 > 60%",
+      "公开增长指标趋缓（不能据此单独判定成熟期）"
+    ],
+    "recommendation": "R&D_INVESTMENT",
+    "risk_factors": ["技术路线可能被替代", "先发者壁垒", "专利丛林风险"]
+  },
+  {
+    "pattern_id": "competitive_defense",
+    "name": "竞争防御策略",
+    "description": "当竞争对手在某技术方向大量布局时，制定防御策略",
+    "conditions": {
+      "applicant_trend": "accelerating",
+      "ipc_concentration": "high"
+    },
+    "positive_signals": [
+      "竞争对手已形成 IPC 集中布局",
+      "存在可合作的高校/研究机构",
+      "有替代技术方向可以切入"
+    ],
+    "strategies": [
+      "围绕竞争对手核心专利做外围布局（fencing）",
+      "在竞争对手未覆盖的 IPC 子类加速申请",
+      "与产学研网络中的关键节点建立合作",
+      "评估交叉许可（cross-licensing）可能性"
+    ],
+    "recommendation": "PATENT_FILING",
+    "risk_factors": ["外围专利可能被无效", "竞争对手的反制措施"]
+  },
+  {
+    "pattern_id": "portfolio_cleanup",
+    "name": "专利组合清理",
+    "description": "识别低价值专利，优化维护成本",
+    "conditions": {
+      "patent_age": "> 5 years",
+      "citation_count": "low",
+      "family_size": "<= 2"
+    },
+    "criteria": [
+      "引证次数为 0 且同族 ≤ 2 件 → 建议放弃",
+      "引证次数为 0 但同族 ≥ 5 件 → 可能有战略价值，需人工复核",
+      "SS 指标 < 0.1 且 RO < 0.05 → 技术重要性低",
+      "已过保护期 → 无需再支付维护费"
+    ],
+    "recommendation": "PORTFOLIO_PRUNE",
+    "risk_factors": ["可能是防御性专利", "商业价值难以量化"]
+  },
+  {
+    "pattern_id": "talent_discovery",
+    "name": "核心人才发现",
+    "description": "通过发明人网络分析识别核心技术人才",
+    "conditions": {
+      "inventor_productivity": "high",
+      "network_centrality": "high"
+    },
+    "signals": [
+      "年申请量 > 5 件的发明人",
+      "跨多个 IPC 分类的发明人（技术广度）",
+      "在合作网络中处于桥梁位置",
+      "所发明专利率先被高引"
+    ],
+    "recommendation": "TALENT_ACQUISITION",
+    "risk_factors": ["竞业限制协议", "人才流动成本"]
+  },
+  {
+    "pattern_id": "licensing_opportunity",
+    "name": "许可转让机会识别",
+    "description": "识别适合对外许可或转让的专利",
+    "conditions": {
+      "citation_impact": "high",
+      "family_size": ">= 3",
+      "core_technology": false
+    },
+    "signals": [
+      "高被引 + 大同族 + 非核心业务领域 → 适合许可",
+      "高被引 + 核心业务领域 → 保留",
+      "SS 指标 > 0.3 且有外部引用 → 许可价值高",
+      "技术方向已被公司放弃 → 可转让"
+    ],
+    "recommendation": "LICENSING",
+    "risk_factors": ["评估价值与实际成交价差异", "被许可方可能成为竞争对手"]
+  },
+  {
+    "pattern_id": "design_around",
+    "name": "规避设计建议",
+    "description": "面对高风险障碍专利时，生成规避设计方向",
+    "conditions": {
+      "patent_scope": "broad",
+      "risk_level": "high"
+    },
+    "strategies": [
+      "裁剪法：去除权利要求中的非必要技术特征",
+      "替换法：用替代技术方案实现相同功能",
+      "规避法：分析独立权利要求的必要技术特征，避开至少一项",
+      "现有技术抗辩：检索优先权日之前的公开文献"
+    ],
+    "recommendation": "RISK_MITIGATION",
+    "risk_factors": ["等同原则（Doctrine of Equivalents）风险", "规避方案可能侵犯其他专利"]
+  }
+]

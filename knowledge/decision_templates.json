@@ -1,0 +1,93 @@
+{
+  "_description": "Strategic decision templates for PatentAgent. Each template maps a decision type to the required analyses and output framing.",
+
+  "technology_investment": {
+    "trigger_keywords": ["投入研发", "投资方向", "值不值得做", "技术路线选择",
+                         "研发立项", "技术布局", "要不要做"],
+    "chain": "technology_landscape",
+    "required_analyses": ["get_dataset_summary", "analyze_patent_trend",
+                          "analyze_lifecycle", "analyze_tech_matrix",
+                          "analyze_burst_terms", "analyze_clustering"],
+    "strategic_framing": "基于 {tech_field} 的公开增长、低共现复核候选和近期词频增长信号，形成研发立项前的信息核查意见；不自动判定生命周期或投资价值。",
+    "recommendation_types": ["R&D_INVESTMENT", "PATENT_FILING"],
+    "output_structure": [
+      "技术成熟度判断：当前处于{萌芽期/爆发期/成熟期/衰退期}",
+      "增长动力：年均增长率 {rate}%，{key_driver}",
+      "竞争密度：已有 {n_applicants} 家申请人，{top_applicant} 领先",
+      "低共现复核候选：{n_gaps} 个组合，其中 {top_gap} 需优先核查相关专利与权利要求",
+      "投资建议：{recommendation}",
+      "风险提示：{risks}"
+    ]
+  },
+
+  "competitive_response": {
+    "trigger_keywords": ["竞争对手", "竞对分析", "竞争策略", "对抗",
+                         "对手布局", "benchmark", "对标"],
+    "chain": "competitor_intel",
+    "required_analyses": ["get_dataset_summary", "analyze_patent_trend",
+                          "analyze_ipc_distribution", "analyze_co_network",
+                          "analyze_tech_matrix", "analyze_patent_valuation"],
+    "strategic_framing": "对比 {applicants} 的技术布局、合作网络和专利质量，评估竞争态势并制定应对策略。",
+    "recommendation_types": ["PATENT_FILING", "PARTNERSHIP", "R&D_INVESTMENT"],
+    "output_structure": [
+      "竞争格局总览：{n_competitors} 家主要申请人",
+      "技术布局对比：{applicant_A} 聚焦 {ipc_A}，{applicant_B} 聚焦 {ipc_B}",
+      "合作网络分析：{top_collaborator} 是产学研枢纽",
+      "核心专利对标：{applicant_X} 持有 {n_high_value} 件高价值专利",
+      "竞争策略建议：{recommendation}",
+      "合作机会：{partnership_opportunities}"
+    ]
+  },
+
+  "fto_risk_assessment": {
+    "trigger_keywords": ["侵权风险", "FTO", "自由实施", "规避设计",
+                         "产品上市", "出海", "专利壁垒", "风险排查"],
+    "chain": "fto_risk",
+    "required_analyses": ["search_patents", "read_patent_details",
+                          "analyze_ipc_distribution", "analyze_country_distribution"],
+    "strategic_framing": "检索 {tech_field} 在目标市场 {country} 的有效专利，评估侵权风险并给出规避建议。",
+    "recommendation_types": ["RISK_MITIGATION", "PATENT_FILING"],
+    "output_structure": [
+      "风险检索范围：{tech_field}，目标市场 {countries}",
+      "高风险专利清单：Top {n} 件可能构成障碍的专利",
+      "权利要求分析：{key_claim_elements}",
+      "规避建议：{design_around_strategies}",
+      "替代技术方向：{alternative_directions}"
+    ]
+  },
+
+  "portfolio_optimization": {
+    "trigger_keywords": ["专利价值", "资产优化", "专利维护", "放弃",
+                         "许可", "转让", "核心专利", "专利运营"],
+    "chain": "asset_valuation",
+    "required_analyses": ["get_dataset_summary", "analyze_patent_valuation",
+                          "analyze_clustering", "analyze_country_distribution"],
+    "strategic_framing": "基于引证网络指标（SS/RO/BC）和同族规模，评估专利组合价值，筛选核心资产和可放弃专利。",
+    "recommendation_types": ["PORTFOLIO_PRUNE", "LICENSING", "PATENT_FILING"],
+    "output_structure": [
+      "专利组合总览：{total} 件专利，{n_high_value} 件高价值",
+      "核心资产清单：Top 10 最有价值专利",
+      "可放弃专利：{n_low_value} 件低价值专利，年维护费约 ¥{savings}",
+      "许可机会：{n_licensable} 件专利适合对外许可",
+      "布局缺口：{n_gaps} 个技术空白方向应补充申请"
+    ]
+  },
+
+  "technology_landscape_overview": {
+    "trigger_keywords": ["技术全景", "总览", "概况", "overview",
+                         "全貌", "全图", "热点", "空白"],
+    "chain": "technology_landscape",
+    "required_analyses": ["get_dataset_summary", "analyze_patent_trend",
+                          "analyze_ipc_distribution", "generate_wordcloud",
+                          "analyze_country_distribution"],
+    "strategic_framing": "对 {tech_field} 领域进行全景扫描，输出技术热点地图和趋势总览。",
+    "recommendation_types": ["R&D_INVESTMENT", "PATENT_FILING"],
+    "output_structure": [
+      "数据总览：{total} 件专利，{year_range}，{n_applicants} 家申请人",
+      "趋势判断：{trend_direction}，年增长率 {rate}%",
+      "技术热点：Top 5 关键词 {keywords}",
+      "地域分布：主要布局在 {top_countries}",
+      "建议关注：{recommendations}"
+    ]
+  }
+}

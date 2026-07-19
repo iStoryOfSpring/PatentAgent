@@ -1,0 +1,83 @@
+{
+  "patent_types": {
+    "invention": "发明专利",
+    "utility_model": "实用新型专利",
+    "design": "外观设计专利",
+    "pct": "PCT国际申请"
+  },
+  "document_fields": {
+    "patent_number": "专利号",
+    "title": "发明名称",
+    "abstract": "摘要",
+    "claims": "权利要求书",
+    "description": "说明书",
+    "applicant": "申请人",
+    "inventor": "发明人",
+    "publication_date": "公开日",
+    "priority_date": "优先权日",
+    "ipc": "国际专利分类号",
+    "cpc": "联合专利分类",
+    "forward_citation": "被引用",
+    "backward_citation": "引用",
+    "family_members": "同族专利",
+    "legal_status": "法律状态",
+    "independent_claim": "独立权利要求",
+    "dependent_claim": "从属权利要求"
+  },
+  "analysis_methods": {
+    "trend_analysis": "趋势分析",
+    "constituent_analysis": "构成分析",
+    "ranking_analysis": "排序分析",
+    "correlation_analysis": "关联分析",
+    "clustering_analysis": "聚类分析",
+    "citation_analysis": "引文分析",
+    "valuation_model": "价值评估模型",
+    "tech_effect_matrix": "技术功效矩阵",
+    "key_patent_analysis": "重点专利分析",
+    "technology_roadmap": "技术路线图",
+    "claim_analysis": "权利要求分析",
+    "design_around": "规避设计",
+    "technology_tracking": "技术追踪",
+    "patent_mining": "专利挖掘",
+    "cooperation_analysis": "合作分析",
+    "layout_analysis": "布局分析",
+    "litigation_analysis": "诉讼分析",
+    "operation_analysis": "运营分析",
+    "technology_import": "技术引进",
+    "export_freedom_to_operate": "出口FTO分析",
+    "competitive_analysis": "竞争对手分析",
+    "patent_early_warning": "专利预警"
+  },
+  "lifecycle_stages": {
+    "embryonic": "萌芽期",
+    "growth": "成长期",
+    "mature": "成熟期",
+    "decline": "衰退期"
+  },
+  "ipc_sections": {
+    "A": "人类生活必需",
+    "B": "作业/运输",
+    "C": "化学/冶金",
+    "D": "纺织/造纸",
+    "E": "固定建筑物",
+    "F": "机械工程/照明/加热/武器",
+    "G": "物理",
+    "H": "电学"
+  },
+  "applicant_types": {
+    "enterprise": "企业",
+    "university": "高等院校",
+    "individual": "个人",
+    "research_institute": "科研机构",
+    "government": "政府机关"
+  },
+  "patent_value_indicators": {
+    "citation_count": "被引次数",
+    "family_size": "同族规模",
+    "claim_count": "权利要求数量",
+    "ipc_breadth": "IPC分类广度",
+    "patent_life": "专利寿命",
+    "triadic_patent": "三方专利",
+    "sep": "标准必要专利"
+  }
+}
