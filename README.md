@@ -294,6 +294,8 @@ Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，�
 成本门禁通过后执行，再按 OpenAI、Claude 或 DeepSeek 的官方消息协议回传结果。
 第二轮禁用新工具并生成针对当前问题的结构化答案和动态追问。
 
+你也可以在网页端自行配置。目前暂不支持Gemini。
+
 ### 数据格式
 
 支持 Web of Science (Clarivate Derwent) 专利导出 `.txt` 文件。
