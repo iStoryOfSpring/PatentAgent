@@ -7,6 +7,8 @@
 > 推荐且唯一持续维护的用户入口：`frontend/` + `server.py`。根目录旧 mock 前端、
 > Streamlit/Chainlit 兼容入口仅为迁移保留，不代表当前能力。
 
+> 暂时以AGPL的形式开源。以后也许（但不保证）会转换为更宽松的模式。Contact: 2507380208@wtu.edu.cn 
+
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue" alt="Python">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
