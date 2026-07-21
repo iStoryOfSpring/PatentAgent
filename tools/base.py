@@ -5,6 +5,9 @@ import time
 from typing import Any
 
 from models.analysis_results import AnalysisResult
+from patent_agent.domain import (
+    ExecutionMetrics, ToolDefinition, ToolExecutionEnvelope, ToolProvenance,
+)
 from storage.datastore import PatentDataStore
 from tools.evidence import evidence_for
 
@@ -79,6 +82,7 @@ class Tool(ABC):
     methodology: str = ""
     evidence_level: str = "engineering_heuristic"
     allow_empty: bool = False
+    deterministic: bool = True
 
     @property
     def cost_weight(self) -> int:
@@ -91,6 +95,32 @@ class Tool(ABC):
     @property
     def evidence_record(self) -> dict[str, Any]:
         return evidence_for(self.name)
+
+    @property
+    def definition(self) -> ToolDefinition:
+        record = self.evidence_record
+        return ToolDefinition(
+            name=self.name,
+            version=str(record.get("version", "")),
+            description=self.description,
+            input_schema={
+                "type": "object",
+                "properties": self.parameters,
+                "required": [
+                    name for name, schema in self.parameters.items()
+                    if schema.get("required", False)
+                ],
+            },
+            output_schema={
+                "type": "object",
+                "required": ["result_type", "summary", "provenance", "metrics"],
+                "x-returned-fields": self.returned_fields,
+            },
+            required_fields=set(self.required_fields),
+            optional_fields=set(self.optional_fields),
+            estimated_cost=self.cost_weight,
+            deterministic=self.deterministic,
+        )
 
     def availability(self, storage: PatentDataStore) -> dict[str, Any]:
         record = self.evidence_record
@@ -187,6 +217,7 @@ class Tool(ABC):
         elapsed_ms = round((time.perf_counter() - started) * 1000, 1)
         if isinstance(result, AnalysisResult):
             audit = storage.audit()
+            snapshot = storage.snapshot()
             required_coverage = [
                 capability["field_coverage"].get(field, 0.0)
                 for field in self.required_fields
@@ -214,6 +245,30 @@ class Tool(ABC):
                 "confidence": quality_level,
                 **result.result_metadata,
             }
+            analyzed_count = int(result.result_metadata.get(
+                "sample_size", result.result_metadata.get(
+                    "analyzed_record_count", snapshot.record_count,
+                ),
+            ))
+            sampled = analyzed_count < snapshot.record_count
+            result.provenance = ToolProvenance(
+                dataset_id=snapshot.dataset_id,
+                dataset_version_id=snapshot.version_id,
+                dataset_content_hash=snapshot.content_hash,
+                adapter=snapshot.adapter,
+                input_record_count=snapshot.record_count,
+                analyzed_record_count=analyzed_count,
+                sampled=sampled,
+                sample_size=analyzed_count if sampled else None,
+                sampling_method=str(result.result_metadata.get(
+                    "sampling_method", "tool_declared" if sampled else "none",
+                )),
+                field_coverage=capability["field_coverage"],
+                algorithm_id=str(self.evidence_record.get("algorithm_id", "")),
+                algorithm_version=str(self.evidence_record.get("version", "")),
+                parameters=clean,
+            )
+            result.metrics = ExecutionMetrics(elapsed_ms=elapsed_ms)
             visual = _VISUALIZATION_DEFAULTS.get(result.result_type)
             if visual and "visualization" not in result.result_metadata:
                 result.result_metadata["visualization"] = {
@@ -233,6 +288,19 @@ class Tool(ABC):
             # 深读工具历史上返回 FullPatent 列表；保留类型但仍由调用端记录参数。
             return result
         return result
+
+    def envelope(self, result: AnalysisResult) -> ToolExecutionEnvelope:
+        """Build the transport-neutral envelope after a successful run."""
+        if result.provenance is None:
+            raise ValueError(f"工具 {self.name} 缺少 provenance")
+        return ToolExecutionEnvelope(
+            tool=self.definition,
+            result=result.model_dump(mode="json"),
+            evidence=[{"source": item} for item in self.evidence_record.get("sources", [])],
+            warnings=result.warnings,
+            provenance=result.provenance,
+            metrics=result.metrics,
+        )
 
     @staticmethod
     def _default_summary(result: AnalysisResult) -> str:
@@ -277,6 +345,7 @@ class Tool(ABC):
         schema["evidence_level"] = self.evidence_record.get("evidence_type", self.evidence_level)
         schema["algorithm"] = self.evidence_record
         schema["cost_weight"] = self.cost_weight
+        schema["definition"] = self.definition.model_dump(mode="json")
         return schema
 
     def to_llm_schema(self, storage: PatentDataStore) -> dict:

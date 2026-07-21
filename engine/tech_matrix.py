@@ -192,9 +192,13 @@ def find_gap_recommendations(
         tech_counter.update(tech_terms)
         effect_counter.update(effect_terms)
     min_support = max(2, int(len(docs) * 0.002))
-    functions = [w for w, c in tech_counter.most_common(top_n)
+    functions = [w for w, c in sorted(
+        tech_counter.items(), key=lambda item: (-item[1], item[0]),
+    )[:top_n]
                  if c >= min_support]
-    effects = [w for w, c in effect_counter.most_common(top_n)
+    effects = [w for w, c in sorted(
+        effect_counter.items(), key=lambda item: (-item[1], item[0]),
+    )[:top_n]
                if c >= min_support]
 
     # 构建共现矩阵
@@ -219,7 +223,9 @@ def find_gap_recommendations(
                 "interpretation": "低共现复核候选，不等同于蓝海",
             })
 
-    gaps.sort(key=lambda x: x["patent_count"])
+    gaps.sort(key=lambda item: (
+        item["patent_count"], item["function"], item["effect"],
+    ))
     return gaps[:top_gaps]
 
 
@@ -244,9 +250,13 @@ def build_tech_effect_matrix_results(patents: list,
         effect_counter.update(effect_terms)
     min_support = max(2, int(len(docs) * 0.002))
     per_axis = max(2, top_n // 2)
-    functions = [w for w, c in tech_counter.most_common(per_axis * 2)
+    functions = [w for w, c in sorted(
+        tech_counter.items(), key=lambda item: (-item[1], item[0]),
+    )[:per_axis * 2]
                  if c >= min_support][:per_axis]
-    effects = [w for w, c in effect_counter.most_common(per_axis * 2)
+    effects = [w for w, c in sorted(
+        effect_counter.items(), key=lambda item: (-item[1], item[0]),
+    )[:per_axis * 2]
                if c >= min_support][:per_axis]
     matrix = np.zeros((len(functions), len(effects)), dtype=int)
     for tech_terms, effect_terms in docs:

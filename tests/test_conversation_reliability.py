@@ -116,6 +116,34 @@ def test_stream_always_finishes_with_fallback_after_synthesis_failure():
     asyncio.run(scenario())
 
 
+class _ApprovalOrchestrator(_FailingSynthesisOrchestrator):
+    async def _plan_analysis(self, intent, storage, user_message=""):
+        return AnalysisPlan(steps=[], chain_id="", requires_confirmation=True)
+
+    async def _execute_plan(self, plan, storage, reuse_lookup=None, on_execution=None):
+        return []
+
+    async def _synthesize(self, plan, executions, response_mode="detailed"):
+        return "审批后完成。"
+
+
+def test_persisted_approval_bypasses_repeated_budget_prompt():
+    async def scenario():
+        orchestrator = _ApprovalOrchestrator(_FailingLLM(), ToolRegistry(), {})
+        orchestrator.enable_strategic_mode = False
+        session = Session(id="s", name="test", created_at=datetime.now(), dataset_id="d")
+        events = [event async for event in orchestrator.stream_query(
+            "执行完整分析", session, PatentDataStore(), turn_id="approved-turn",
+            approval_granted=True,
+        )]
+        plan = next(event for event in events if event["type"] == "plan")
+        assert plan["requires_confirmation"] is False
+        assert not [event for event in events if event["type"] == "clarification"]
+        assert next(event for event in events if event["type"] == "done")["final_status"] == "completed"
+
+    asyncio.run(scenario())
+
+
 class _HistoryLLM:
     async def chat(self, messages, **_kwargs):
         assert "历史工具证据" in messages[0]["content"]

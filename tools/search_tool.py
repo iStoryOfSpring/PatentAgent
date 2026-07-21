@@ -3,6 +3,7 @@
 from tools.base import Tool, tool_registry
 from storage.datastore import PatentDataStore
 from models.analysis_results import PatentSearchResult, PatentDetailsResult
+from weakref import WeakKeyDictionary
 
 
 class SearchTool(Tool):
@@ -188,16 +189,13 @@ def _split_lines(val) -> list[str]:
 
 
 # ── 全局 searcher 缓存 ──
-_searcher_cache: dict[str, "PatentSearcher"] = {}
+_searcher_cache: WeakKeyDictionary = WeakKeyDictionary()
 
 
 def _get_searcher(storage: PatentDataStore):
     """获取或创建 PatentSearcher（按 dataset 缓存）"""
-    ds = storage.get_summary()
-    cache_key = f"{id(storage)}_{storage.adapter_name}_{ds.total_patents}_{ds.year_range}"
-
-    if cache_key in _searcher_cache:
-        return _searcher_cache[cache_key]
+    if storage in _searcher_cache:
+        return _searcher_cache[storage]
 
     from retrieval.search import PatentSearcher
     from retrieval.vector_store import create_vector_store
@@ -205,6 +203,7 @@ def _get_searcher(storage: PatentDataStore):
     vector_store = create_vector_store(
         persist_dir="./data/chroma_db",
         embedding_backend="tfidf",  # 降级方案，无需 API key
+        prefer_chromadb=False,  # exact lexical ranking; no persistent ANN state
     )
     searcher = PatentSearcher(
         vector_store=vector_store,
@@ -219,7 +218,7 @@ def _get_searcher(storage: PatentDataStore):
         patents = [_row_to_pseudo_patent(row) for _, row in df.iterrows()]
         searcher.build_from_patents(patents)
 
-    _searcher_cache[cache_key] = searcher
+    _searcher_cache[storage] = searcher
     return searcher
 
 

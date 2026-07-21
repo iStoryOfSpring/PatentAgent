@@ -3,6 +3,12 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // VisualizationPanel is an intentionally lazy-loaded ECharts workspace.
+    // Keep the warning threshold below 1 MiB while treating that isolated
+    // optional chunk separately from the 430 KiB application shell.
+    chunkSizeWarningLimit: 800,
+  },
   server: {
     port: 5173,
     proxy: {

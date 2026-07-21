@@ -25,7 +25,7 @@
   2.1 你需要什么
 
   - 一台电脑（Mac、Windows 或 Linux 都可以）
-  - Python 3.10 或更新版本
+  - Python 3.10、3.11 或 3.12（当前官方兼容范围）
   - 8GB 以上内存（视数据量而定）
 
   2.2 检查 Python 是否已安装
@@ -34,7 +34,7 @@
 
     python3 --version
 
-  如果显示 "Python 3.10.x" 或更高版本，说明已安装。
+  如果显示 Python 3.10.x、3.11.x 或 3.12.x，说明已安装。
   如果提示"找不到命令"，先去 https://www.python.org/downloads/ 下载安装。
 
   2.3 安装 PatentAgent
@@ -45,14 +45,19 @@
 
     cd ~/Desktop/PatentAgent
 
-  第三步：安装 Python 依赖：
+  第三步：按锁文件安装 Python 依赖（推荐）：
+
+    uv sync --frozen --all-extras --group dev
+
+  pyproject.toml 是依赖声明源，uv.lock 固定完整版本。requirements.txt 只作为 pip
+  兼容导出；不能手工修改。未安装 uv 时可临时使用：
 
     pip install -r requirements.txt
 
   第四步：安装前端依赖（首次运行需要）：
 
     cd frontend
-    npm install
+    npm ci
     cd ..
 
   等待几分钟，看到 "Successfully installed..." 就完成了。
@@ -73,6 +78,15 @@
   后端 API 文档: http://localhost:8000/docs ← 可以在这里直接测试所有接口
 
   按 Ctrl+C 停止所有服务。
+
+  开发与回归检查：
+
+    uv lock --check
+    uv run python -m pytest -q
+    cd frontend && npm test -- --run && npm run build
+
+  tests/fixtures/wos_golden 是固定合成数据与 16 个工具的结果漂移门禁。除非有经过审查的
+  算法或契约变更，不要更新金样文件。
 
   2.5 分别启动（高级用户）
 
@@ -136,32 +150,32 @@
   首次加载会走完整解析（10 秒左右），以后只要文件没变，缓存命中只需要 0.3 秒。
 
 ================================================================================
-  第四章：三种使用模式
+  第四章：唯一 Web 入口与集成接口
 ================================================================================
 
-  PatentAgent 有三种使用模式。
+  PatentAgent 只有一个面向用户并持续维护的界面：React Web。
 
-  模式一：Web 界面（推荐）
-  ──────────────────────
+  Web 用户入口
+  ────────────
   浏览器打开 http://localhost:5173，三栏布局：
     左栏：数据管理 + LLM 设置
     中栏：Agent 对话（SSE 流式响应，实时看到分析过程）
     右栏：16 个快捷工具（一键执行，结果即时显示）
   适合日常交互式分析。
 
-  模式二：API 调用
-  ──────────────
+  REST API 集成接口
+  ────────────────
   FastAPI 后端提供标准 REST API + SSE 流式端点。
   可以在 http://localhost:8000/docs 查看 Swagger 交互式文档。
   适合程序化调用、集成到其他系统。
 
-  模式三：MCP 服务器
+  MCP 可选集成接口
   ────────────────
   启动 MCP 服务器后，Claude Code / VS Code / Cursor 等 AI 客户端
   可直接调用全部 16 个分析工具。
-  适合在 AI 原生环境中分析专利。
+  适合把同一套分析工具接入 AI 原生环境；它不是第二套 PatentAgent 用户界面。
 
-  本章先介绍 Web 界面（最常用）。
+  后续用户操作均以 Web 界面为准，API 和 MCP 章节只面向集成开发者。
 
 ================================================================================
   第五章：Agent 对话模式详解
@@ -171,19 +185,29 @@
 
   对话模式需要连接一个大语言模型（LLM）来做智能分析和写作。
 
-  在左侧边栏找到"LLM 设置"，展开它：
+  左侧“LLM 设置”卡片显示当前供应商、协议、模型和状态。点击“添加供应商”或
+  “切换 / 设置”，进入高级设置：
 
-  供应商：选择 Claude、OpenAI 或 DeepSeek（三选一）
-    - Claude：推荐，长文本理解最好
-    - OpenAI：兼容性最广
-    - DeepSeek：性价比最高，且能在中国大陆地区使用
+    1. 从 OpenAI、Claude、DeepSeek、OpenRouter、Ollama、vLLM 或“自定义”预设开始。
+    2. 可以修改供应商名称；名称不会决定请求格式，必须正确选择 API 协议：
+       OpenAI Chat Compatible、Anthropic Messages 或 DeepSeek Chat。
+    3. 检查请求地址和鉴权方式。远程地址必须为 HTTPS；localhost、127.0.0.1、::1
+       可以使用 HTTP。本地 Ollama/vLLM 可选择“无鉴权”。
+    4. 输入 API Key。切换配置后密钥框始终为空；“已加载”只表示后端内存里仍有凭证。
+    5. 手工填写模型 ID，或先点击“获取模型”。获取失败不会清空已填写的模型。
+    6. 点击“测试连接”查看分阶段结果；确认通过后点击“保存并连接”。
 
-  API Key：填入你从对应平台获取的密钥
-    - Claude 去 https://console.anthropic.com 申请
-    - OpenAI 去 https://platform.openai.com 申请
-    - DeepSeek 去 https://platform.deepseek.com 申请
+  三个按钮的区别：
+    - 保存：只保存名称、地址、模型和请求参数等非敏感配置，不连接 Agent。
+    - 测试连接：真实检查文本、工具选择、工具回传和结构化输出，但不切换 Agent。
+    - 保存并连接：完整探测通过后才设为当前供应商；失败不会替换原来可用的 Agent。
 
-  填好后点击「连接」，看到"已连接 Claude"就成功了。
+  只有普通文本可用、但不能完成 PatentAgent 工具闭环的模型不能激活。探测错误会标明
+  认证、地址、协议、模型或能力不兼容类别。生成回答期间不能切换、编辑/删除当前配置
+  或断开连接。
+
+  安全说明：API Key 和标记为“敏感”的 Extra Header 只存在后端进程内存，不写入
+  SQLite、日志或 API 响应。后端重启后配置仍在，但状态会变为“待输入凭证”。
 
   注意：如果你不想用 AI 对话模式，可以跳过这一步。
   侧边栏的快捷工具不需要连接 LLM 就能用。
@@ -373,9 +397,9 @@
     3. AI 自动选择合适的工具、填入正确的参数、执行分析
     4. 结果直接返回给你，AI 还会基于数据撰写分析结论
 
-  和 Streamlit GUI 的区别：
-    GUI 模式  → 打开浏览器 → 手动点击按钮 → 每个工具单独看结果
-    MCP 模式  → 在编辑器中直接对话 → AI 自动调用工具 → 一键获得综合分析
+  和 Web 用户入口的关系：
+    Web 入口 → 在 PatentAgent 浏览器界面管理数据、供应商、会话和完整分析流程
+    MCP 集成 → 外部 AI 客户端通过 JSON-RPC 调用同一工具注册表
 
   8.2 安装 MCP 依赖
   ────────────────
@@ -426,7 +450,12 @@
 
   MCP_HTTP_HOST（默认 127.0.0.1）
     仅 HTTP 模式有效。监听的网络地址。
-    127.0.0.1 = 仅本机可访问；0.0.0.0 = 网络中任意机器可访问（注意安全）。
+    127.0.0.1 = 仅本机可访问。配置为 0.0.0.0 或其他非回环地址时，服务会要求
+    同时设置 MCP_AUTH_TOKEN，否则拒绝启动。
+
+  MCP_AUTH_TOKEN（默认空）
+    MCP HTTP 的 Bearer Token。只在确需非回环访问时设置；客户端请求必须携带
+    Authorization: Bearer <token>。stdio 模式不需要此配置。
 
   MCP_MAX_ITEMS_IN_RESULT（默认 50）
     分析结果中列表数据（如词频列表、搜索列表）的最大条目数。
@@ -584,7 +613,7 @@
 
   测试输出示例：
     test_01_initialize ............. PASSED  （服务器启动）
-    test_02_tools_list ............ PASSED  （列出15个工具）
+    test_02_tools_list ............ PASSED  （列出16个工具）
     test_03_call_dataset_summary .. PASSED  （调用工具返回数据）
     test_04_call_unknown_tool ..... PASSED  （错误处理正常）
 
@@ -600,13 +629,13 @@
   Q：工具调用返回错误"年列不存在"？
   A：数据加载失败。检查 MCP_INPUT_DIR 路径是否正确，目录下是否有 .txt 文件。
 
-  Q：能不能同时用 GUI 和 MCP？
-  A：可以。两者共用相同的工具注册表和引擎层，互不影响。
+  Q：能不能同时用 Web 和 MCP？
+  A：可以。Web 是用户入口，MCP 是可选集成接口；两者共用相同的工具注册表和引擎层。
      但注意：两个实例各自维护独立的 PatentDataStore，不共享缓存。
 
-  Q：MCP 模式和 GUI 模式调用的工具代码是一样的吗？
-  A：完全一样。MCP 服务器通过相同的 Tool.execute() 接口调用工具，
-     只是上层传输协议不同（JSON-RPC vs Streamlit 回调）。
+  Q：MCP 和 Web 调用的工具代码是一样的吗？
+  A：完全一样。MCP 和 FastAPI 都通过相同的 Tool.run() 契约调用运行时注册工具，
+     只是上层传输协议不同（JSON-RPC 与 HTTP/SSE）。
 
   Q：如何在 Claude Code 中确认 MCP 已连接？
   A：在 Claude Code 中输入"列出可用的工具"，如果能列出与 /api/tools 一致的工具
@@ -635,23 +664,33 @@
   第十章：设置与高级配置
 ================================================================================
 
-  10.1 顶栏设置按钮
+  10.1 请求参数
 
-  点击顶栏「设置」，可以调整：
+  高级设置中的“请求参数与专家配置”默认折叠。可设置：
+    - 超时 5–300 秒（默认 60）
+    - 重试 0–5 次（默认 2）
+    - 最大输出 256–32768 Token（默认 8192）
+    - 温度 0–2；留空使用服务默认
+    - 推理强度 default/low/medium/high/max
+    - DeepSeek Thinking mode：auto/enabled/disabled
 
-  隐私模式：
-    - 关闭（默认）：使用云端 LLM（Claude/OpenAI/DeepSeek）
-    - 开启：仅使用本地模型，数据不离开你的电脑
+  10.2 Extra Headers
 
-  Embedding 后端：
-    - auto：自动选择（推荐）
-    - openai：使用 OpenAI API
-    - sentence_transformers：本地模型
-    - tfidf：纯本地，无需任何外部依赖
+  每一项填写 Header 名称和值。勾选“敏感”后，值只在测试/连接请求中发送并进入后端
+  内存；数据库和重新读取的 API 只返回 Header 名称以及是否已加载。Host、Content-Length、
+  Content-Type 等由 HTTP 客户端管理的 Header、重复鉴权 Header、重复名称和带换行的值会被拒绝。
 
-  10.2 中英文切换
+  10.3 Extra Body JSON
 
-  顶栏「EN / 中文」按钮，一键切换界面语言。所有按钮、提示、标签都会切换。
+  只允许 JSON 对象。编辑器支持即时语法检查、格式化和恢复默认值。以下字段由 Agent
+  编排器管理，不能覆盖：model、messages、tools、tool_choice、response_format、
+  max_tokens、max_completion_tokens、stream。
+
+  10.4 配置切换和删除
+
+  有未保存修改时，关闭高级设置、切换配置或选择其他预设会要求确认。删除配置也需要
+  二次确认。当前已连接配置必须先断开才能删除；删除上次选择的已断开配置后不会自动
+  激活其他供应商。
 
 ================================================================================
   第十一章：常见问题
@@ -663,6 +702,16 @@
 
   Q：没有 LLM 的 API Key 能用吗？
   A：能。侧边栏从 /api/tools 动态读取工具；无需 LLM，但会按字段能力禁用不可靠工具。
+     如果本机已经运行 Ollama/vLLM，也可以新增 OpenAI-compatible 配置并选择“无鉴权”；
+     该模型仍须通过完整工具能力探测才能用于 Agent 对话。
+
+  Q：为什么重启后显示“待输入凭证”？
+  A：这是安全设计。非敏感配置和上次选择保存在本地 SQLite，但 API Key 和敏感 Header
+     只在后端内存中，重启后必须重新输入。
+
+  Q：获取模型失败还能连接吗？
+  A：可以。某些兼容服务没有模型列表端点，保留请求地址并手工填写准确的模型 ID，
+     然后运行“测试连接”。获取失败不会清空已有模型。
 
   Q：为什么 AI 的分析结论有时候不准？
   A：AI 严格基于实际分析数据写结论。如果某个维度没有数据

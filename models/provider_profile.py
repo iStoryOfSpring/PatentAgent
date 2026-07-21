@@ -7,15 +7,23 @@ from urllib.parse import urlsplit, urlunsplit
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from patent_agent.security.provider_urls import validate_provider_url_syntax
+
 
 ProviderProtocol = Literal["openai_chat", "anthropic_messages", "deepseek_chat"]
 AuthMode = Literal["bearer", "x_api_key", "custom_header", "none"]
 ReasoningEffort = Literal["default", "low", "medium", "high", "max"]
 ThinkingMode = Literal["auto", "enabled", "disabled"]
+ProbeStatus = Literal["not_tested", "passed", "failed"]
 
 RESERVED_EXTRA_BODY_FIELDS = {
     "model", "messages", "tools", "tool_choice", "response_format",
     "max_tokens", "max_completion_tokens", "stream",
+}
+
+FORBIDDEN_EXTRA_HEADER_NAMES = {
+    "connection", "content-length", "content-type", "host",
+    "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade",
 }
 
 
@@ -28,11 +36,17 @@ def _validate_http_url(value: str, *, website: bool = False) -> str:
         raise ValueError("必须是有效的 HTTP/HTTPS URL")
     if parsed.username or parsed.password:
         raise ValueError("URL 不得包含用户名或密码")
+    try:
+        parsed.port
+    except ValueError as exc:
+        raise ValueError("URL 端口无效") from exc
     if not website and (parsed.query or parsed.fragment):
         raise ValueError("请求地址不得包含 query 或 fragment")
     local_hosts = {"localhost", "127.0.0.1", "::1"}
     if not website and parsed.scheme != "https" and parsed.hostname not in local_hosts:
         raise ValueError("远程请求地址必须使用 HTTPS；仅本机地址允许 HTTP")
+    if not website:
+        validate_provider_url_syntax(value)
     path = parsed.path.rstrip("/")
     return urlunsplit((parsed.scheme, parsed.netloc, path, parsed.query, parsed.fragment))
 
@@ -49,6 +63,15 @@ class ProviderHeader(BaseModel):
         value = value.strip()
         if not value or any(ch in value for ch in "\r\n:"):
             raise ValueError("Header 名称无效")
+        if value.lower() in FORBIDDEN_EXTRA_HEADER_NAMES:
+            raise ValueError(f"Header {value} 由 HTTP 客户端管理，不能在 Extra Headers 中设置")
+        return value
+
+    @field_validator("value")
+    @classmethod
+    def validate_value(cls, value: str) -> str:
+        if any(ch in value for ch in "\r\n"):
+            raise ValueError("Header 值不得包含换行符")
         return value
 
 
@@ -75,10 +98,17 @@ class ProviderProfileBase(BaseModel):
     extra_headers: list[ProviderHeader] = Field(default_factory=list)
     extra_body: dict = Field(default_factory=dict)
 
-    @field_validator("name", "notes", "model", "auth_header_name", "auth_prefix")
+    @field_validator("name", "notes", "model", "auth_header_name")
     @classmethod
     def strip_text(cls, value: str) -> str:
         return value.strip()
+
+    @field_validator("auth_prefix")
+    @classmethod
+    def validate_auth_prefix(cls, value: str) -> str:
+        if any(ch in value for ch in "\r\n"):
+            raise ValueError("鉴权前缀不得包含换行符")
+        return value
 
     @field_validator("base_url")
     @classmethod
@@ -115,6 +145,8 @@ class ProviderProfileBase(BaseModel):
         names = [header.name.lower() for header in self.extra_headers]
         if len(names) != len(set(names)):
             raise ValueError("Extra Headers 名称不得重复")
+        if self.auth_mode != "none" and self.auth_header_name.lower() in names:
+            raise ValueError("Extra Headers 不得重复设置鉴权 Header")
         if self.protocol != "deepseek_chat" and self.thinking_mode != "auto":
             raise ValueError("Thinking mode 仅适用于 DeepSeek 协议")
         return self
@@ -152,6 +184,9 @@ class ProviderProfile(ProviderProfileBase):
     credential_loaded: bool = False
     connected: bool = False
     needs_reconnect: bool = False
+    probe_status: ProbeStatus = "not_tested"
+    probe_error_category: str = ""
+    last_probe_at: str = ""
     created_at: str = ""
     updated_at: str = ""
 
@@ -159,6 +194,13 @@ class ProviderProfile(ProviderProfileBase):
 class ProviderCredentials(BaseModel):
     api_key: str = Field(default="", max_length=8192)
     sensitive_headers: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator("api_key")
+    @classmethod
+    def validate_api_key(cls, value: str) -> str:
+        if any(ch in value for ch in "\r\n"):
+            raise ValueError("API Key 不得包含换行符")
+        return value
 
     @field_validator("sensitive_headers")
     @classmethod
@@ -168,5 +210,6 @@ class ProviderCredentials(BaseModel):
                 raise ValueError("敏感 Header 名称无效")
             if len(secret) > 8192:
                 raise ValueError("敏感 Header 值过长")
+            if any(ch in secret for ch in "\r\n"):
+                raise ValueError("敏感 Header 值不得包含换行符")
         return {key.strip(): secret for key, secret in value.items()}
-

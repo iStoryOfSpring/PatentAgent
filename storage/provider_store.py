@@ -16,6 +16,29 @@ from storage.conversation_store import _now
 class ProviderProfileStore:
     SCHEMA_VERSION = 1
 
+    _MIGRATION_COLUMNS = {
+        "schema_version": "INTEGER NOT NULL DEFAULT 1",
+        "notes": "TEXT NOT NULL DEFAULT ''",
+        "website_url": "TEXT NOT NULL DEFAULT ''",
+        "base_url": "TEXT NOT NULL DEFAULT ''",
+        "model": "TEXT NOT NULL DEFAULT ''",
+        "selected": "INTEGER NOT NULL DEFAULT 0",
+        "auth_mode": "TEXT NOT NULL DEFAULT 'bearer'",
+        "auth_header_name": "TEXT NOT NULL DEFAULT 'Authorization'",
+        "auth_prefix": "TEXT NOT NULL DEFAULT 'Bearer '",
+        "timeout_seconds": "INTEGER NOT NULL DEFAULT 60",
+        "max_retries": "INTEGER NOT NULL DEFAULT 2",
+        "max_output_tokens": "INTEGER NOT NULL DEFAULT 8192",
+        "temperature": "REAL",
+        "reasoning_effort": "TEXT NOT NULL DEFAULT 'default'",
+        "thinking_mode": "TEXT NOT NULL DEFAULT 'auto'",
+        "model_discovery_path": "TEXT NOT NULL DEFAULT '/models'",
+        "extra_headers_json": "TEXT NOT NULL DEFAULT '[]'",
+        "extra_body_json": "TEXT NOT NULL DEFAULT '{}'",
+        "created_at": "TEXT NOT NULL DEFAULT ''",
+        "updated_at": "TEXT NOT NULL DEFAULT ''",
+    }
+
     def __init__(self, db_path: str | Path):
         self.db_path = Path(db_path)
 
@@ -25,6 +48,10 @@ class ProviderProfileStore:
             await db.execute("PRAGMA journal_mode=WAL")
             await db.executescript(
                 """
+                CREATE TABLE IF NOT EXISTS provider_schema_meta (
+                    singleton INTEGER PRIMARY KEY CHECK (singleton=1),
+                    schema_version INTEGER NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS provider_profiles (
                     id TEXT PRIMARY KEY,
                     schema_version INTEGER NOT NULL DEFAULT 1,
@@ -50,9 +77,44 @@ class ProviderProfileStore:
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 );
-                CREATE UNIQUE INDEX IF NOT EXISTS idx_provider_selected
-                ON provider_profiles(selected) WHERE selected=1;
                 """
+            )
+            # Databases created by development builds can contain an earlier
+            # subset of the profile columns.  Keep this migration independent
+            # from PRAGMA user_version, which belongs to the conversation store
+            # in the same SQLite file.
+            columns = {
+                row[1] for row in await db.execute_fetchall(
+                    "PRAGMA table_info(provider_profiles)"
+                )
+            }
+            for name, definition in self._MIGRATION_COLUMNS.items():
+                if name not in columns:
+                    await db.execute(
+                        f"ALTER TABLE provider_profiles ADD COLUMN {name} {definition}"
+                    )
+            # Normalize accidental multi-selection before creating the partial
+            # unique index. Keep the most recently updated profile selected.
+            await db.execute(
+                "UPDATE provider_profiles SET selected=0 WHERE selected=1 AND id NOT IN ("
+                "SELECT id FROM provider_profiles WHERE selected=1 "
+                "ORDER BY updated_at DESC,id LIMIT 1)"
+            )
+            await db.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_provider_selected "
+                "ON provider_profiles(selected) WHERE selected=1"
+            )
+            await db.execute(
+                "INSERT INTO provider_schema_meta(singleton,schema_version) VALUES(1,?) "
+                "ON CONFLICT(singleton) DO UPDATE SET schema_version=excluded.schema_version",
+                (self.SCHEMA_VERSION,),
+            )
+            # Repair values written by an early validator that accidentally
+            # stripped the required space from the conventional Bearer prefix.
+            await db.execute(
+                "UPDATE provider_profiles SET auth_prefix='Bearer ' "
+                "WHERE auth_mode='bearer' AND auth_header_name='Authorization' "
+                "AND auth_prefix='Bearer'"
             )
             await db.commit()
 
@@ -185,4 +247,3 @@ class ProviderProfileStore:
             await db.commit()
             if cursor.rowcount == 0:
                 raise KeyError(profile_id)
-

@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "record_count": 300,
+  "year_range": [2019, 2024],
+  "unique_source_records": 300,
+  "publication_date_coverage": 1.0,
+  "ipc_coverage": 1.0,
+  "collaboration_patents": 60,
+  "collaboration_rate": 0.2,
+  "citation_edges": 299
+}

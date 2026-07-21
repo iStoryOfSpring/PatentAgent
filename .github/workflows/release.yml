@@ -1,0 +1,44 @@
+name: release-artifacts
+
+on:
+  push:
+    tags: ["V*"]
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.30"
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: uv sync --frozen --all-extras --group dev
+      - run: uv run python -m pytest -q
+      - run: npm ci
+        working-directory: frontend
+      - run: npm test -- --run
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - name: Build reproducible application archive
+        run: |
+          mkdir -p release/PatentAgent
+          git archive --format=tar HEAD | tar -x -C release/PatentAgent
+          cp -R frontend/dist release/PatentAgent/frontend/dist
+          tar -czf "release/PatentAgent-${GITHUB_REF_NAME}.tar.gz" -C release PatentAgent
+          shasum -a 256 "release/PatentAgent-${GITHUB_REF_NAME}.tar.gz" > "release/PatentAgent-${GITHUB_REF_NAME}.sha256"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/PatentAgent-${{ github.ref_name }}.tar.gz
+            release/PatentAgent-${{ github.ref_name }}.sha256
+          generate_release_notes: true

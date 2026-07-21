@@ -42,6 +42,14 @@ class ChatEvent:
         self.content = content
 
 
+class LLMProbeError(RuntimeError):
+    """Capability probe failure with safe, user-visible stage metadata."""
+
+    def __init__(self, message: str, stages: dict[str, dict]):
+        super().__init__(message)
+        self.stages = stages
+
+
 class LLMClient:
     """多供应商 LLM 客户端。
 
@@ -91,9 +99,8 @@ class LLMClient:
             if base_url:
                 kwargs["base_url"] = base_url
             self._client = anthropic.AsyncAnthropic(**kwargs)
-            self._sync_client = anthropic.Anthropic(**kwargs)
         elif provider == LLMProvider.OPENAI:
-            from openai import AsyncOpenAI, OpenAI
+            from openai import AsyncOpenAI
             key = api_key or os.getenv("OPENAI_API_KEY")
             kwargs = {
                 "api_key": key,
@@ -103,9 +110,8 @@ class LLMClient:
                 "default_headers": self.extra_headers or None,
             }
             self._client = AsyncOpenAI(**kwargs)
-            self._sync_client = OpenAI(**kwargs)
         elif provider == LLMProvider.DEEPSEEK:
-            from openai import AsyncOpenAI, OpenAI
+            from openai import AsyncOpenAI
             key = api_key or os.getenv("DEEPSEEK_API_KEY")
             kwargs = {
                 "api_key": key,
@@ -115,9 +121,20 @@ class LLMClient:
                 "default_headers": self.extra_headers or None,
             }
             self._client = AsyncOpenAI(**kwargs)
-            self._sync_client = OpenAI(**kwargs)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
+        self._redaction_secrets = [
+            value for value in [key, *self.extra_headers.values()] if value
+        ]
+
+    def _safe_error_detail(self, exc: Exception) -> str:
+        detail = str(exc)
+        for secret in getattr(self, "_redaction_secrets", []):
+            detail = detail.replace(secret, "[redacted]")
+        return re.sub(
+            r"(?i)(api[-_ ]?key|authorization|x-api-key)\s*[:=]\s*\S+",
+            r"\1=[redacted]", detail,
+        )[:500]
 
     # ── 工具 Schema 格式转换 ──
     @staticmethod
@@ -309,10 +326,9 @@ class LLMClient:
                 return response
             except Exception as exc:
                 if attempt >= self.max_retries:
-                    detail = re.sub(r"(?i)(api[-_ ]?key|authorization)\s*[:=]\s*\S+", r"\1=[redacted]", str(exc))[:500]
                     raise RuntimeError(
                         f"LLM_PROVIDER_ERROR[{self.provider.value}]: "
-                        f"{type(exc).__name__}: {detail}"
+                        f"{type(exc).__name__}: {self._safe_error_detail(exc)}"
                     ) from exc
                 await asyncio.sleep(0.5 * (2 ** attempt))
 
@@ -595,25 +611,47 @@ class LLMClient:
         """Run a user-visible staged probe without mutating Agent state."""
         started = time.perf_counter()
         text_started = time.perf_counter()
-        text_response = await self.chat(
-            [{"role": "user", "content": "仅回复 PA_TEXT_OK。"}],
-            max_tokens=32,
-        )
-        if "PA_TEXT_OK" not in text_response.text:
-            raise RuntimeError("LLM probe plain-text response was invalid")
+        stages: dict[str, dict] = {}
+        try:
+            text_response = await self.chat(
+                [{"role": "user", "content": "仅回复 PA_TEXT_OK。"}],
+                max_tokens=32,
+            )
+            if "PA_TEXT_OK" not in text_response.text:
+                raise RuntimeError("LLM probe plain-text response was invalid")
+        except Exception as exc:
+            stages["text"] = {
+                "status": "failed",
+                "latency_ms": round((time.perf_counter() - text_started) * 1000, 1),
+            }
+            raise LLMProbeError(str(exc), stages) from exc
         text_ms = round((time.perf_counter() - text_started) * 1000, 1)
+        stages["text"] = {"status": "passed", "latency_ms": text_ms}
 
         roundtrip_started = time.perf_counter()
-        result = await self.probe()
+        try:
+            result = await self.probe()
+        except Exception as exc:
+            message = str(exc).lower()
+            if "structured" in message or "schema" in message or "json" in message:
+                stages["tool_selection"] = {"status": "passed"}
+                stages["tool_result_roundtrip"] = {"status": "passed"}
+                stages["structured_output"] = {"status": "failed"}
+            elif "final response" in message or "roundtrip" in message:
+                stages["tool_selection"] = {"status": "passed"}
+                stages["tool_result_roundtrip"] = {"status": "failed"}
+            else:
+                stages["tool_selection"] = {"status": "failed"}
+            raise LLMProbeError(str(exc), stages) from exc
         roundtrip_ms = round((time.perf_counter() - roundtrip_started) * 1000, 1)
+        stages.update({
+            "tool_selection": {"status": "passed"},
+            "tool_result_roundtrip": {"status": "passed"},
+            "structured_output": {"status": "passed"},
+        })
         result.update({
             "latency_ms": round((time.perf_counter() - started) * 1000, 1),
-            "stages": {
-                "text": {"status": "passed", "latency_ms": text_ms},
-                "tool_selection": {"status": "passed"},
-                "tool_result_roundtrip": {"status": "passed"},
-                "structured_output": {"status": "passed"},
-            },
+            "stages": stages,
             "roundtrip_latency_ms": roundtrip_ms,
         })
         return result
@@ -625,80 +663,6 @@ class LLMClient:
             result = close()
             if hasattr(result, "__await__"):
                 await result
-        sync_close = getattr(self._sync_client, "close", None)
-        if sync_close:
-            sync_close()
-
-    # ── 同步对话接口（用于 Streamlit，避免 asyncio.run()）──
-    def chat_sync(self,
-                  messages: list[dict],
-                  tools: list[dict] = None,
-                  max_tokens: int = 8192) -> ChatResponse:
-        """同步对话接口 — 无需事件循环。"""
-        system_prompt = None
-        chat_messages = []
-        for m in messages:
-            if m["role"] == "system":
-                system_prompt = m["content"]
-            else:
-                chat_messages.append(m)
-
-        for attempt in range(self.max_retries + 1):
-            try:
-                if self.provider == LLMProvider.CLAUDE:
-                    return self._claude_chat_sync(
-                        system_prompt, chat_messages, tools, max_tokens,
-                    )
-                return self._openai_chat_sync(
-                    system_prompt, chat_messages, tools, max_tokens,
-                )
-            except Exception as exc:
-                if attempt >= self.max_retries:
-                    raise RuntimeError(
-                        f"LLM_PROVIDER_ERROR[{self.provider.value}]: {type(exc).__name__}"
-                    ) from exc
-                time.sleep(0.5 * (2 ** attempt))
-
-    def _claude_chat_sync(self, system_prompt, messages, tools, max_tokens):
-        kwargs = {"model": self.model, "max_tokens": max_tokens}
-        if system_prompt:
-            kwargs["system"] = system_prompt
-        if messages:
-            kwargs["messages"] = messages
-        if tools:
-            kwargs["tools"] = self._to_claude_tools(tools)
-
-        response = self._sync_client.messages.create(**kwargs)
-        text = ""
-        for block in response.content:
-            if getattr(block, 'type', None) == 'text':
-                text += block.text
-
-        tool_calls = self._extract_claude_tool_calls(response.content)
-        return ChatResponse(text=text, tool_calls=tool_calls)
-
-    def _openai_chat_sync(self, system_prompt, messages, tools, max_tokens):
-        msgs = []
-        if system_prompt:
-            msgs.append({"role": "system", "content": system_prompt})
-        msgs.extend(messages)
-
-        kwargs = {
-            "model": self.model,
-            "messages": msgs,
-            "max_tokens": max_tokens,
-        }
-        if tools:
-            openai_tools = [
-                {"type": "function", "function": t} for t in tools
-            ]
-            kwargs["tools"] = openai_tools
-
-        response = self._sync_client.chat.completions.create(**kwargs)
-        msg = response.choices[0].message
-        text = msg.content or ""
-        tool_calls = self._extract_openai_tool_calls(msg)
-        return ChatResponse(text=text, tool_calls=tool_calls)
 
     # ── 流式接口 ──
     async def chat_streaming(self,

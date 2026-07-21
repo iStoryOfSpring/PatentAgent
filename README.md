@@ -4,20 +4,30 @@
 
 > PatentSmelter 的下一代演进。从"批处理工具箱"到"对话式智能分析"。
 
-> 推荐且唯一持续维护的用户入口：`frontend/` + `server.py`。根目录旧 mock 前端、
-> Streamlit/Chainlit 兼容入口仅为迁移保留，不代表当前能力。
+> 唯一用户入口：`frontend/` + `server.py`。MCP stdio/HTTP 服务作为可选的
+> 外部 AI 客户端集成接口，与 Web 共用工具注册表，但不是另一套用户界面。
 
 > 暂时以AGPL的形式开源。以后也许（但不保证）会转换为更宽松的模式。Contact: 2507380208@wtu.edu.cn 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-blue" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.10--3.12-blue" alt="Python">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
   <img src="https://img.shields.io/badge/Tools-16-orange" alt="Tools">
-  <img src="https://img.shields.io/badge/Version-3.0-lightgrey" alt="Version">
+  <img src="https://img.shields.io/badge/Version-3.1-lightgrey" alt="Version">
 </p>
 
 ## 快速开始
+
+后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。官方支持
+Python 3.10、3.11 和 3.12：
+
+```bash
+uv sync --frozen --all-extras --group dev
+cd frontend && npm ci && cd ..
+```
+
+`requirements.txt` 是由锁文件导出的 pip 兼容清单，不应手工编辑。
 
 ### 一键启动（推荐）
 
@@ -40,18 +50,19 @@ MCP_INPUT_DIR=./my_patents PATENT_DATA_ROOT=./my_patents uvicorn server:app --ho
 **前端：**
 ```bash
 cd PatentAgent/frontend
-npm install     # 首次运行
+npm ci          # 首次运行，严格按 package-lock.json 安装
 npm run dev     # http://localhost:5173
 ```
 
-### MCP Server
+### 可选：MCP 集成
 
 ```bash
 cd PatentAgent
 pip install mcp
 python mcp_server.py
 ```
-在 Claude Code / VS Code / Cursor 中配置 MCP 连接。详见 [MCP 使用指南](#mcp-使用指南)。
+需要从 Claude Code / VS Code / Cursor 调用分析工具时再配置 MCP。详见
+[MCP 使用指南](#mcp-使用指南)。
 
 ## 核心特性
 
@@ -60,8 +71,8 @@ python mcp_server.py
 - **智能关键词过滤** — 400 词专利专用停用词库 + NLTK 词性过滤，剔除说明书套话和语境噪音
 - **结果可追溯** — 图表、结构化摘要、方法、字段覆盖率、警告、参数和耗时统一返回
 - **原生可视化** — React/ECharts 优先读取结构化结果，支持原始尺寸、适应窗格、全屏、PNG/JSON 导出与数据表切换
-- **多供应商 LLM** — Claude / OpenAI / DeepSeek，支持本地模型隐私模式
-- **极速加载** — 多线程并行解析 + Pickle 缓存，首次 10s，缓存命中 0.3s
+- **多供应商 LLM** — 多个命名配置、OpenAI/Anthropic/DeepSeek 三类协议、OpenRouter/Ollama/vLLM 与自定义兼容服务
+- **极速加载** — 8 线程并行解析 + Pickle 缓存，首次 10s，缓存命中 0.3s
 - **报告导出** — HTML 报告（含完整中文排版），CSV 数据导出
 - **MCP 协议支持** — 标准 MCP (Model Context Protocol) stdio/HTTP 服务器，Claude Code / VS Code / Cursor 可直接调用全部工具
 - **算法证据登记表** — 16 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
@@ -122,6 +133,9 @@ python mcp_server.py
 python mcp_http_server.py --port 8000 --host 127.0.0.1
 ```
 
+HTTP 默认只允许本机。若确需绑定非回环地址，必须同时设置强随机
+`MCP_AUTH_TOKEN`，客户端以 `Authorization: Bearer <token>` 认证；缺少令牌时服务拒绝启动。
+
 ### 环境变量配置
 
 | 变量 | 默认值 | 说明 |
@@ -131,6 +145,7 @@ python mcp_http_server.py --port 8000 --host 127.0.0.1
 | `MCP_LOG_LEVEL` | `INFO` | 日志级别：DEBUG / INFO / WARNING / ERROR |
 | `MCP_HTTP_PORT` | `8000` | HTTP 模式监听端口 |
 | `MCP_HTTP_HOST` | `127.0.0.1` | HTTP 模式监听地址 |
+| `MCP_AUTH_TOKEN` | 空 | 非回环监听必填；HTTP 客户端使用 Bearer Token |
 | `MCP_MAX_ITEMS_IN_RESULT` | `50` | 分析结果中列表字段的最大条目数 |
 
 ### 配置 Claude Code
@@ -223,11 +238,15 @@ python -m pytest tests/test_mcp_integration.py -v
 ## 架构
 
 ```
-React Frontend (Vite + TypeScript)  |  MCP Server (stdio/HTTP)
-         ↕ HTTP + SSE                         ↕ JSON-RPC
-FastAPI Backend (server.py)
+唯一用户入口: React Frontend (Vite + TypeScript)
+                       ↕ HTTP + SSE
+              FastAPI Backend (server.py 兼容入口)
+                       ↕
+可选集成接口: MCP Server (stdio/HTTP, JSON-RPC)
          ↕
-Agent 编排层 (条件/依赖/重试 + 完整证据分块综合 + SQLite 持久会话)
+patent_agent 模块化单体 (application/domain/security/infrastructure/api)
+         ↕
+Agent 流水线 (Intent/Plan/Policy/Execute/Validate/Synthesize)
          ↕
 Tool 层 (注册表为单一来源，含能力门禁与统一结果契约)
          ↕
@@ -249,21 +268,31 @@ PatentAgent/
 │   │   ├── App.tsx         #   主应用（三栏布局）
 │   │   ├── api.ts          #   全部 API 调用 + SSE 流
 │   │   ├── types.ts        #   TypeScript 类型定义
-│   │   └── components/     #   原生 ECharts 注册表、兼容 ChartFrame、工具卡与消息组件
+│   │   ├── features/       #   datasets/sessions/agent/tools/providers/reports
+│   │   └── components/     #   原生 ECharts、工具卡与消息组件
 │   └── package.json
+├── patent_agent/          # 模块化单体边界与公共强类型契约
+│   ├── application/      #   数据、工具、报告等用例
+│   ├── domain/           #   Dataset/Task/Tool envelope
+│   ├── security/         #   内存凭证仓与模型 URL 安全
+│   └── infrastructure/   #   AppContainer、配置、日志与请求门禁
+├── reporting/             # 后端 HTML/Word/PDF 报告生成
 ├── agent/                 # Agent 编排层
-│   ├── orchestrator.py    #   状态机 + 工具编排
+│   ├── orchestrator.py    #   兼容外观与状态机
+│   ├── pipeline.py        #   Planner/Executor/Validator/Synthesizer
 │   ├── strategy_chains.py #   旧版兼容，Web 主流程不再调用
 │   ├── cross_tool_synthesis.py  # 跨工具关联推理
 │   ├── recommendation_engine.py # 战略建议生成
 │   ├── adaptive_planner.py      # 旧版兼容，不会自动追加工具
 │   ├── proactive_discovery.py   # 主动发现引擎
 ├── storage/conversation_store.py # 会话、轮次与结构化证据（不保存 API Key/图表 HTML）
+├── storage/provider_store.py     # 非敏感供应商配置与幂等 SQLite 迁移
 │   └── prompts.py
 ├── tools/                 # Tool 层（16 个运行时注册工具）
 ├── engine/                # 分析引擎层 (13个纯计算模块)
 ├── patent_mcp/            # MCP 服务器
 ├── mcp_server.py          # MCP stdio 入口
+├── mcp_http_server.py     # MCP HTTP 入口
 ├── models/                # Pydantic 数据模型
 ├── knowledge/             # 单一算法证据登记表 + 决策模板
 ├── storage/               # 数据访问层
@@ -271,24 +300,57 @@ PatentAgent/
 └── tests/                 # Python 回归测试 + 前端渲染测试
 ```
 
+运行状态由 FastAPI lifespan 创建的 `AppContainer` 持有，不再由 `server.py` 的可变模块
+全局变量持有。SQLite 记录数据集版本、轮次任务、工具 provenance/metrics、审批、报告和
+可续传事件；进程重启会把运行中任务标记为 `interrupted`，不会自动重复 LLM 调用。
+
+## 可复现性与质量门禁
+
+```bash
+uv lock --check
+uv run python -m pytest -q
+cd frontend && npm test -- --run && npm run build
+```
+
+`tests/fixtures/wos_golden/` 是固定的五年以上合成 WoS 数据集；16 个工具均校验统一的
+`ToolExecutionEnvelope`、数据版本、字段覆盖、算法参数和执行指标。更新金样必须显式运行
+`python scripts/generate_golden_wos_fixture.py` 并审查差异。GitHub Actions 在 Python
+3.10/3.11/3.12、Node 20、MCP、迁移、锁文件和金样回归全部通过后才满足合并门禁；`V*`
+标签只生成源码、前端产物与 SHA-256 校验和，不发布 PyPI。
+
 ## 配置
 
 ### LLM 设置
 
+左侧供应商卡只显示当前名称、协议、模型与连接状态；“切换 / 设置”打开高级设置。
+高级设置可以保存多个命名配置，并提供 OpenAI、Claude、DeepSeek、OpenRouter、
+Ollama、vLLM 和自定义预设。显示名称只用于识别配置，请求消息格式只由
+`openai_chat`、`anthropic_messages` 或 `deepseek_chat` 协议决定。
+
+“保存”只写入非敏感配置；“测试连接”不会切换 Agent；“保存并连接”只有在完整能力
+探测通过后才替换当前 Agent。探测依次验证普通文本、工具选择、本地工具结果回传、
+最终文本和结构化 JSON 输出。仅能聊天但不能完成工具闭环的模型不能激活。
+
+API Key 与标为“敏感”的 Extra Header 只保存在后端进程内存：不会写入
+`.patentagent/sessions.db`、日志或 API 响应。后端重启后会恢复配置和上次选择，但必须
+重新输入凭证。Ollama/vLLM 等本机端点可选择“无鉴权”；远程 Base URL 必须使用 HTTPS。
+Extra Body 只接受 JSON 对象，不能覆盖 `model/messages/tools/tool_choice/response_format/max_tokens`
+等编排器字段。Agent 正在生成时不能切换、编辑当前配置、删除当前配置或断开连接。
+
+供应商配置 API：
+
+```text
+GET    /api/llm/profiles
+POST   /api/llm/profiles
+PATCH  /api/llm/profiles/{id}
+DELETE /api/llm/profiles/{id}
+POST   /api/llm/profiles/{id}/models
+POST   /api/llm/profiles/{id}/probe
+POST   /api/llm/profiles/{id}/activate
+POST   /api/llm/disconnect
 ```
-Claude API   → 长上下文 + 工具调用最成熟（推荐）
-OpenAI API   → 兼容性最广
-DeepSeek API → 中文性价比最优，支持国内直接访问
 
-默认模型: Claude `claude-sonnet-4-6` / OpenAI `gpt-4.1` /
-DeepSeek `deepseek-v4-flash`
-
-本地隐私模式: vLLM + Qwen3-32B / DeepSeek-V3 + BGE-M3 Embedding
-```
-
-连接检查不只测试一次文本回复，还会完成一次无副作用的
-`tool_call → 本地结果回传 → 最终文本`，并校验一次结构化 JSON 输出。只有全部通过，前端才显示
-“LLM 工具调用已就绪”。
+旧 `/api/agent/config` 继续兼容，并经过相同的 URL 校验、协议适配和完整能力探测。
 
 Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，本地参数/数据/
 成本门禁通过后执行，再按 OpenAI、Claude 或 DeepSeek 的官方消息协议回传结果。
@@ -304,8 +366,13 @@ Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，�
 
 ## 文档
 
+- [V3.1 更新日志](CHANGELOG.md) — 当前版本的重要新增、变更、安全修复与兼容说明
 - [项目与论文审计](docs/project-audit.md) — 数据质量、论文适用条件、优势/弱点和法律边界
 - [16 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
 - DII 基准数据状态 — 检索式、授权核验和导入审计方法（随专利数据目录提供，不包含在源码仓库中）
 - [软件说明书](软件说明书.txt) — 架构设计、功能详解、技术栈、版本历史
 - [操作指南](操作指南.txt) — 从零开始的手把手教程，含环境配置、工具使用、常见问题
+
+## 作者
+
+Wu Jinhong、Chen Siyu。版权与许可声明见 [LICENSE](LICENSE)。

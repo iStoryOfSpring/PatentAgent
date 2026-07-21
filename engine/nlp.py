@@ -107,7 +107,7 @@ def compute_burst_terms(yearly_texts: dict[int, str],
             "late_freq": round(lf, 2),
         })
 
-    scores.sort(key=lambda x: (x["burst"], x["support"]), reverse=True)
+    scores.sort(key=lambda item: (-item["burst"], -item["support"], item["term"]))
     return BurstTermResult(
         result_type="burst_terms", data=scores[:top_n],
         methodology="近期/历史文档频率比（加性平滑、最小支持度）；不是 Kleinberg Burst。",
