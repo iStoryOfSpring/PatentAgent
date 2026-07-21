@@ -10,7 +10,7 @@
 > 暂时以AGPL的形式开源。以后也许（但不保证）会转换为更宽松的模式。Contact: 2507380208@wtu.edu.cn 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10--3.12-blue" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue" alt="Python">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
   <img src="https://img.shields.io/badge/Tools-16-orange" alt="Tools">
