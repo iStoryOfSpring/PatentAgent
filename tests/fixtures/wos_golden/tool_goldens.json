@@ -3,7 +3,7 @@
   "tools": {
     "analyze_burst_terms": {
       "result_type": "burst_terms",
-      "sha256": "0824a167f639589460fcd747322e27cbfc102ee5d43c351624319a9daa7c23f8",
+      "sha256": "1aab8e0621f9bda40f75d6b21713058ee23bddc15e98608de4f42316ebecafbe",
       "projection": {
         "data": [
           {
@@ -157,7 +157,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -239,7 +238,6 @@
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "abstract": 1.0,
@@ -289,7 +287,7 @@
     },
     "analyze_clustering": {
       "result_type": "clustering",
-      "sha256": "eb46ff1a91194ec0d5ff2586413f1577fdc3f0d582d34f89720052e2f986c15d",
+      "sha256": "ecdf145175a460f113d98fcafbd798bce5b97ff7e2dfdec4d911237a87c491aa",
       "projection": {
         "centroids": [
           [
@@ -409,7 +407,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -800,7 +797,6 @@
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "abstract": 1.0,
@@ -853,7 +849,7 @@
     },
     "analyze_co_network": {
       "result_type": "co_occurrence",
-      "sha256": "da74a93a2aac583b3483dcbb03b0556623667b5c5089d0e0e61b6af8a4338623",
+      "sha256": "cff6f1fa2f877b3d4ede11aac81c1d8a1435819324e202d502014a0692f087c6",
       "projection": {
         "data_quality": {
           "adapter": "wos_derwent",
@@ -865,7 +861,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -1249,7 +1244,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "applicants": 1.0
@@ -1287,7 +1281,7 @@
     },
     "analyze_competitor_evolution": {
       "result_type": "competitor_evolution",
-      "sha256": "e05b668212754647bca9c72de3f1790576d0f0cd4a67aa6dbf4a7c1df84e4145",
+      "sha256": "03c7870b70e3d5029992b30462a00a482e6ac6a4de81556bce901e4a18909af8",
       "projection": {
         "data": {
           "applicants": [
@@ -1598,7 +1592,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -1680,7 +1673,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "applicants": 1.0,
@@ -1726,7 +1718,7 @@
     },
     "analyze_country_distribution": {
       "result_type": "country_distribution",
-      "sha256": "24e9c1c30a4dba44492fb4228424573fc74db775c51e57c09d13ad800c84ed3a",
+      "sha256": "2e0a70a4054052759e00a67377e6ca5821c15ee3653e627abb97f77cba103df1",
       "projection": {
         "data": [
           {
@@ -1744,7 +1736,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -1825,7 +1816,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "family_members": 1.0,
@@ -1864,7 +1854,7 @@
     },
     "analyze_ipc_distribution": {
       "result_type": "ipc_matrix",
-      "sha256": "23c1311578d8951b3a3bf44b42cf24f9d6c84dbe88b18f369a82bed813c85204",
+      "sha256": "d16406ab10fee81c6c71812f4bc7f3ba2c3102e4657f43da116b96cb73786185",
       "projection": {
         "data_quality": {
           "adapter": "wos_derwent",
@@ -1876,7 +1866,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -2001,7 +1990,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "ipc": 1.0,
@@ -2053,7 +2041,7 @@
     },
     "analyze_lifecycle": {
       "result_type": "s_curve",
-      "sha256": "05a2c53264423d877de704da26d7809e429cd48211c342f5031665769221ed7e",
+      "sha256": "90a239feb6461fe5c6d17bfdb98473a70ce0e66103797805184f4557f70a52c0",
       "projection": {
         "counts": [
           50,
@@ -2081,7 +2069,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -2170,7 +2157,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "publication_date": 1.0
@@ -2220,7 +2206,7 @@
     },
     "analyze_patent_trend": {
       "result_type": "yearly_trend",
-      "sha256": "1e85595ebc726b89fbe15453b387c565220e9a55f08a588a78c83603901a4905",
+      "sha256": "26b90e4b0be19a86ccf32218795efc3d7e8844382aeb503fb92b8c97d550da58",
       "projection": {
         "data": [
           {
@@ -2258,7 +2244,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -2340,7 +2325,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "applicants": 1.0,
@@ -2388,7 +2372,7 @@
     },
     "analyze_patent_valuation": {
       "result_type": "value_indicators",
-      "sha256": "8cd306fc4af17d404e85712d624c00c05959b194d1b3a6bba4e3c5af2237f7a7",
+      "sha256": "6ab864886d8aaa11d1ab4dd75f14d7a5f5e37d75d8973edb22ed828adb977a38",
       "projection": {
         "coverage": {
           "backward_citations": 0.9967,
@@ -2671,7 +2655,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -2756,7 +2739,6 @@
           "algorithm_version": "3.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "backward_citations": 0.9967,
@@ -2823,7 +2805,7 @@
     },
     "analyze_tech_matrix": {
       "result_type": "tech_effect_matrix",
-      "sha256": "74d47e533563067a211b11e108fa228205956ef8b7d60e19bcbcc59ef26433dc",
+      "sha256": "c81981d1e405ba79971c58826a5326499fcba0f4eb26f6a248f94284155d1a0f",
       "projection": {
         "data_quality": {
           "adapter": "wos_derwent",
@@ -2835,7 +2817,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -3038,7 +3019,6 @@
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "abstract": 1.0
@@ -3089,7 +3069,7 @@
     },
     "analyze_tech_roadmap": {
       "result_type": "roadmap",
-      "sha256": "8eba88ec6be60e065321bf5b1faad213d28b0b7f7caca9f34c19f404df80b3ed",
+      "sha256": "9e7241414f71dfef73d9ef91b3c996e32c3bf36cc686b17e5ccdefe13227918b",
       "projection": {
         "data": {
           "2019": [
@@ -3259,7 +3239,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -3342,7 +3321,6 @@
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "backward_citations": 0.9967,
@@ -3386,7 +3364,7 @@
     },
     "analyze_yearly_keywords": {
       "result_type": "yearly_keywords",
-      "sha256": "d1ce3ffaf3aedcc4e4583be8550c19450963ee52c2bc5ed68268092aa2551723",
+      "sha256": "09727bfa9a12c1dbfa5a22bc1faf2debbf438fb61266f2e8896f20856fdf3c4c",
       "projection": {
         "data": {
           "2019": [
@@ -3652,7 +3630,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -3734,7 +3711,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "abstract": 1.0,
@@ -3776,7 +3752,7 @@
     },
     "generate_wordcloud": {
       "result_type": "word_freq",
-      "sha256": "29d10da7ee21830c061db6b06ec63e209083579150bc4176db18060493a1262b",
+      "sha256": "759af21eae6d5a0bff4bb0a39fafbe67ce1f7b95635827ac75632a71a8ed8074",
       "projection": {
         "data": [
           {
@@ -3834,7 +3810,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -3915,7 +3890,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "abstract": 1.0,
@@ -3959,7 +3933,7 @@
     },
     "get_dataset_summary": {
       "result_type": "dataset_summary",
-      "sha256": "f57669cd89c33b53c94b3d1b4182a0361ce19e125138727a7f425befe1c0fd6a",
+      "sha256": "ef1e6fc6a82e1bb3081e52fd0643de6e10a10013d8f6aa06e7149e450ace2d8f",
       "projection": {
         "data_quality": {
           "adapter": "wos_derwent",
@@ -3971,7 +3945,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -4056,7 +4029,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {},
           "input_record_count": 300,
@@ -4136,7 +4108,7 @@
     },
     "read_patent_details": {
       "result_type": "patent_details",
-      "sha256": "ce3f281d8242e97b129e2460ea5f3ecbc1ca3122129cbb1c8b6023862afdb9e6",
+      "sha256": "541072154df77b3c69837c556c070124772b164793e451da8c54421ec7067328",
       "projection": {
         "data_quality": {
           "adapter": "wos_derwent",
@@ -4148,7 +4120,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -4277,7 +4248,6 @@
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "claims_json": 0.0,
@@ -4330,7 +4300,7 @@
     },
     "search_patents": {
       "result_type": "patent_search",
-      "sha256": "6c6ecc879bb141c974b4a14f298f4368018f454aa5881afbc0fe48cb004619b1",
+      "sha256": "86c60c64a26a749acf7ef7a26cad32ee9cf486258711e738f613b517ce09e88a",
       "projection": {
         "data_quality": {
           "adapter": "wos_derwent",
@@ -4342,7 +4312,6 @@
             "multi_applicant_rate": 0.2
           },
           "dataset_manifest": {
-            "dataset_id": "synthetic-wos-golden-v1",
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
             "record_count": 300,
@@ -4466,7 +4435,6 @@
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
           "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_id": "dataset_07b4e1e9240917785008b697",
           "dataset_version_id": "version_aac33effff6c647efede919b",
           "field_coverage": {
             "abstract": 1.0,

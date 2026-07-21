@@ -37,7 +37,10 @@ PARAMETERS = {
     "analyze_patent_valuation": {"top_n": 10, "citation_mode": "screening"},
     "analyze_competitor_evolution": {"top_n": 5},
 }
-VOLATILE_KEYS = {"chart_html", "elapsed_ms", "imported_at"}
+# dataset_id is a local installation identity derived from the source directory.
+# The portable content identity is dataset_content_hash, which the regression
+# test validates separately before comparing the golden projection.
+VOLATILE_KEYS = {"chart_html", "elapsed_ms", "imported_at", "dataset_id"}
 
 
 def canonical(value: Any) -> Any:

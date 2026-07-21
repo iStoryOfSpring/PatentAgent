@@ -35,6 +35,8 @@ node_modules/
 
 # Patent data — large downloaded datasets, not source code
 my_patents/
+.patent_cache*.hash
+.patent_cache*.parquet
 
 # Generated output — charts, CSVs, rendered HTML
 output/
