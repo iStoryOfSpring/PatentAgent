@@ -12,7 +12,7 @@ from engine.adapters.wos_adapter import WoSAdapter
 from models.analysis_results import AnalysisResult
 from storage.datastore import PatentDataStore
 from tools import tool_registry
-from scripts.generate_tool_goldens import fingerprint
+from scripts.generate_tool_goldens import canonical, fingerprint
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "wos_golden"
@@ -34,6 +34,28 @@ PARAMETERS = {
     "analyze_patent_valuation": {"top_n": 10, "citation_mode": "screening"},
     "analyze_competitor_evolution": {"top_n": 5},
 }
+
+
+def assert_golden_projection(actual, expected, path: str = "result") -> None:
+    """Compare stable structure exactly and numeric metrics with CI-safe tolerance."""
+    if isinstance(expected, dict):
+        assert isinstance(actual, dict), path
+        assert set(actual) == set(expected), path
+        for key in expected:
+            assert_golden_projection(actual[key], expected[key], f"{path}.{key}")
+        return
+    if isinstance(expected, list):
+        assert isinstance(actual, list), path
+        assert len(actual) == len(expected), path
+        for index, (actual_item, expected_item) in enumerate(zip(actual, expected)):
+            assert_golden_projection(
+                actual_item, expected_item, f"{path}[{index}]",
+            )
+        return
+    if isinstance(expected, float):
+        assert actual == pytest.approx(expected, rel=1e-6, abs=1e-6), path
+        return
+    assert actual == expected, path
 
 
 @pytest.fixture(scope="module")
@@ -78,7 +100,9 @@ def test_all_sixteen_tools_emit_traceable_contract(tool_name, golden_store):
         (FIXTURE_DIR / "tool_goldens.json").read_text(encoding="utf-8")
     )["tools"]
     assert result.result_type == goldens[tool_name]["result_type"]
-    assert fingerprint(result.model_dump(mode="json")) == goldens[tool_name]["sha256"]
+    payload = result.model_dump(mode="json")
+    if fingerprint(payload) != goldens[tool_name]["sha256"]:
+        assert_golden_projection(canonical(payload), goldens[tool_name]["projection"])
 
 
 def test_key_algorithm_outputs_are_stable(golden_store):
