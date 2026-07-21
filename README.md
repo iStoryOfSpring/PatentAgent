@@ -20,7 +20,7 @@
 ## 快速开始
 
 后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。官方支持
-Python 3.10、3.11 和 3.12：
+Python 3.10到3.14：
 
 ```bash
 uv sync --frozen --all-extras --group dev
