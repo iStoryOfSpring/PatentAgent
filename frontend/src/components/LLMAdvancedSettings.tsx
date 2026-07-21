@@ -4,6 +4,7 @@ import {
   ExternalLink, Loader2, Plus, RefreshCw, Save, TestTube2, Trash2, X, Zap,
 } from "lucide-react";
 import {
+  ApiError,
   activateProviderProfile, createProviderProfile, deleteProviderProfile,
   discoverProviderModels, probeProviderProfile, updateProviderProfile,
 } from "../api";
@@ -56,6 +57,15 @@ const protocolLabel = (protocol: ProviderProtocol) => ({
   anthropic_messages: "Anthropic Messages",
   deepseek_chat: "DeepSeek Chat",
 }[protocol]);
+
+const groupModels = (models: string[]) => models.reduce<Record<string, string[]>>((groups, model) => {
+  const namespace = model.includes("/") ? model.split("/", 1)[0] :
+    model.startsWith("claude") ? "Anthropic" :
+    /^(gpt|o\d)/.test(model) ? "OpenAI" :
+    model.startsWith("deepseek") ? "DeepSeek" : "其他 / 本地";
+  (groups[namespace] ||= []).push(model);
+  return groups;
+}, {});
 
 const asInput = (profile: ProviderProfile): ProviderProfileInput => ({
   name: profile.name,
@@ -110,6 +120,7 @@ export function LLMAdvancedSettings({
     () => JSON.stringify(draft) !== baseline,
     [draft, baseline],
   );
+  const groupedModels = useMemo(() => groupModels(models), [models]);
 
   const loadDraft = (profile?: ProviderProfile, preset?: ProviderProfileInput) => {
     const value = profile ? asInput(profile) : { ...(preset || baseProfile()), extra_headers: [...(preset?.extra_headers || [])], extra_body: { ...(preset?.extra_body || {}) } };
@@ -142,11 +153,13 @@ export function LLMAdvancedSettings({
   const confirmDiscard = () => !dirty || window.confirm("当前配置有未保存修改，确认放弃吗？");
 
   const selectProfile = (profile: ProviderProfile) => {
+    if (isStreaming) return;
     if (!confirmDiscard()) return;
     loadDraft(profile);
   };
 
   const selectPreset = (preset: Preset) => {
+    if (isStreaming) return;
     if (!confirmDiscard()) return;
     loadDraft(undefined, preset.profile);
   };
@@ -167,8 +180,8 @@ export function LLMAdvancedSettings({
 
   const save = async (): Promise<ProviderProfile> => {
     if (jsonError) throw new Error("请先修复 Extra Body JSON")
-    if (!draft.name.trim() || !draft.base_url.trim() || !draft.model.trim()) {
-      throw new Error("供应商名称、请求地址和模型 ID 均为必填项");
+    if (!draft.name.trim()) {
+      throw new Error("供应商名称不能为空");
     }
     setBusy("save");
     try {
@@ -190,6 +203,12 @@ export function LLMAdvancedSettings({
     setError("");
     setProbe(null);
     try {
+      if (!draft.base_url.trim()) throw new Error("获取模型或连接前必须填写请求地址");
+      if (action !== "models" && !draft.model.trim()) throw new Error("测试或连接前必须填写模型 ID");
+      if (
+        action !== "models" && draft.auth_mode !== "none" && !apiKey &&
+        !currentStored?.credential_loaded
+      ) throw new Error("当前配置需要 API Key");
       const saved = dirty || !editingId ? await save() : profiles.find(item => item.id === editingId)!;
       setBusy(action);
       if (action === "models") {
@@ -206,7 +225,14 @@ export function LLMAdvancedSettings({
         setBaseline(JSON.stringify(asInput(connected)));
       }
     } catch (cause) {
+      if (cause instanceof ApiError && cause.detail?.stages && action !== "models") {
+        setProbe({
+          status: "failed", stages: cause.detail.stages,
+          error_category: cause.detail.category, message: cause.message,
+        });
+      }
       setError((cause as Error).message);
+      await onRefresh().catch(() => undefined);
     } finally {
       setBusy(null);
     }
@@ -266,19 +292,19 @@ export function LLMAdvancedSettings({
             <div className="p-4 border-b border-slate-200">
               <div className="text-xs font-semibold text-slate-500 mb-2">从预设新增</div>
               <div className="flex flex-wrap gap-1.5">
-                {PRESETS.map(preset => <button key={preset.label} onClick={() => selectPreset(preset)} className="px-2 py-1 text-xs bg-white border border-slate-200 rounded-md hover:border-blue-300 hover:text-blue-700">{preset.label}</button>)}
+                {PRESETS.map(preset => <button key={preset.label} onClick={() => selectPreset(preset)} disabled={isStreaming} className="px-2 py-1 text-xs bg-white border border-slate-200 rounded-md hover:border-blue-300 hover:text-blue-700 disabled:opacity-50">{preset.label}</button>)}
               </div>
             </div>
             <div className="p-3 overflow-y-auto space-y-2 flex-1">
               {profiles.map(profile => (
-                <button key={profile.id} onClick={() => selectProfile(profile)} className={`w-full text-left p-3 rounded-xl border ${editingId === profile.id ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white hover:border-slate-300"}`}>
+                <button key={profile.id} onClick={() => selectProfile(profile)} disabled={isStreaming} className={`w-full text-left p-3 rounded-xl border disabled:opacity-60 ${editingId === profile.id ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white hover:border-slate-300"}`}>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm text-slate-800 truncate flex-1">{profile.name}</span>
                     {profile.connected && <span className="w-2 h-2 rounded-full bg-emerald-500" title="已连接" />}
                   </div>
                   <div className="text-[11px] text-slate-500 mt-1 truncate">{protocolLabel(profile.protocol)} · {profile.model || "未指定模型"}</div>
-                  <div className={`text-[10px] mt-1 ${profile.connected ? "text-emerald-600" : profile.credential_loaded ? "text-amber-600" : "text-slate-400"}`}>
-                    {profile.connected ? "已连接" : profile.needs_reconnect ? "配置已修改，需要重新连接" : profile.auth_mode === "none" ? "无需凭证，尚未连接" : profile.credential_loaded ? "凭证已载入，尚未连接" : "待输入凭证"}
+                  <div className={`text-[10px] mt-1 ${profile.connected ? "text-emerald-600" : profile.probe_status === "failed" ? "text-rose-600" : profile.credential_loaded ? "text-amber-600" : "text-slate-400"}`}>
+                    {profile.connected ? "已连接" : profile.needs_reconnect ? "配置已修改，需要重新连接" : profile.probe_status === "failed" ? `探测失败${profile.probe_error_category ? ` · ${profile.probe_error_category}` : ""}` : profile.auth_mode === "none" ? "无需凭证，尚未连接" : profile.credential_loaded ? "凭证已载入，尚未连接" : "待输入凭证"}
                   </div>
                 </button>
               ))}
@@ -293,22 +319,22 @@ export function LLMAdvancedSettings({
               <div className="max-w-[820px] mx-auto space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-slate-800 mb-3">基础信息</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid lg:grid-cols-2 gap-4">
                     <label className="field-label">供应商名称<input value={draft.name} onChange={e => setField("name", e.target.value)} className="field-input" /></label>
                     <label className="field-label">API 协议<select value={draft.protocol} onChange={e => { const value = e.target.value as ProviderProtocol; setField("protocol", value); if (value !== "deepseek_chat") setField("thinking_mode", "auto"); }} className="field-input"><option value="openai_chat">OpenAI Chat Compatible</option><option value="anthropic_messages">Anthropic Messages</option><option value="deepseek_chat">DeepSeek Chat</option></select></label>
                     <label className="field-label">官网地址<input value={draft.website_url} onChange={e => setField("website_url", e.target.value)} placeholder="https://example.com" className="field-input" /></label>
-                    <label className="field-label md:col-span-2">备注<textarea value={draft.notes} onChange={e => setField("notes", e.target.value)} rows={2} className="field-input resize-y" placeholder="用途、账号或模型能力说明" /></label>
+                    <label className="field-label lg:col-span-2">备注<textarea value={draft.notes} onChange={e => setField("notes", e.target.value)} rows={2} className="field-input resize-y" placeholder="用途、账号或模型能力说明" /></label>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-bold text-slate-800 mb-3">连接配置</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <label className="field-label md:col-span-2">请求地址<input value={draft.base_url} onChange={e => setField("base_url", e.target.value)} placeholder="https://api.example.com/v1" className="field-input font-mono" /><span className="field-help">远程地址必须使用 HTTPS；localhost 可使用 HTTP。</span></label>
+                  <div className="grid lg:grid-cols-2 gap-4">
+                    <label className="field-label lg:col-span-2">请求地址<input value={draft.base_url} onChange={e => setField("base_url", e.target.value)} placeholder="https://api.example.com/v1" className="field-input font-mono" /><span className="field-help">远程地址必须使用 HTTPS；localhost 可使用 HTTP。</span></label>
                     <label className="field-label">鉴权方式<select value={draft.auth_mode} onChange={e => setField("auth_mode", e.target.value as ProviderProfileInput["auth_mode"])} className="field-input"><option value="bearer">Bearer Token</option><option value="x_api_key">x-api-key</option><option value="custom_header">自定义 Header</option><option value="none">无鉴权</option></select></label>
                     {draft.auth_mode !== "none" && <label className="field-label">API Key<div className="relative"><input type={showKey ? "text" : "password"} value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder={currentStored?.credential_loaded ? "已在内存中加载；留空继续使用" : "输入本次连接凭证"} className="field-input pr-10" autoComplete="off" /><button type="button" onClick={() => setShowKey(v => !v)} className="absolute right-2 top-2.5 text-slate-400">{showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div></label>}
-                    {draft.auth_mode === "custom_header" && <><label className="field-label">鉴权 Header<input value={draft.auth_header_name} onChange={e => setField("auth_header_name", e.target.value)} className="field-input" /></label><label className="field-label">值前缀<input value={draft.auth_prefix} onChange={e => setField("auth_prefix", e.target.value)} className="field-input" /></label></>}
-                    <label className="field-label">模型 ID<div className="flex gap-2"><input list="provider-model-list" value={draft.model} onChange={e => setField("model", e.target.value)} className="field-input min-w-0" /><button type="button" onClick={() => withSaved("models")} disabled={Boolean(busy)} className="secondary-button shrink-0">{busy === "models" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}获取模型</button></div><datalist id="provider-model-list">{models.map(model => <option key={model} value={model} />)}</datalist>{models.length > 0 && <span className="field-help">已发现 {models.length} 个模型，可在输入框中选择或继续手工填写。</span>}</label>
+                    {draft.auth_mode !== "none" && <><label className="field-label">鉴权 Header<input value={draft.auth_header_name} onChange={e => setField("auth_header_name", e.target.value)} className="field-input" /></label><label className="field-label">值前缀<input value={draft.auth_prefix} onChange={e => setField("auth_prefix", e.target.value)} className="field-input" /></label></>}
+                    <label className="field-label">模型 ID<div className="flex gap-2"><input list="provider-model-list" value={draft.model} onChange={e => setField("model", e.target.value)} className="field-input min-w-0" /><button type="button" onClick={() => withSaved("models")} disabled={Boolean(busy)} className="secondary-button shrink-0">{busy === "models" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}获取模型</button></div><datalist id="provider-model-list">{models.map(model => <option key={model} value={model} />)}</datalist>{models.length > 0 && <><select aria-label="已发现模型" value={models.includes(draft.model) ? draft.model : ""} onChange={e => e.target.value && setField("model", e.target.value)} className="field-input"><option value="">选择发现的模型（或继续手工输入）</option>{Object.entries(groupedModels).map(([group, entries]) => <optgroup key={group} label={group}>{entries.map(model => <option key={model} value={model}>{model}</option>)}</optgroup>)}</select><span className="field-help">已发现 {models.length} 个模型，按命名空间/模型族分组。</span></>}</label>
                     <label className="field-label">模型发现路径<input value={draft.model_discovery_path} onChange={e => setField("model_discovery_path", e.target.value)} className="field-input font-mono" /></label>
                   </div>
                 </div>
@@ -327,23 +353,23 @@ export function LLMAdvancedSettings({
 
                     <div>
                       <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">Extra Headers</span><button type="button" onClick={() => setField("extra_headers", [...draft.extra_headers, { name: "", value: "", sensitive: false }])} className="secondary-button"><Plus className="w-3 h-3" />添加</button></div>
-                      <div className="space-y-2">{draft.extra_headers.map((header, index) => <div key={index} className="grid grid-cols-[1fr_1fr_auto_auto] gap-2 items-center"><input value={header.name} onChange={e => { const next = [...draft.extra_headers]; next[index] = { ...header, name: e.target.value }; setField("extra_headers", next); }} placeholder="Header name" className="field-input font-mono" /><input type={header.sensitive ? "password" : "text"} value={header.sensitive ? (sensitiveHeaders[header.name] || "") : header.value} onChange={e => header.sensitive ? setSensitiveHeaders(values => ({ ...values, [header.name]: e.target.value })) : (() => { const next = [...draft.extra_headers]; next[index] = { ...header, value: e.target.value }; setField("extra_headers", next); })()} placeholder={header.sensitive && header.credential_loaded ? "已加载" : "Value"} className="field-input" /><label className="text-xs text-slate-600 flex items-center gap-1"><input type="checkbox" checked={header.sensitive} onChange={e => { const next = [...draft.extra_headers]; next[index] = { ...header, sensitive: e.target.checked, value: e.target.checked ? "" : header.value }; setField("extra_headers", next); }} />敏感</label><button type="button" onClick={() => setField("extra_headers", draft.extra_headers.filter((_, i) => i !== index))} className="p-2 text-rose-500"><Trash2 className="w-4 h-4" /></button></div>)}</div>
+                      <div className="space-y-2">{draft.extra_headers.map((header, index) => <div key={index} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center"><input value={header.name} onChange={e => { const oldName = header.name; const newName = e.target.value; const next = [...draft.extra_headers]; next[index] = { ...header, name: newName }; if (header.sensitive && sensitiveHeaders[oldName]) setSensitiveHeaders(values => { const updated = { ...values, [newName]: values[oldName] }; delete updated[oldName]; return updated; }); setField("extra_headers", next); }} placeholder="Header name" className="field-input font-mono" /><input type={header.sensitive ? "password" : "text"} value={header.sensitive ? (sensitiveHeaders[header.name] || "") : header.value} onChange={e => header.sensitive ? setSensitiveHeaders(values => ({ ...values, [header.name]: e.target.value })) : (() => { const next = [...draft.extra_headers]; next[index] = { ...header, value: e.target.value }; setField("extra_headers", next); })()} placeholder={header.sensitive && header.credential_loaded ? "已加载" : "Value"} className="field-input" /><label className="text-xs text-slate-600 flex items-center gap-1"><input type="checkbox" checked={header.sensitive} onChange={e => { const next = [...draft.extra_headers]; next[index] = { ...header, sensitive: e.target.checked, value: e.target.checked ? "" : header.value }; setField("extra_headers", next); }} />敏感</label><button type="button" onClick={() => setField("extra_headers", draft.extra_headers.filter((_, i) => i !== index))} className="p-2 text-rose-500"><Trash2 className="w-4 h-4" /></button></div>)}</div>
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">Extra Body JSON</span><button type="button" onClick={() => { try { const formatted = JSON.stringify(JSON.parse(extraBodyText), null, 2); parseExtraBody(formatted); } catch { /* existing error remains visible */ } }} className="secondary-button">格式化</button></div>
+                      <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">Extra Body JSON</span><div className="flex gap-2"><button type="button" onClick={() => parseExtraBody("{}") } className="secondary-button">恢复默认</button><button type="button" onClick={() => { try { const formatted = JSON.stringify(JSON.parse(extraBodyText), null, 2); parseExtraBody(formatted); } catch { /* existing error remains visible */ } }} className="secondary-button">格式化</button></div></div>
                       <textarea value={extraBodyText} onChange={e => parseExtraBody(e.target.value)} rows={7} spellCheck={false} className={`field-input font-mono text-xs ${jsonError ? "border-rose-400" : ""}`} />
                       {jsonError ? <p className="text-xs text-rose-600 mt-1">{jsonError}</p> : <p className="field-help">编排器管理的 model、messages、tools、tool_choice、response_format 和 max_tokens 不可覆盖。</p>}
                     </div>
                   </div>}
                 </div>
 
-                {probe && <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50"><div className="font-semibold text-sm text-emerald-800 mb-2">能力探测通过 {probe.latency_ms ? `· ${probe.latency_ms}ms` : ""}</div><div className="grid sm:grid-cols-2 gap-2">{Object.entries(probe.stages || {}).map(([name, result]) => <div key={name} className="text-xs text-emerald-700 flex justify-between bg-white/70 rounded px-2 py-1"><span>{({ text: "普通文本", tool_selection: "工具选择", tool_result_roundtrip: "工具回传", structured_output: "结构化输出" } as Record<string, string>)[name] || name}</span><span>{result.status === "passed" ? "通过" : result.status}{result.latency_ms ? ` · ${result.latency_ms}ms` : ""}</span></div>)}</div></div>}
+                {probe && <div className={`p-4 rounded-xl border ${probe.status === "failed" ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50"}`}><div className={`font-semibold text-sm mb-2 ${probe.status === "failed" ? "text-rose-800" : "text-emerald-800"}`}>{probe.status === "failed" ? `能力探测失败${probe.error_category ? ` · ${probe.error_category}` : ""}` : `能力探测通过 ${probe.latency_ms ? `· ${probe.latency_ms}ms` : ""}`}</div><div className="grid sm:grid-cols-2 gap-2">{Object.entries(probe.stages || {}).map(([name, result]) => <div key={name} className={`text-xs flex justify-between bg-white/70 rounded px-2 py-1 ${result.status === "passed" ? "text-emerald-700" : "text-rose-700"}`}><span>{({ text: "普通文本", tool_selection: "工具选择", tool_result_roundtrip: "工具回传", structured_output: "结构化输出" } as Record<string, string>)[name] || name}</span><span>{result.status === "passed" ? "通过" : "失败"}{result.latency_ms ? ` · ${result.latency_ms}ms` : ""}</span></div>)}</div></div>}
               </div>
             </div>
 
             <footer className="border-t border-slate-200 p-3 md:px-6 bg-white flex flex-wrap items-center gap-2 shrink-0">
-              <button onClick={remove} disabled={!editingId || isStreaming || Boolean(currentStored?.selected)} className="secondary-button text-rose-600 disabled:opacity-40" title={currentStored?.selected ? "当前已选择配置不可删除" : "删除配置"}><Trash2 className="w-4 h-4" />删除</button>
+              <button onClick={remove} disabled={!editingId || isStreaming || Boolean(currentStored?.connected)} className="secondary-button text-rose-600 disabled:opacity-40" title={currentStored?.connected ? "请先断开当前连接" : "删除配置"}><Trash2 className="w-4 h-4" />删除</button>
               <button onClick={duplicate} disabled={Boolean(busy)} className="secondary-button"><Copy className="w-4 h-4" />复制</button>
               <div className="flex-1" />
               {dirty && <span className="text-xs text-amber-600">有未保存修改</span>}

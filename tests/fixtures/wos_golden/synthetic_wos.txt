@@ -1,0 +1,4204 @@
+FN Clarivate Analytics Web of Science
+VR 1.0
+ER
+
+PT P
+UT SYNTHETIC:0000
+PN EP2019000000-A1; WO2019000000-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp;Research Institute 00
+AU Inventor 00
+IP H01M-010/056
+PI PRIORITY000000 01 Jan 2018
+PD EP2019000000-A1 02 Jan 2019
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0001
+PN EP2019000001-A1; WO2019000001-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 01
+IP B01D-053/22
+PI PRIORITY000001 01 Jan 2018
+PD EP2019000001-A1 02 Jan 2019
+CP EP2019000000-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0002
+PN EP2019000002-A1; WO2019000002-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 02
+IP H01L-031/021
+PI PRIORITY000002 01 Jan 2018
+PD EP2019000002-A1 02 Jan 2019
+CP EP2019000001-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0003
+PN EP2019000003-A1; WO2019000003-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 03
+IP C25B-011/04
+PI PRIORITY000003 01 Jan 2018
+PD EP2019000003-A1 02 Jan 2019
+CP EP2019000002-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0004
+PN EP2019000004-A1; WO2019000004-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 04
+IP F28D-020/00
+PI PRIORITY000004 01 Jan 2018
+PD EP2019000004-A1 02 Jan 2019
+CP EP2019000003-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0005
+PN EP2019000005-A1; WO2019000005-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp;Research Institute 05
+AU Inventor 05
+IP G01D-005/00
+PI PRIORITY000005 01 Jan 2018
+PD EP2019000005-A1 02 Jan 2019
+CP EP2019000004-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0006
+PN EP2019000006-A1; WO2019000006-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 06
+IP H01M-010/056
+PI PRIORITY000006 01 Jan 2018
+PD EP2019000006-A1 02 Jan 2019
+CP EP2019000005-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0007
+PN EP2019000007-A1; WO2019000007-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 07
+IP B01D-053/22
+PI PRIORITY000007 01 Jan 2018
+PD EP2019000007-A1 02 Jan 2019
+CP EP2019000006-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0008
+PN EP2019000008-A1; WO2019000008-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 08
+IP H01L-031/021
+PI PRIORITY000008 01 Jan 2018
+PD EP2019000008-A1 02 Jan 2019
+CP EP2019000007-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0009
+PN EP2019000009-A1; WO2019000009-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 09
+IP C25B-011/04
+PI PRIORITY000009 01 Jan 2018
+PD EP2019000009-A1 02 Jan 2019
+CP EP2019000008-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0010
+PN EP2019000010-A1; WO2019000010-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp;Research Institute 03
+AU Inventor 10
+IP F28D-020/00
+PI PRIORITY000010 01 Jan 2018
+PD EP2019000010-A1 02 Jan 2019
+CP EP2019000009-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0011
+PN EP2019000011-A1; WO2019000011-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 11
+IP G01D-005/00
+PI PRIORITY000011 01 Jan 2018
+PD EP2019000011-A1 02 Jan 2019
+CP EP2019000010-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0012
+PN EP2019000012-A1; WO2019000012-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 12
+IP H01M-010/056
+PI PRIORITY000012 01 Jan 2018
+PD EP2019000012-A1 02 Jan 2019
+CP EP2019000011-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0013
+PN EP2019000013-A1; WO2019000013-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 13
+IP B01D-053/22
+PI PRIORITY000013 01 Jan 2018
+PD EP2019000013-A1 02 Jan 2019
+CP EP2019000012-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0014
+PN EP2019000014-A1; WO2019000014-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 14
+IP H01L-031/021
+PI PRIORITY000014 01 Jan 2018
+PD EP2019000014-A1 02 Jan 2019
+CP EP2019000013-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0015
+PN EP2019000015-A1; WO2019000015-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp;Research Institute 01
+AU Inventor 15
+IP C25B-011/04
+PI PRIORITY000015 01 Jan 2018
+PD EP2019000015-A1 02 Jan 2019
+CP EP2019000014-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0016
+PN EP2019000016-A1; WO2019000016-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 16
+IP F28D-020/00
+PI PRIORITY000016 01 Jan 2018
+PD EP2019000016-A1 02 Jan 2019
+CP EP2019000015-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0017
+PN EP2019000017-A1; WO2019000017-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 17
+IP G01D-005/00
+PI PRIORITY000017 01 Jan 2018
+PD EP2019000017-A1 02 Jan 2019
+CP EP2019000016-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0018
+PN EP2019000018-A1; WO2019000018-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 18
+IP H01M-010/056
+PI PRIORITY000018 01 Jan 2018
+PD EP2019000018-A1 02 Jan 2019
+CP EP2019000017-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0019
+PN EP2019000019-A1; WO2019000019-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 19
+IP B01D-053/22
+PI PRIORITY000019 01 Jan 2018
+PD EP2019000019-A1 02 Jan 2019
+CP EP2019000018-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0020
+PN EP2019000020-A1; WO2019000020-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp;Research Institute 06
+AU Inventor 00
+IP H01L-031/021
+PI PRIORITY000020 01 Jan 2018
+PD EP2019000020-A1 02 Jan 2019
+CP EP2019000019-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0021
+PN EP2019000021-A1; WO2019000021-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 01
+IP C25B-011/04
+PI PRIORITY000021 01 Jan 2018
+PD EP2019000021-A1 02 Jan 2019
+CP EP2019000020-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0022
+PN EP2019000022-A1; WO2019000022-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 02
+IP F28D-020/00
+PI PRIORITY000022 01 Jan 2018
+PD EP2019000022-A1 02 Jan 2019
+CP EP2019000021-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0023
+PN EP2019000023-A1; WO2019000023-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 03
+IP G01D-005/00
+PI PRIORITY000023 01 Jan 2018
+PD EP2019000023-A1 02 Jan 2019
+CP EP2019000022-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0024
+PN EP2019000024-A1; WO2019000024-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 04
+IP H01M-010/056
+PI PRIORITY000024 01 Jan 2018
+PD EP2019000024-A1 02 Jan 2019
+CP EP2019000023-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0025
+PN EP2019000025-A1; WO2019000025-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp;Research Institute 04
+AU Inventor 05
+IP B01D-053/22
+PI PRIORITY000025 01 Jan 2018
+PD EP2019000025-A1 02 Jan 2019
+CP EP2019000024-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0026
+PN EP2019000026-A1; WO2019000026-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 06
+IP H01L-031/021
+PI PRIORITY000026 01 Jan 2018
+PD EP2019000026-A1 02 Jan 2019
+CP EP2019000025-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0027
+PN EP2019000027-A1; WO2019000027-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 07
+IP C25B-011/04
+PI PRIORITY000027 01 Jan 2018
+PD EP2019000027-A1 02 Jan 2019
+CP EP2019000026-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0028
+PN EP2019000028-A1; WO2019000028-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 08
+IP F28D-020/00
+PI PRIORITY000028 01 Jan 2018
+PD EP2019000028-A1 02 Jan 2019
+CP EP2019000027-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0029
+PN EP2019000029-A1; WO2019000029-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 09
+IP G01D-005/00
+PI PRIORITY000029 01 Jan 2018
+PD EP2019000029-A1 02 Jan 2019
+CP EP2019000028-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0030
+PN EP2019000030-A1; WO2019000030-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp;Research Institute 02
+AU Inventor 10
+IP H01M-010/056
+PI PRIORITY000030 01 Jan 2018
+PD EP2019000030-A1 02 Jan 2019
+CP EP2019000029-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0031
+PN EP2019000031-A1; WO2019000031-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 11
+IP B01D-053/22
+PI PRIORITY000031 01 Jan 2018
+PD EP2019000031-A1 02 Jan 2019
+CP EP2019000030-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0032
+PN EP2019000032-A1; WO2019000032-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 12
+IP H01L-031/021
+PI PRIORITY000032 01 Jan 2018
+PD EP2019000032-A1 02 Jan 2019
+CP EP2019000031-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0033
+PN EP2019000033-A1; WO2019000033-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 13
+IP C25B-011/04
+PI PRIORITY000033 01 Jan 2018
+PD EP2019000033-A1 02 Jan 2019
+CP EP2019000032-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0034
+PN EP2019000034-A1; WO2019000034-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 14
+IP F28D-020/00
+PI PRIORITY000034 01 Jan 2018
+PD EP2019000034-A1 02 Jan 2019
+CP EP2019000033-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0035
+PN EP2019000035-A1; WO2019000035-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp;Research Institute 00
+AU Inventor 15
+IP G01D-005/00
+PI PRIORITY000035 01 Jan 2018
+PD EP2019000035-A1 02 Jan 2019
+CP EP2019000034-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0036
+PN EP2019000036-A1; WO2019000036-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 16
+IP H01M-010/056
+PI PRIORITY000036 01 Jan 2018
+PD EP2019000036-A1 02 Jan 2019
+CP EP2019000035-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0037
+PN EP2019000037-A1; WO2019000037-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 17
+IP B01D-053/22
+PI PRIORITY000037 01 Jan 2018
+PD EP2019000037-A1 02 Jan 2019
+CP EP2019000036-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0038
+PN EP2019000038-A1; WO2019000038-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 18
+IP H01L-031/021
+PI PRIORITY000038 01 Jan 2018
+PD EP2019000038-A1 02 Jan 2019
+CP EP2019000037-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0039
+PN EP2019000039-A1; WO2019000039-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 19
+IP C25B-011/04
+PI PRIORITY000039 01 Jan 2018
+PD EP2019000039-A1 02 Jan 2019
+CP EP2019000038-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0040
+PN EP2019000040-A1; WO2019000040-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp;Research Institute 05
+AU Inventor 00
+IP F28D-020/00
+PI PRIORITY000040 01 Jan 2018
+PD EP2019000040-A1 02 Jan 2019
+CP EP2019000039-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0041
+PN EP2019000041-A1; WO2019000041-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 01
+IP G01D-005/00
+PI PRIORITY000041 01 Jan 2018
+PD EP2019000041-A1 02 Jan 2019
+CP EP2019000040-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0042
+PN EP2019000042-A1; WO2019000042-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 02
+IP H01M-010/056
+PI PRIORITY000042 01 Jan 2018
+PD EP2019000042-A1 02 Jan 2019
+CP EP2019000041-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0043
+PN EP2019000043-A1; WO2019000043-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 03
+IP B01D-053/22
+PI PRIORITY000043 01 Jan 2018
+PD EP2019000043-A1 02 Jan 2019
+CP EP2019000042-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0044
+PN EP2019000044-A1; WO2019000044-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 04
+IP H01L-031/021
+PI PRIORITY000044 01 Jan 2018
+PD EP2019000044-A1 02 Jan 2019
+CP EP2019000043-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0045
+PN EP2019000045-A1; WO2019000045-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp;Research Institute 03
+AU Inventor 05
+IP C25B-011/04
+PI PRIORITY000045 01 Jan 2018
+PD EP2019000045-A1 02 Jan 2019
+CP EP2019000044-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0046
+PN EP2019000046-A1; WO2019000046-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 06
+IP F28D-020/00
+PI PRIORITY000046 01 Jan 2018
+PD EP2019000046-A1 02 Jan 2019
+CP EP2019000045-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0047
+PN EP2019000047-A1; WO2019000047-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 07
+IP G01D-005/00
+PI PRIORITY000047 01 Jan 2018
+PD EP2019000047-A1 02 Jan 2019
+CP EP2019000046-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0048
+PN EP2019000048-A1; WO2019000048-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 08
+IP H01M-010/056
+PI PRIORITY000048 01 Jan 2018
+PD EP2019000048-A1 02 Jan 2019
+CP EP2019000047-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0049
+PN EP2019000049-A1; WO2019000049-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 09
+IP B01D-053/22
+PI PRIORITY000049 01 Jan 2018
+PD EP2019000049-A1 02 Jan 2019
+CP EP2019000048-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0050
+PN EP2020000050-A1; WO2020000050-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp;Research Institute 01
+AU Inventor 10
+IP H01L-031/021
+PI PRIORITY000050 01 Jan 2019
+PD EP2020000050-A1 02 Jan 2020
+CP EP2019000049-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0051
+PN EP2020000051-A1; WO2020000051-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 11
+IP C25B-011/04
+PI PRIORITY000051 01 Jan 2019
+PD EP2020000051-A1 02 Jan 2020
+CP EP2020000050-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0052
+PN EP2020000052-A1; WO2020000052-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 12
+IP F28D-020/00
+PI PRIORITY000052 01 Jan 2019
+PD EP2020000052-A1 02 Jan 2020
+CP EP2020000051-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0053
+PN EP2020000053-A1; WO2020000053-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 13
+IP G01D-005/00
+PI PRIORITY000053 01 Jan 2019
+PD EP2020000053-A1 02 Jan 2020
+CP EP2020000052-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0054
+PN EP2020000054-A1; WO2020000054-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 14
+IP H01M-010/056
+PI PRIORITY000054 01 Jan 2019
+PD EP2020000054-A1 02 Jan 2020
+CP EP2020000053-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0055
+PN EP2020000055-A1; WO2020000055-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp;Research Institute 06
+AU Inventor 15
+IP B01D-053/22
+PI PRIORITY000055 01 Jan 2019
+PD EP2020000055-A1 02 Jan 2020
+CP EP2020000054-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0056
+PN EP2020000056-A1; WO2020000056-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 16
+IP H01L-031/021
+PI PRIORITY000056 01 Jan 2019
+PD EP2020000056-A1 02 Jan 2020
+CP EP2020000055-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0057
+PN EP2020000057-A1; WO2020000057-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 17
+IP C25B-011/04
+PI PRIORITY000057 01 Jan 2019
+PD EP2020000057-A1 02 Jan 2020
+CP EP2020000056-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0058
+PN EP2020000058-A1; WO2020000058-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 18
+IP F28D-020/00
+PI PRIORITY000058 01 Jan 2019
+PD EP2020000058-A1 02 Jan 2020
+CP EP2020000057-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0059
+PN EP2020000059-A1; WO2020000059-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 19
+IP G01D-005/00
+PI PRIORITY000059 01 Jan 2019
+PD EP2020000059-A1 02 Jan 2020
+CP EP2020000058-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0060
+PN EP2020000060-A1; WO2020000060-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp;Research Institute 04
+AU Inventor 00
+IP H01M-010/056
+PI PRIORITY000060 01 Jan 2019
+PD EP2020000060-A1 02 Jan 2020
+CP EP2020000059-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0061
+PN EP2020000061-A1; WO2020000061-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 01
+IP B01D-053/22
+PI PRIORITY000061 01 Jan 2019
+PD EP2020000061-A1 02 Jan 2020
+CP EP2020000060-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0062
+PN EP2020000062-A1; WO2020000062-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 02
+IP H01L-031/021
+PI PRIORITY000062 01 Jan 2019
+PD EP2020000062-A1 02 Jan 2020
+CP EP2020000061-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0063
+PN EP2020000063-A1; WO2020000063-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 03
+IP C25B-011/04
+PI PRIORITY000063 01 Jan 2019
+PD EP2020000063-A1 02 Jan 2020
+CP EP2020000062-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0064
+PN EP2020000064-A1; WO2020000064-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 04
+IP F28D-020/00
+PI PRIORITY000064 01 Jan 2019
+PD EP2020000064-A1 02 Jan 2020
+CP EP2020000063-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0065
+PN EP2020000065-A1; WO2020000065-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp;Research Institute 02
+AU Inventor 05
+IP G01D-005/00
+PI PRIORITY000065 01 Jan 2019
+PD EP2020000065-A1 02 Jan 2020
+CP EP2020000064-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0066
+PN EP2020000066-A1; WO2020000066-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 06
+IP H01M-010/056
+PI PRIORITY000066 01 Jan 2019
+PD EP2020000066-A1 02 Jan 2020
+CP EP2020000065-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0067
+PN EP2020000067-A1; WO2020000067-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 07
+IP B01D-053/22
+PI PRIORITY000067 01 Jan 2019
+PD EP2020000067-A1 02 Jan 2020
+CP EP2020000066-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0068
+PN EP2020000068-A1; WO2020000068-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 08
+IP H01L-031/021
+PI PRIORITY000068 01 Jan 2019
+PD EP2020000068-A1 02 Jan 2020
+CP EP2020000067-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0069
+PN EP2020000069-A1; WO2020000069-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 09
+IP C25B-011/04
+PI PRIORITY000069 01 Jan 2019
+PD EP2020000069-A1 02 Jan 2020
+CP EP2020000068-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0070
+PN EP2020000070-A1; WO2020000070-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp;Research Institute 00
+AU Inventor 10
+IP F28D-020/00
+PI PRIORITY000070 01 Jan 2019
+PD EP2020000070-A1 02 Jan 2020
+CP EP2020000069-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0071
+PN EP2020000071-A1; WO2020000071-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 11
+IP G01D-005/00
+PI PRIORITY000071 01 Jan 2019
+PD EP2020000071-A1 02 Jan 2020
+CP EP2020000070-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0072
+PN EP2020000072-A1; WO2020000072-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 12
+IP H01M-010/056
+PI PRIORITY000072 01 Jan 2019
+PD EP2020000072-A1 02 Jan 2020
+CP EP2020000071-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0073
+PN EP2020000073-A1; WO2020000073-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 13
+IP B01D-053/22
+PI PRIORITY000073 01 Jan 2019
+PD EP2020000073-A1 02 Jan 2020
+CP EP2020000072-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0074
+PN EP2020000074-A1; WO2020000074-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 14
+IP H01L-031/021
+PI PRIORITY000074 01 Jan 2019
+PD EP2020000074-A1 02 Jan 2020
+CP EP2020000073-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0075
+PN EP2020000075-A1; WO2020000075-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp;Research Institute 05
+AU Inventor 15
+IP C25B-011/04
+PI PRIORITY000075 01 Jan 2019
+PD EP2020000075-A1 02 Jan 2020
+CP EP2020000074-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0076
+PN EP2020000076-A1; WO2020000076-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 16
+IP F28D-020/00
+PI PRIORITY000076 01 Jan 2019
+PD EP2020000076-A1 02 Jan 2020
+CP EP2020000075-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0077
+PN EP2020000077-A1; WO2020000077-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 17
+IP G01D-005/00
+PI PRIORITY000077 01 Jan 2019
+PD EP2020000077-A1 02 Jan 2020
+CP EP2020000076-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0078
+PN EP2020000078-A1; WO2020000078-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 18
+IP H01M-010/056
+PI PRIORITY000078 01 Jan 2019
+PD EP2020000078-A1 02 Jan 2020
+CP EP2020000077-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0079
+PN EP2020000079-A1; WO2020000079-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 19
+IP B01D-053/22
+PI PRIORITY000079 01 Jan 2019
+PD EP2020000079-A1 02 Jan 2020
+CP EP2020000078-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0080
+PN EP2020000080-A1; WO2020000080-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp;Research Institute 03
+AU Inventor 00
+IP H01L-031/021
+PI PRIORITY000080 01 Jan 2019
+PD EP2020000080-A1 02 Jan 2020
+CP EP2020000079-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0081
+PN EP2020000081-A1; WO2020000081-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 01
+IP C25B-011/04
+PI PRIORITY000081 01 Jan 2019
+PD EP2020000081-A1 02 Jan 2020
+CP EP2020000080-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0082
+PN EP2020000082-A1; WO2020000082-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 02
+IP F28D-020/00
+PI PRIORITY000082 01 Jan 2019
+PD EP2020000082-A1 02 Jan 2020
+CP EP2020000081-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0083
+PN EP2020000083-A1; WO2020000083-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 03
+IP G01D-005/00
+PI PRIORITY000083 01 Jan 2019
+PD EP2020000083-A1 02 Jan 2020
+CP EP2020000082-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0084
+PN EP2020000084-A1; WO2020000084-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 04
+IP H01M-010/056
+PI PRIORITY000084 01 Jan 2019
+PD EP2020000084-A1 02 Jan 2020
+CP EP2020000083-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0085
+PN EP2020000085-A1; WO2020000085-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp;Research Institute 01
+AU Inventor 05
+IP B01D-053/22
+PI PRIORITY000085 01 Jan 2019
+PD EP2020000085-A1 02 Jan 2020
+CP EP2020000084-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0086
+PN EP2020000086-A1; WO2020000086-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 06
+IP H01L-031/021
+PI PRIORITY000086 01 Jan 2019
+PD EP2020000086-A1 02 Jan 2020
+CP EP2020000085-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0087
+PN EP2020000087-A1; WO2020000087-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 07
+IP C25B-011/04
+PI PRIORITY000087 01 Jan 2019
+PD EP2020000087-A1 02 Jan 2020
+CP EP2020000086-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0088
+PN EP2020000088-A1; WO2020000088-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 08
+IP F28D-020/00
+PI PRIORITY000088 01 Jan 2019
+PD EP2020000088-A1 02 Jan 2020
+CP EP2020000087-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0089
+PN EP2020000089-A1; WO2020000089-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 09
+IP G01D-005/00
+PI PRIORITY000089 01 Jan 2019
+PD EP2020000089-A1 02 Jan 2020
+CP EP2020000088-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0090
+PN EP2020000090-A1; WO2020000090-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp;Research Institute 06
+AU Inventor 10
+IP H01M-010/056
+PI PRIORITY000090 01 Jan 2019
+PD EP2020000090-A1 02 Jan 2020
+CP EP2020000089-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0091
+PN EP2020000091-A1; WO2020000091-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 11
+IP B01D-053/22
+PI PRIORITY000091 01 Jan 2019
+PD EP2020000091-A1 02 Jan 2020
+CP EP2020000090-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0092
+PN EP2020000092-A1; WO2020000092-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 12
+IP H01L-031/021
+PI PRIORITY000092 01 Jan 2019
+PD EP2020000092-A1 02 Jan 2020
+CP EP2020000091-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0093
+PN EP2020000093-A1; WO2020000093-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 13
+IP C25B-011/04
+PI PRIORITY000093 01 Jan 2019
+PD EP2020000093-A1 02 Jan 2020
+CP EP2020000092-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0094
+PN EP2020000094-A1; WO2020000094-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 14
+IP F28D-020/00
+PI PRIORITY000094 01 Jan 2019
+PD EP2020000094-A1 02 Jan 2020
+CP EP2020000093-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0095
+PN EP2020000095-A1; WO2020000095-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp;Research Institute 04
+AU Inventor 15
+IP G01D-005/00
+PI PRIORITY000095 01 Jan 2019
+PD EP2020000095-A1 02 Jan 2020
+CP EP2020000094-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0096
+PN EP2020000096-A1; WO2020000096-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 16
+IP H01M-010/056
+PI PRIORITY000096 01 Jan 2019
+PD EP2020000096-A1 02 Jan 2020
+CP EP2020000095-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0097
+PN EP2020000097-A1; WO2020000097-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 17
+IP B01D-053/22
+PI PRIORITY000097 01 Jan 2019
+PD EP2020000097-A1 02 Jan 2020
+CP EP2020000096-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0098
+PN EP2020000098-A1; WO2020000098-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 18
+IP H01L-031/021
+PI PRIORITY000098 01 Jan 2019
+PD EP2020000098-A1 02 Jan 2020
+CP EP2020000097-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0099
+PN EP2020000099-A1; WO2020000099-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 19
+IP C25B-011/04
+PI PRIORITY000099 01 Jan 2019
+PD EP2020000099-A1 02 Jan 2020
+CP EP2020000098-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0100
+PN EP2021000100-A1; WO2021000100-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp;Research Institute 02
+AU Inventor 00
+IP F28D-020/00
+PI PRIORITY000100 01 Jan 2020
+PD EP2021000100-A1 02 Jan 2021
+CP EP2020000099-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0101
+PN EP2021000101-A1; WO2021000101-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 01
+IP G01D-005/00
+PI PRIORITY000101 01 Jan 2020
+PD EP2021000101-A1 02 Jan 2021
+CP EP2021000100-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0102
+PN EP2021000102-A1; WO2021000102-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 02
+IP H01M-010/056
+PI PRIORITY000102 01 Jan 2020
+PD EP2021000102-A1 02 Jan 2021
+CP EP2021000101-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0103
+PN EP2021000103-A1; WO2021000103-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 03
+IP B01D-053/22
+PI PRIORITY000103 01 Jan 2020
+PD EP2021000103-A1 02 Jan 2021
+CP EP2021000102-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0104
+PN EP2021000104-A1; WO2021000104-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 04
+IP H01L-031/021
+PI PRIORITY000104 01 Jan 2020
+PD EP2021000104-A1 02 Jan 2021
+CP EP2021000103-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0105
+PN EP2021000105-A1; WO2021000105-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp;Research Institute 00
+AU Inventor 05
+IP C25B-011/04
+PI PRIORITY000105 01 Jan 2020
+PD EP2021000105-A1 02 Jan 2021
+CP EP2021000104-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0106
+PN EP2021000106-A1; WO2021000106-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 06
+IP F28D-020/00
+PI PRIORITY000106 01 Jan 2020
+PD EP2021000106-A1 02 Jan 2021
+CP EP2021000105-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0107
+PN EP2021000107-A1; WO2021000107-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 07
+IP G01D-005/00
+PI PRIORITY000107 01 Jan 2020
+PD EP2021000107-A1 02 Jan 2021
+CP EP2021000106-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0108
+PN EP2021000108-A1; WO2021000108-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 08
+IP H01M-010/056
+PI PRIORITY000108 01 Jan 2020
+PD EP2021000108-A1 02 Jan 2021
+CP EP2021000107-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0109
+PN EP2021000109-A1; WO2021000109-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 09
+IP B01D-053/22
+PI PRIORITY000109 01 Jan 2020
+PD EP2021000109-A1 02 Jan 2021
+CP EP2021000108-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0110
+PN EP2021000110-A1; WO2021000110-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp;Research Institute 05
+AU Inventor 10
+IP H01L-031/021
+PI PRIORITY000110 01 Jan 2020
+PD EP2021000110-A1 02 Jan 2021
+CP EP2021000109-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0111
+PN EP2021000111-A1; WO2021000111-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 11
+IP C25B-011/04
+PI PRIORITY000111 01 Jan 2020
+PD EP2021000111-A1 02 Jan 2021
+CP EP2021000110-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0112
+PN EP2021000112-A1; WO2021000112-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 12
+IP F28D-020/00
+PI PRIORITY000112 01 Jan 2020
+PD EP2021000112-A1 02 Jan 2021
+CP EP2021000111-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0113
+PN EP2021000113-A1; WO2021000113-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 13
+IP G01D-005/00
+PI PRIORITY000113 01 Jan 2020
+PD EP2021000113-A1 02 Jan 2021
+CP EP2021000112-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0114
+PN EP2021000114-A1; WO2021000114-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 14
+IP H01M-010/056
+PI PRIORITY000114 01 Jan 2020
+PD EP2021000114-A1 02 Jan 2021
+CP EP2021000113-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0115
+PN EP2021000115-A1; WO2021000115-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp;Research Institute 03
+AU Inventor 15
+IP B01D-053/22
+PI PRIORITY000115 01 Jan 2020
+PD EP2021000115-A1 02 Jan 2021
+CP EP2021000114-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0116
+PN EP2021000116-A1; WO2021000116-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 16
+IP H01L-031/021
+PI PRIORITY000116 01 Jan 2020
+PD EP2021000116-A1 02 Jan 2021
+CP EP2021000115-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0117
+PN EP2021000117-A1; WO2021000117-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 17
+IP C25B-011/04
+PI PRIORITY000117 01 Jan 2020
+PD EP2021000117-A1 02 Jan 2021
+CP EP2021000116-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0118
+PN EP2021000118-A1; WO2021000118-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 18
+IP F28D-020/00
+PI PRIORITY000118 01 Jan 2020
+PD EP2021000118-A1 02 Jan 2021
+CP EP2021000117-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0119
+PN EP2021000119-A1; WO2021000119-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 19
+IP G01D-005/00
+PI PRIORITY000119 01 Jan 2020
+PD EP2021000119-A1 02 Jan 2021
+CP EP2021000118-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0120
+PN EP2021000120-A1; WO2021000120-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp;Research Institute 01
+AU Inventor 00
+IP H01M-010/056
+PI PRIORITY000120 01 Jan 2020
+PD EP2021000120-A1 02 Jan 2021
+CP EP2021000119-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0121
+PN EP2021000121-A1; WO2021000121-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 01
+IP B01D-053/22
+PI PRIORITY000121 01 Jan 2020
+PD EP2021000121-A1 02 Jan 2021
+CP EP2021000120-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0122
+PN EP2021000122-A1; WO2021000122-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 02
+IP H01L-031/021
+PI PRIORITY000122 01 Jan 2020
+PD EP2021000122-A1 02 Jan 2021
+CP EP2021000121-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0123
+PN EP2021000123-A1; WO2021000123-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 03
+IP C25B-011/04
+PI PRIORITY000123 01 Jan 2020
+PD EP2021000123-A1 02 Jan 2021
+CP EP2021000122-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0124
+PN EP2021000124-A1; WO2021000124-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 04
+IP F28D-020/00
+PI PRIORITY000124 01 Jan 2020
+PD EP2021000124-A1 02 Jan 2021
+CP EP2021000123-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0125
+PN EP2021000125-A1; WO2021000125-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp;Research Institute 06
+AU Inventor 05
+IP G01D-005/00
+PI PRIORITY000125 01 Jan 2020
+PD EP2021000125-A1 02 Jan 2021
+CP EP2021000124-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0126
+PN EP2021000126-A1; WO2021000126-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 06
+IP H01M-010/056
+PI PRIORITY000126 01 Jan 2020
+PD EP2021000126-A1 02 Jan 2021
+CP EP2021000125-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0127
+PN EP2021000127-A1; WO2021000127-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 07
+IP B01D-053/22
+PI PRIORITY000127 01 Jan 2020
+PD EP2021000127-A1 02 Jan 2021
+CP EP2021000126-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0128
+PN EP2021000128-A1; WO2021000128-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 08
+IP H01L-031/021
+PI PRIORITY000128 01 Jan 2020
+PD EP2021000128-A1 02 Jan 2021
+CP EP2021000127-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0129
+PN EP2021000129-A1; WO2021000129-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 09
+IP C25B-011/04
+PI PRIORITY000129 01 Jan 2020
+PD EP2021000129-A1 02 Jan 2021
+CP EP2021000128-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0130
+PN EP2021000130-A1; WO2021000130-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp;Research Institute 04
+AU Inventor 10
+IP F28D-020/00
+PI PRIORITY000130 01 Jan 2020
+PD EP2021000130-A1 02 Jan 2021
+CP EP2021000129-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0131
+PN EP2021000131-A1; WO2021000131-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 11
+IP G01D-005/00
+PI PRIORITY000131 01 Jan 2020
+PD EP2021000131-A1 02 Jan 2021
+CP EP2021000130-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0132
+PN EP2021000132-A1; WO2021000132-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 12
+IP H01M-010/056
+PI PRIORITY000132 01 Jan 2020
+PD EP2021000132-A1 02 Jan 2021
+CP EP2021000131-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0133
+PN EP2021000133-A1; WO2021000133-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 13
+IP B01D-053/22
+PI PRIORITY000133 01 Jan 2020
+PD EP2021000133-A1 02 Jan 2021
+CP EP2021000132-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0134
+PN EP2021000134-A1; WO2021000134-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 14
+IP H01L-031/021
+PI PRIORITY000134 01 Jan 2020
+PD EP2021000134-A1 02 Jan 2021
+CP EP2021000133-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0135
+PN EP2021000135-A1; WO2021000135-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp;Research Institute 02
+AU Inventor 15
+IP C25B-011/04
+PI PRIORITY000135 01 Jan 2020
+PD EP2021000135-A1 02 Jan 2021
+CP EP2021000134-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0136
+PN EP2021000136-A1; WO2021000136-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 16
+IP F28D-020/00
+PI PRIORITY000136 01 Jan 2020
+PD EP2021000136-A1 02 Jan 2021
+CP EP2021000135-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0137
+PN EP2021000137-A1; WO2021000137-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 17
+IP G01D-005/00
+PI PRIORITY000137 01 Jan 2020
+PD EP2021000137-A1 02 Jan 2021
+CP EP2021000136-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0138
+PN EP2021000138-A1; WO2021000138-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 18
+IP H01M-010/056
+PI PRIORITY000138 01 Jan 2020
+PD EP2021000138-A1 02 Jan 2021
+CP EP2021000137-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0139
+PN EP2021000139-A1; WO2021000139-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 19
+IP B01D-053/22
+PI PRIORITY000139 01 Jan 2020
+PD EP2021000139-A1 02 Jan 2021
+CP EP2021000138-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0140
+PN EP2021000140-A1; WO2021000140-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp;Research Institute 00
+AU Inventor 00
+IP H01L-031/021
+PI PRIORITY000140 01 Jan 2020
+PD EP2021000140-A1 02 Jan 2021
+CP EP2021000139-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0141
+PN EP2021000141-A1; WO2021000141-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 01
+IP C25B-011/04
+PI PRIORITY000141 01 Jan 2020
+PD EP2021000141-A1 02 Jan 2021
+CP EP2021000140-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0142
+PN EP2021000142-A1; WO2021000142-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 02
+IP F28D-020/00
+PI PRIORITY000142 01 Jan 2020
+PD EP2021000142-A1 02 Jan 2021
+CP EP2021000141-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0143
+PN EP2021000143-A1; WO2021000143-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 03
+IP G01D-005/00
+PI PRIORITY000143 01 Jan 2020
+PD EP2021000143-A1 02 Jan 2021
+CP EP2021000142-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0144
+PN EP2021000144-A1; WO2021000144-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 04
+IP H01M-010/056
+PI PRIORITY000144 01 Jan 2020
+PD EP2021000144-A1 02 Jan 2021
+CP EP2021000143-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0145
+PN EP2021000145-A1; WO2021000145-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp;Research Institute 05
+AU Inventor 05
+IP B01D-053/22
+PI PRIORITY000145 01 Jan 2020
+PD EP2021000145-A1 02 Jan 2021
+CP EP2021000144-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0146
+PN EP2021000146-A1; WO2021000146-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 06
+IP H01L-031/021
+PI PRIORITY000146 01 Jan 2020
+PD EP2021000146-A1 02 Jan 2021
+CP EP2021000145-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0147
+PN EP2021000147-A1; WO2021000147-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 07
+IP C25B-011/04
+PI PRIORITY000147 01 Jan 2020
+PD EP2021000147-A1 02 Jan 2021
+CP EP2021000146-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0148
+PN EP2021000148-A1; WO2021000148-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 08
+IP F28D-020/00
+PI PRIORITY000148 01 Jan 2020
+PD EP2021000148-A1 02 Jan 2021
+CP EP2021000147-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0149
+PN EP2021000149-A1; WO2021000149-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 09
+IP G01D-005/00
+PI PRIORITY000149 01 Jan 2020
+PD EP2021000149-A1 02 Jan 2021
+CP EP2021000148-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0150
+PN EP2022000150-A1; WO2022000150-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp;Research Institute 03
+AU Inventor 10
+IP H01M-010/056
+PI PRIORITY000150 01 Jan 2021
+PD EP2022000150-A1 02 Jan 2022
+CP EP2021000149-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0151
+PN EP2022000151-A1; WO2022000151-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 11
+IP B01D-053/22
+PI PRIORITY000151 01 Jan 2021
+PD EP2022000151-A1 02 Jan 2022
+CP EP2022000150-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0152
+PN EP2022000152-A1; WO2022000152-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 12
+IP H01L-031/021
+PI PRIORITY000152 01 Jan 2021
+PD EP2022000152-A1 02 Jan 2022
+CP EP2022000151-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0153
+PN EP2022000153-A1; WO2022000153-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 13
+IP C25B-011/04
+PI PRIORITY000153 01 Jan 2021
+PD EP2022000153-A1 02 Jan 2022
+CP EP2022000152-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0154
+PN EP2022000154-A1; WO2022000154-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 14
+IP F28D-020/00
+PI PRIORITY000154 01 Jan 2021
+PD EP2022000154-A1 02 Jan 2022
+CP EP2022000153-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0155
+PN EP2022000155-A1; WO2022000155-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp;Research Institute 01
+AU Inventor 15
+IP G01D-005/00
+PI PRIORITY000155 01 Jan 2021
+PD EP2022000155-A1 02 Jan 2022
+CP EP2022000154-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0156
+PN EP2022000156-A1; WO2022000156-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 16
+IP H01M-010/056
+PI PRIORITY000156 01 Jan 2021
+PD EP2022000156-A1 02 Jan 2022
+CP EP2022000155-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0157
+PN EP2022000157-A1; WO2022000157-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 17
+IP B01D-053/22
+PI PRIORITY000157 01 Jan 2021
+PD EP2022000157-A1 02 Jan 2022
+CP EP2022000156-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0158
+PN EP2022000158-A1; WO2022000158-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 18
+IP H01L-031/021
+PI PRIORITY000158 01 Jan 2021
+PD EP2022000158-A1 02 Jan 2022
+CP EP2022000157-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0159
+PN EP2022000159-A1; WO2022000159-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 19
+IP C25B-011/04
+PI PRIORITY000159 01 Jan 2021
+PD EP2022000159-A1 02 Jan 2022
+CP EP2022000158-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0160
+PN EP2022000160-A1; WO2022000160-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp;Research Institute 06
+AU Inventor 00
+IP F28D-020/00
+PI PRIORITY000160 01 Jan 2021
+PD EP2022000160-A1 02 Jan 2022
+CP EP2022000159-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0161
+PN EP2022000161-A1; WO2022000161-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 01
+IP G01D-005/00
+PI PRIORITY000161 01 Jan 2021
+PD EP2022000161-A1 02 Jan 2022
+CP EP2022000160-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0162
+PN EP2022000162-A1; WO2022000162-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 02
+IP H01M-010/056
+PI PRIORITY000162 01 Jan 2021
+PD EP2022000162-A1 02 Jan 2022
+CP EP2022000161-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0163
+PN EP2022000163-A1; WO2022000163-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 03
+IP B01D-053/22
+PI PRIORITY000163 01 Jan 2021
+PD EP2022000163-A1 02 Jan 2022
+CP EP2022000162-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0164
+PN EP2022000164-A1; WO2022000164-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 04
+IP H01L-031/021
+PI PRIORITY000164 01 Jan 2021
+PD EP2022000164-A1 02 Jan 2022
+CP EP2022000163-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0165
+PN EP2022000165-A1; WO2022000165-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp;Research Institute 04
+AU Inventor 05
+IP C25B-011/04
+PI PRIORITY000165 01 Jan 2021
+PD EP2022000165-A1 02 Jan 2022
+CP EP2022000164-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0166
+PN EP2022000166-A1; WO2022000166-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 06
+IP F28D-020/00
+PI PRIORITY000166 01 Jan 2021
+PD EP2022000166-A1 02 Jan 2022
+CP EP2022000165-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0167
+PN EP2022000167-A1; WO2022000167-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 07
+IP G01D-005/00
+PI PRIORITY000167 01 Jan 2021
+PD EP2022000167-A1 02 Jan 2022
+CP EP2022000166-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0168
+PN EP2022000168-A1; WO2022000168-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 08
+IP H01M-010/056
+PI PRIORITY000168 01 Jan 2021
+PD EP2022000168-A1 02 Jan 2022
+CP EP2022000167-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0169
+PN EP2022000169-A1; WO2022000169-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 09
+IP B01D-053/22
+PI PRIORITY000169 01 Jan 2021
+PD EP2022000169-A1 02 Jan 2022
+CP EP2022000168-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0170
+PN EP2022000170-A1; WO2022000170-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp;Research Institute 02
+AU Inventor 10
+IP H01L-031/021
+PI PRIORITY000170 01 Jan 2021
+PD EP2022000170-A1 02 Jan 2022
+CP EP2022000169-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0171
+PN EP2022000171-A1; WO2022000171-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 11
+IP C25B-011/04
+PI PRIORITY000171 01 Jan 2021
+PD EP2022000171-A1 02 Jan 2022
+CP EP2022000170-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0172
+PN EP2022000172-A1; WO2022000172-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 12
+IP F28D-020/00
+PI PRIORITY000172 01 Jan 2021
+PD EP2022000172-A1 02 Jan 2022
+CP EP2022000171-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0173
+PN EP2022000173-A1; WO2022000173-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 13
+IP G01D-005/00
+PI PRIORITY000173 01 Jan 2021
+PD EP2022000173-A1 02 Jan 2022
+CP EP2022000172-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0174
+PN EP2022000174-A1; WO2022000174-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 14
+IP H01M-010/056
+PI PRIORITY000174 01 Jan 2021
+PD EP2022000174-A1 02 Jan 2022
+CP EP2022000173-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0175
+PN EP2022000175-A1; WO2022000175-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp;Research Institute 00
+AU Inventor 15
+IP B01D-053/22
+PI PRIORITY000175 01 Jan 2021
+PD EP2022000175-A1 02 Jan 2022
+CP EP2022000174-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0176
+PN EP2022000176-A1; WO2022000176-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 16
+IP H01L-031/021
+PI PRIORITY000176 01 Jan 2021
+PD EP2022000176-A1 02 Jan 2022
+CP EP2022000175-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0177
+PN EP2022000177-A1; WO2022000177-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 17
+IP C25B-011/04
+PI PRIORITY000177 01 Jan 2021
+PD EP2022000177-A1 02 Jan 2022
+CP EP2022000176-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0178
+PN EP2022000178-A1; WO2022000178-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 18
+IP F28D-020/00
+PI PRIORITY000178 01 Jan 2021
+PD EP2022000178-A1 02 Jan 2022
+CP EP2022000177-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0179
+PN EP2022000179-A1; WO2022000179-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 19
+IP G01D-005/00
+PI PRIORITY000179 01 Jan 2021
+PD EP2022000179-A1 02 Jan 2022
+CP EP2022000178-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0180
+PN EP2022000180-A1; WO2022000180-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp;Research Institute 05
+AU Inventor 00
+IP H01M-010/056
+PI PRIORITY000180 01 Jan 2021
+PD EP2022000180-A1 02 Jan 2022
+CP EP2022000179-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0181
+PN EP2022000181-A1; WO2022000181-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 01
+IP B01D-053/22
+PI PRIORITY000181 01 Jan 2021
+PD EP2022000181-A1 02 Jan 2022
+CP EP2022000180-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0182
+PN EP2022000182-A1; WO2022000182-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 02
+IP H01L-031/021
+PI PRIORITY000182 01 Jan 2021
+PD EP2022000182-A1 02 Jan 2022
+CP EP2022000181-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0183
+PN EP2022000183-A1; WO2022000183-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 03
+IP C25B-011/04
+PI PRIORITY000183 01 Jan 2021
+PD EP2022000183-A1 02 Jan 2022
+CP EP2022000182-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0184
+PN EP2022000184-A1; WO2022000184-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 04
+IP F28D-020/00
+PI PRIORITY000184 01 Jan 2021
+PD EP2022000184-A1 02 Jan 2022
+CP EP2022000183-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0185
+PN EP2022000185-A1; WO2022000185-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp;Research Institute 03
+AU Inventor 05
+IP G01D-005/00
+PI PRIORITY000185 01 Jan 2021
+PD EP2022000185-A1 02 Jan 2022
+CP EP2022000184-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0186
+PN EP2022000186-A1; WO2022000186-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 06
+IP H01M-010/056
+PI PRIORITY000186 01 Jan 2021
+PD EP2022000186-A1 02 Jan 2022
+CP EP2022000185-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0187
+PN EP2022000187-A1; WO2022000187-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 07
+IP B01D-053/22
+PI PRIORITY000187 01 Jan 2021
+PD EP2022000187-A1 02 Jan 2022
+CP EP2022000186-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0188
+PN EP2022000188-A1; WO2022000188-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 08
+IP H01L-031/021
+PI PRIORITY000188 01 Jan 2021
+PD EP2022000188-A1 02 Jan 2022
+CP EP2022000187-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0189
+PN EP2022000189-A1; WO2022000189-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 09
+IP C25B-011/04
+PI PRIORITY000189 01 Jan 2021
+PD EP2022000189-A1 02 Jan 2022
+CP EP2022000188-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0190
+PN EP2022000190-A1; WO2022000190-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp;Research Institute 01
+AU Inventor 10
+IP F28D-020/00
+PI PRIORITY000190 01 Jan 2021
+PD EP2022000190-A1 02 Jan 2022
+CP EP2022000189-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0191
+PN EP2022000191-A1; WO2022000191-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 11
+IP G01D-005/00
+PI PRIORITY000191 01 Jan 2021
+PD EP2022000191-A1 02 Jan 2022
+CP EP2022000190-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0192
+PN EP2022000192-A1; WO2022000192-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 12
+IP H01M-010/056
+PI PRIORITY000192 01 Jan 2021
+PD EP2022000192-A1 02 Jan 2022
+CP EP2022000191-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0193
+PN EP2022000193-A1; WO2022000193-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 13
+IP B01D-053/22
+PI PRIORITY000193 01 Jan 2021
+PD EP2022000193-A1 02 Jan 2022
+CP EP2022000192-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0194
+PN EP2022000194-A1; WO2022000194-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 14
+IP H01L-031/021
+PI PRIORITY000194 01 Jan 2021
+PD EP2022000194-A1 02 Jan 2022
+CP EP2022000193-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0195
+PN EP2022000195-A1; WO2022000195-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp;Research Institute 06
+AU Inventor 15
+IP C25B-011/04
+PI PRIORITY000195 01 Jan 2021
+PD EP2022000195-A1 02 Jan 2022
+CP EP2022000194-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0196
+PN EP2022000196-A1; WO2022000196-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 16
+IP F28D-020/00
+PI PRIORITY000196 01 Jan 2021
+PD EP2022000196-A1 02 Jan 2022
+CP EP2022000195-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0197
+PN EP2022000197-A1; WO2022000197-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 17
+IP G01D-005/00
+PI PRIORITY000197 01 Jan 2021
+PD EP2022000197-A1 02 Jan 2022
+CP EP2022000196-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0198
+PN EP2022000198-A1; WO2022000198-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 18
+IP H01M-010/056
+PI PRIORITY000198 01 Jan 2021
+PD EP2022000198-A1 02 Jan 2022
+CP EP2022000197-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0199
+PN EP2022000199-A1; WO2022000199-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 19
+IP B01D-053/22
+PI PRIORITY000199 01 Jan 2021
+PD EP2022000199-A1 02 Jan 2022
+CP EP2022000198-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0200
+PN EP2023000200-A1; WO2023000200-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp;Research Institute 04
+AU Inventor 00
+IP H01L-031/021
+PI PRIORITY000200 01 Jan 2022
+PD EP2023000200-A1 02 Jan 2023
+CP EP2022000199-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0201
+PN EP2023000201-A1; WO2023000201-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 01
+IP C25B-011/04
+PI PRIORITY000201 01 Jan 2022
+PD EP2023000201-A1 02 Jan 2023
+CP EP2023000200-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0202
+PN EP2023000202-A1; WO2023000202-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 02
+IP F28D-020/00
+PI PRIORITY000202 01 Jan 2022
+PD EP2023000202-A1 02 Jan 2023
+CP EP2023000201-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0203
+PN EP2023000203-A1; WO2023000203-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 03
+IP G01D-005/00
+PI PRIORITY000203 01 Jan 2022
+PD EP2023000203-A1 02 Jan 2023
+CP EP2023000202-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0204
+PN EP2023000204-A1; WO2023000204-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 04
+IP H01M-010/056
+PI PRIORITY000204 01 Jan 2022
+PD EP2023000204-A1 02 Jan 2023
+CP EP2023000203-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0205
+PN EP2023000205-A1; WO2023000205-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp;Research Institute 02
+AU Inventor 05
+IP B01D-053/22
+PI PRIORITY000205 01 Jan 2022
+PD EP2023000205-A1 02 Jan 2023
+CP EP2023000204-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0206
+PN EP2023000206-A1; WO2023000206-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 06
+IP H01L-031/021
+PI PRIORITY000206 01 Jan 2022
+PD EP2023000206-A1 02 Jan 2023
+CP EP2023000205-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0207
+PN EP2023000207-A1; WO2023000207-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 07
+IP C25B-011/04
+PI PRIORITY000207 01 Jan 2022
+PD EP2023000207-A1 02 Jan 2023
+CP EP2023000206-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0208
+PN EP2023000208-A1; WO2023000208-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 08
+IP F28D-020/00
+PI PRIORITY000208 01 Jan 2022
+PD EP2023000208-A1 02 Jan 2023
+CP EP2023000207-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0209
+PN EP2023000209-A1; WO2023000209-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 09
+IP G01D-005/00
+PI PRIORITY000209 01 Jan 2022
+PD EP2023000209-A1 02 Jan 2023
+CP EP2023000208-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0210
+PN EP2023000210-A1; WO2023000210-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp;Research Institute 00
+AU Inventor 10
+IP H01M-010/056
+PI PRIORITY000210 01 Jan 2022
+PD EP2023000210-A1 02 Jan 2023
+CP EP2023000209-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0211
+PN EP2023000211-A1; WO2023000211-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 11
+IP B01D-053/22
+PI PRIORITY000211 01 Jan 2022
+PD EP2023000211-A1 02 Jan 2023
+CP EP2023000210-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0212
+PN EP2023000212-A1; WO2023000212-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 12
+IP H01L-031/021
+PI PRIORITY000212 01 Jan 2022
+PD EP2023000212-A1 02 Jan 2023
+CP EP2023000211-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0213
+PN EP2023000213-A1; WO2023000213-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 13
+IP C25B-011/04
+PI PRIORITY000213 01 Jan 2022
+PD EP2023000213-A1 02 Jan 2023
+CP EP2023000212-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0214
+PN EP2023000214-A1; WO2023000214-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 14
+IP F28D-020/00
+PI PRIORITY000214 01 Jan 2022
+PD EP2023000214-A1 02 Jan 2023
+CP EP2023000213-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0215
+PN EP2023000215-A1; WO2023000215-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp;Research Institute 05
+AU Inventor 15
+IP G01D-005/00
+PI PRIORITY000215 01 Jan 2022
+PD EP2023000215-A1 02 Jan 2023
+CP EP2023000214-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0216
+PN EP2023000216-A1; WO2023000216-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 16
+IP H01M-010/056
+PI PRIORITY000216 01 Jan 2022
+PD EP2023000216-A1 02 Jan 2023
+CP EP2023000215-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0217
+PN EP2023000217-A1; WO2023000217-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 17
+IP B01D-053/22
+PI PRIORITY000217 01 Jan 2022
+PD EP2023000217-A1 02 Jan 2023
+CP EP2023000216-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0218
+PN EP2023000218-A1; WO2023000218-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 18
+IP H01L-031/021
+PI PRIORITY000218 01 Jan 2022
+PD EP2023000218-A1 02 Jan 2023
+CP EP2023000217-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0219
+PN EP2023000219-A1; WO2023000219-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 19
+IP C25B-011/04
+PI PRIORITY000219 01 Jan 2022
+PD EP2023000219-A1 02 Jan 2023
+CP EP2023000218-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0220
+PN EP2023000220-A1; WO2023000220-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp;Research Institute 03
+AU Inventor 00
+IP F28D-020/00
+PI PRIORITY000220 01 Jan 2022
+PD EP2023000220-A1 02 Jan 2023
+CP EP2023000219-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0221
+PN EP2023000221-A1; WO2023000221-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 01
+IP G01D-005/00
+PI PRIORITY000221 01 Jan 2022
+PD EP2023000221-A1 02 Jan 2023
+CP EP2023000220-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0222
+PN EP2023000222-A1; WO2023000222-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 02
+IP H01M-010/056
+PI PRIORITY000222 01 Jan 2022
+PD EP2023000222-A1 02 Jan 2023
+CP EP2023000221-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0223
+PN EP2023000223-A1; WO2023000223-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 03
+IP B01D-053/22
+PI PRIORITY000223 01 Jan 2022
+PD EP2023000223-A1 02 Jan 2023
+CP EP2023000222-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0224
+PN EP2023000224-A1; WO2023000224-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 04
+IP H01L-031/021
+PI PRIORITY000224 01 Jan 2022
+PD EP2023000224-A1 02 Jan 2023
+CP EP2023000223-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0225
+PN EP2023000225-A1; WO2023000225-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp;Research Institute 01
+AU Inventor 05
+IP C25B-011/04
+PI PRIORITY000225 01 Jan 2022
+PD EP2023000225-A1 02 Jan 2023
+CP EP2023000224-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0226
+PN EP2023000226-A1; WO2023000226-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 06
+IP F28D-020/00
+PI PRIORITY000226 01 Jan 2022
+PD EP2023000226-A1 02 Jan 2023
+CP EP2023000225-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0227
+PN EP2023000227-A1; WO2023000227-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 07
+IP G01D-005/00
+PI PRIORITY000227 01 Jan 2022
+PD EP2023000227-A1 02 Jan 2023
+CP EP2023000226-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0228
+PN EP2023000228-A1; WO2023000228-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 08
+IP H01M-010/056
+PI PRIORITY000228 01 Jan 2022
+PD EP2023000228-A1 02 Jan 2023
+CP EP2023000227-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0229
+PN EP2023000229-A1; WO2023000229-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 09
+IP B01D-053/22
+PI PRIORITY000229 01 Jan 2022
+PD EP2023000229-A1 02 Jan 2023
+CP EP2023000228-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0230
+PN EP2023000230-A1; WO2023000230-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp;Research Institute 06
+AU Inventor 10
+IP H01L-031/021
+PI PRIORITY000230 01 Jan 2022
+PD EP2023000230-A1 02 Jan 2023
+CP EP2023000229-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0231
+PN EP2023000231-A1; WO2023000231-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 11
+IP C25B-011/04
+PI PRIORITY000231 01 Jan 2022
+PD EP2023000231-A1 02 Jan 2023
+CP EP2023000230-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0232
+PN EP2023000232-A1; WO2023000232-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 12
+IP F28D-020/00
+PI PRIORITY000232 01 Jan 2022
+PD EP2023000232-A1 02 Jan 2023
+CP EP2023000231-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0233
+PN EP2023000233-A1; WO2023000233-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 13
+IP G01D-005/00
+PI PRIORITY000233 01 Jan 2022
+PD EP2023000233-A1 02 Jan 2023
+CP EP2023000232-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0234
+PN EP2023000234-A1; WO2023000234-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 14
+IP H01M-010/056
+PI PRIORITY000234 01 Jan 2022
+PD EP2023000234-A1 02 Jan 2023
+CP EP2023000233-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0235
+PN EP2023000235-A1; WO2023000235-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp;Research Institute 04
+AU Inventor 15
+IP B01D-053/22
+PI PRIORITY000235 01 Jan 2022
+PD EP2023000235-A1 02 Jan 2023
+CP EP2023000234-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0236
+PN EP2023000236-A1; WO2023000236-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 16
+IP H01L-031/021
+PI PRIORITY000236 01 Jan 2022
+PD EP2023000236-A1 02 Jan 2023
+CP EP2023000235-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0237
+PN EP2023000237-A1; WO2023000237-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 17
+IP C25B-011/04
+PI PRIORITY000237 01 Jan 2022
+PD EP2023000237-A1 02 Jan 2023
+CP EP2023000236-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0238
+PN EP2023000238-A1; WO2023000238-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 18
+IP F28D-020/00
+PI PRIORITY000238 01 Jan 2022
+PD EP2023000238-A1 02 Jan 2023
+CP EP2023000237-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0239
+PN EP2023000239-A1; WO2023000239-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 19
+IP G01D-005/00
+PI PRIORITY000239 01 Jan 2022
+PD EP2023000239-A1 02 Jan 2023
+CP EP2023000238-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0240
+PN EP2023000240-A1; WO2023000240-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp;Research Institute 02
+AU Inventor 00
+IP H01M-010/056
+PI PRIORITY000240 01 Jan 2022
+PD EP2023000240-A1 02 Jan 2023
+CP EP2023000239-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0241
+PN EP2023000241-A1; WO2023000241-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 01
+IP B01D-053/22
+PI PRIORITY000241 01 Jan 2022
+PD EP2023000241-A1 02 Jan 2023
+CP EP2023000240-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0242
+PN EP2023000242-A1; WO2023000242-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 02
+IP H01L-031/021
+PI PRIORITY000242 01 Jan 2022
+PD EP2023000242-A1 02 Jan 2023
+CP EP2023000241-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0243
+PN EP2023000243-A1; WO2023000243-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 03
+IP C25B-011/04
+PI PRIORITY000243 01 Jan 2022
+PD EP2023000243-A1 02 Jan 2023
+CP EP2023000242-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0244
+PN EP2023000244-A1; WO2023000244-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 04
+IP F28D-020/00
+PI PRIORITY000244 01 Jan 2022
+PD EP2023000244-A1 02 Jan 2023
+CP EP2023000243-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0245
+PN EP2023000245-A1; WO2023000245-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp;Research Institute 00
+AU Inventor 05
+IP G01D-005/00
+PI PRIORITY000245 01 Jan 2022
+PD EP2023000245-A1 02 Jan 2023
+CP EP2023000244-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0246
+PN EP2023000246-A1; WO2023000246-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 06
+IP H01M-010/056
+PI PRIORITY000246 01 Jan 2022
+PD EP2023000246-A1 02 Jan 2023
+CP EP2023000245-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0247
+PN EP2023000247-A1; WO2023000247-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 07
+IP B01D-053/22
+PI PRIORITY000247 01 Jan 2022
+PD EP2023000247-A1 02 Jan 2023
+CP EP2023000246-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0248
+PN EP2023000248-A1; WO2023000248-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 08
+IP H01L-031/021
+PI PRIORITY000248 01 Jan 2022
+PD EP2023000248-A1 02 Jan 2023
+CP EP2023000247-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0249
+PN EP2023000249-A1; WO2023000249-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 09
+IP C25B-011/04
+PI PRIORITY000249 01 Jan 2022
+PD EP2023000249-A1 02 Jan 2023
+CP EP2023000248-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0250
+PN EP2024000250-A1; WO2024000250-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp;Research Institute 05
+AU Inventor 10
+IP F28D-020/00
+PI PRIORITY000250 01 Jan 2023
+PD EP2024000250-A1 02 Jan 2024
+CP EP2023000249-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0251
+PN EP2024000251-A1; WO2024000251-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 11
+IP G01D-005/00
+PI PRIORITY000251 01 Jan 2023
+PD EP2024000251-A1 02 Jan 2024
+CP EP2024000250-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0252
+PN EP2024000252-A1; WO2024000252-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 12
+IP H01M-010/056
+PI PRIORITY000252 01 Jan 2023
+PD EP2024000252-A1 02 Jan 2024
+CP EP2024000251-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0253
+PN EP2024000253-A1; WO2024000253-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 13
+IP B01D-053/22
+PI PRIORITY000253 01 Jan 2023
+PD EP2024000253-A1 02 Jan 2024
+CP EP2024000252-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0254
+PN EP2024000254-A1; WO2024000254-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 14
+IP H01L-031/021
+PI PRIORITY000254 01 Jan 2023
+PD EP2024000254-A1 02 Jan 2024
+CP EP2024000253-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0255
+PN EP2024000255-A1; WO2024000255-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp;Research Institute 03
+AU Inventor 15
+IP C25B-011/04
+PI PRIORITY000255 01 Jan 2023
+PD EP2024000255-A1 02 Jan 2024
+CP EP2024000254-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0256
+PN EP2024000256-A1; WO2024000256-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 16
+IP F28D-020/00
+PI PRIORITY000256 01 Jan 2023
+PD EP2024000256-A1 02 Jan 2024
+CP EP2024000255-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0257
+PN EP2024000257-A1; WO2024000257-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 17
+IP G01D-005/00
+PI PRIORITY000257 01 Jan 2023
+PD EP2024000257-A1 02 Jan 2024
+CP EP2024000256-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0258
+PN EP2024000258-A1; WO2024000258-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 18
+IP H01M-010/056
+PI PRIORITY000258 01 Jan 2023
+PD EP2024000258-A1 02 Jan 2024
+CP EP2024000257-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0259
+PN EP2024000259-A1; WO2024000259-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 19
+IP B01D-053/22
+PI PRIORITY000259 01 Jan 2023
+PD EP2024000259-A1 02 Jan 2024
+CP EP2024000258-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0260
+PN EP2024000260-A1; WO2024000260-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp;Research Institute 01
+AU Inventor 00
+IP H01L-031/021
+PI PRIORITY000260 01 Jan 2023
+PD EP2024000260-A1 02 Jan 2024
+CP EP2024000259-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0261
+PN EP2024000261-A1; WO2024000261-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 01
+IP C25B-011/04
+PI PRIORITY000261 01 Jan 2023
+PD EP2024000261-A1 02 Jan 2024
+CP EP2024000260-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0262
+PN EP2024000262-A1; WO2024000262-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 02
+IP F28D-020/00
+PI PRIORITY000262 01 Jan 2023
+PD EP2024000262-A1 02 Jan 2024
+CP EP2024000261-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0263
+PN EP2024000263-A1; WO2024000263-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 03
+IP G01D-005/00
+PI PRIORITY000263 01 Jan 2023
+PD EP2024000263-A1 02 Jan 2024
+CP EP2024000262-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0264
+PN EP2024000264-A1; WO2024000264-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 04
+IP H01M-010/056
+PI PRIORITY000264 01 Jan 2023
+PD EP2024000264-A1 02 Jan 2024
+CP EP2024000263-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0265
+PN EP2024000265-A1; WO2024000265-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp;Research Institute 06
+AU Inventor 05
+IP B01D-053/22
+PI PRIORITY000265 01 Jan 2023
+PD EP2024000265-A1 02 Jan 2024
+CP EP2024000264-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0266
+PN EP2024000266-A1; WO2024000266-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 06
+IP H01L-031/021
+PI PRIORITY000266 01 Jan 2023
+PD EP2024000266-A1 02 Jan 2024
+CP EP2024000265-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0267
+PN EP2024000267-A1; WO2024000267-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 07
+IP C25B-011/04
+PI PRIORITY000267 01 Jan 2023
+PD EP2024000267-A1 02 Jan 2024
+CP EP2024000266-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0268
+PN EP2024000268-A1; WO2024000268-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 08
+IP F28D-020/00
+PI PRIORITY000268 01 Jan 2023
+PD EP2024000268-A1 02 Jan 2024
+CP EP2024000267-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0269
+PN EP2024000269-A1; WO2024000269-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 09
+IP G01D-005/00
+PI PRIORITY000269 01 Jan 2023
+PD EP2024000269-A1 02 Jan 2024
+CP EP2024000268-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0270
+PN EP2024000270-A1; WO2024000270-A1
+TI Solid Electrolyte Battery apparatus generation 0
+AB NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp;Research Institute 04
+AU Inventor 10
+IP H01M-010/056
+PI PRIORITY000270 01 Jan 2023
+PD EP2024000270-A1 02 Jan 2024
+CP EP2024000269-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0271
+PN EP2024000271-A1; WO2024000271-A1
+TI Carbon Capture Membrane apparatus generation 1
+AB NOVELTY - improved carbon capture membrane structure generation 1. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 11
+IP B01D-053/22
+PI PRIORITY000271 01 Jan 2023
+PD EP2024000271-A1 02 Jan 2024
+CP EP2024000270-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0272
+PN EP2024000272-A1; WO2024000272-A1
+TI Photovoltaic Coating apparatus generation 2
+AB NOVELTY - improved photovoltaic coating structure generation 2. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 12
+IP H01L-031/021
+PI PRIORITY000272 01 Jan 2023
+PD EP2024000272-A1 02 Jan 2024
+CP EP2024000271-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0273
+PN EP2024000273-A1; WO2024000273-A1
+TI Hydrogen Catalyst apparatus generation 3
+AB NOVELTY - improved hydrogen catalyst structure generation 3. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 13
+IP C25B-011/04
+PI PRIORITY000273 01 Jan 2023
+PD EP2024000273-A1 02 Jan 2024
+CP EP2024000272-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0274
+PN EP2024000274-A1; WO2024000274-A1
+TI Thermal Management apparatus generation 4
+AB NOVELTY - improved thermal management structure generation 4. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 14
+IP F28D-020/00
+PI PRIORITY000274 01 Jan 2023
+PD EP2024000274-A1 02 Jan 2024
+CP EP2024000273-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0275
+PN EP2024000275-A1; WO2024000275-A1
+TI Robotic Sensor apparatus generation 5
+AB NOVELTY - improved robotic sensor structure generation 5. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp;Research Institute 02
+AU Inventor 15
+IP G01D-005/00
+PI PRIORITY000275 01 Jan 2023
+PD EP2024000275-A1 02 Jan 2024
+CP EP2024000274-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0276
+PN EP2024000276-A1; WO2024000276-A1
+TI Solid Electrolyte Battery apparatus generation 6
+AB NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 16
+IP H01M-010/056
+PI PRIORITY000276 01 Jan 2023
+PD EP2024000276-A1 02 Jan 2024
+CP EP2024000275-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0277
+PN EP2024000277-A1; WO2024000277-A1
+TI Carbon Capture Membrane apparatus generation 7
+AB NOVELTY - improved carbon capture membrane structure generation 7. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 17
+IP B01D-053/22
+PI PRIORITY000277 01 Jan 2023
+PD EP2024000277-A1 02 Jan 2024
+CP EP2024000276-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0278
+PN EP2024000278-A1; WO2024000278-A1
+TI Photovoltaic Coating apparatus generation 8
+AB NOVELTY - improved photovoltaic coating structure generation 8. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp
+AU Inventor 18
+IP H01L-031/021
+PI PRIORITY000278 01 Jan 2023
+PD EP2024000278-A1 02 Jan 2024
+CP EP2024000277-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0279
+PN EP2024000279-A1; WO2024000279-A1
+TI Hydrogen Catalyst apparatus generation 9
+AB NOVELTY - improved hydrogen catalyst structure generation 9. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 19
+IP C25B-011/04
+PI PRIORITY000279 01 Jan 2023
+PD EP2024000279-A1 02 Jan 2024
+CP EP2024000278-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0280
+PN EP2024000280-A1; WO2024000280-A1
+TI Thermal Management apparatus generation 0
+AB NOVELTY - improved thermal management structure generation 0. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp;Research Institute 00
+AU Inventor 00
+IP F28D-020/00
+PI PRIORITY000280 01 Jan 2023
+PD EP2024000280-A1 02 Jan 2024
+CP EP2024000279-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0281
+PN EP2024000281-A1; WO2024000281-A1
+TI Robotic Sensor apparatus generation 1
+AB NOVELTY - improved robotic sensor structure generation 1. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 01
+IP G01D-005/00
+PI PRIORITY000281 01 Jan 2023
+PD EP2024000281-A1 02 Jan 2024
+CP EP2024000280-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0282
+PN EP2024000282-A1; WO2024000282-A1
+TI Solid Electrolyte Battery apparatus generation 2
+AB NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 02
+IP H01M-010/056
+PI PRIORITY000282 01 Jan 2023
+PD EP2024000282-A1 02 Jan 2024
+CP EP2024000281-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0283
+PN EP2024000283-A1; WO2024000283-A1
+TI Carbon Capture Membrane apparatus generation 3
+AB NOVELTY - improved carbon capture membrane structure generation 3. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp
+AU Inventor 03
+IP B01D-053/22
+PI PRIORITY000283 01 Jan 2023
+PD EP2024000283-A1 02 Jan 2024
+CP EP2024000282-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0284
+PN EP2024000284-A1; WO2024000284-A1
+TI Photovoltaic Coating apparatus generation 4
+AB NOVELTY - improved photovoltaic coating structure generation 4. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 04
+IP H01L-031/021
+PI PRIORITY000284 01 Jan 2023
+PD EP2024000284-A1 02 Jan 2024
+CP EP2024000283-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0285
+PN EP2024000285-A1; WO2024000285-A1
+TI Hydrogen Catalyst apparatus generation 5
+AB NOVELTY - improved hydrogen catalyst structure generation 5. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp;Research Institute 05
+AU Inventor 05
+IP C25B-011/04
+PI PRIORITY000285 01 Jan 2023
+PD EP2024000285-A1 02 Jan 2024
+CP EP2024000284-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0286
+PN EP2024000286-A1; WO2024000286-A1
+TI Thermal Management apparatus generation 6
+AB NOVELTY - improved thermal management structure generation 6. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 06
+IP F28D-020/00
+PI PRIORITY000286 01 Jan 2023
+PD EP2024000286-A1 02 Jan 2024
+CP EP2024000285-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0287
+PN EP2024000287-A1; WO2024000287-A1
+TI Robotic Sensor apparatus generation 7
+AB NOVELTY - improved robotic sensor structure generation 7. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 07
+IP G01D-005/00
+PI PRIORITY000287 01 Jan 2023
+PD EP2024000287-A1 02 Jan 2024
+CP EP2024000286-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0288
+PN EP2024000288-A1; WO2024000288-A1
+TI Solid Electrolyte Battery apparatus generation 8
+AB NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 00 Corp
+AU Inventor 08
+IP H01M-010/056
+PI PRIORITY000288 01 Jan 2023
+PD EP2024000288-A1 02 Jan 2024
+CP EP2024000287-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0289
+PN EP2024000289-A1; WO2024000289-A1
+TI Carbon Capture Membrane apparatus generation 9
+AB NOVELTY - improved carbon capture membrane structure generation 9. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 01 Corp
+AU Inventor 09
+IP B01D-053/22
+PI PRIORITY000289 01 Jan 2023
+PD EP2024000289-A1 02 Jan 2024
+CP EP2024000288-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0290
+PN EP2024000290-A1; WO2024000290-A1
+TI Photovoltaic Coating apparatus generation 0
+AB NOVELTY - improved photovoltaic coating structure generation 0. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 02 Corp;Research Institute 03
+AU Inventor 10
+IP H01L-031/021
+PI PRIORITY000290 01 Jan 2023
+PD EP2024000290-A1 02 Jan 2024
+CP EP2024000289-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0291
+PN EP2024000291-A1; WO2024000291-A1
+TI Hydrogen Catalyst apparatus generation 1
+AB NOVELTY - improved hydrogen catalyst structure generation 1. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 03 Corp
+AU Inventor 11
+IP C25B-011/04
+PI PRIORITY000291 01 Jan 2023
+PD EP2024000291-A1 02 Jan 2024
+CP EP2024000290-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0292
+PN EP2024000292-A1; WO2024000292-A1
+TI Thermal Management apparatus generation 2
+AB NOVELTY - improved thermal management structure generation 2. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 04 Corp
+AU Inventor 12
+IP F28D-020/00
+PI PRIORITY000292 01 Jan 2023
+PD EP2024000292-A1 02 Jan 2024
+CP EP2024000291-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0293
+PN EP2024000293-A1; WO2024000293-A1
+TI Robotic Sensor apparatus generation 3
+AB NOVELTY - improved robotic sensor structure generation 3. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 05 Corp
+AU Inventor 13
+IP G01D-005/00
+PI PRIORITY000293 01 Jan 2023
+PD EP2024000293-A1 02 Jan 2024
+CP EP2024000292-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0294
+PN EP2024000294-A1; WO2024000294-A1
+TI Solid Electrolyte Battery apparatus generation 4
+AB NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 06 Corp
+AU Inventor 14
+IP H01M-010/056
+PI PRIORITY000294 01 Jan 2023
+PD EP2024000294-A1 02 Jan 2024
+CP EP2024000293-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0295
+PN EP2024000295-A1; WO2024000295-A1
+TI Carbon Capture Membrane apparatus generation 5
+AB NOVELTY - improved carbon capture membrane structure generation 5. USE - gas separation. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 07 Corp;Research Institute 01
+AU Inventor 15
+IP B01D-053/22
+PI PRIORITY000295 01 Jan 2023
+PD EP2024000295-A1 02 Jan 2024
+CP EP2024000294-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0296
+PN EP2024000296-A1; WO2024000296-A1
+TI Photovoltaic Coating apparatus generation 6
+AB NOVELTY - improved photovoltaic coating structure generation 6. USE - solar conversion. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 08 Corp
+AU Inventor 16
+IP H01L-031/021
+PI PRIORITY000296 01 Jan 2023
+PD EP2024000296-A1 02 Jan 2024
+CP EP2024000295-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0297
+PN EP2024000297-A1; WO2024000297-A1
+TI Hydrogen Catalyst apparatus generation 7
+AB NOVELTY - improved hydrogen catalyst structure generation 7. USE - water electrolysis. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 09 Corp
+AU Inventor 17
+IP C25B-011/04
+PI PRIORITY000297 01 Jan 2023
+PD EP2024000297-A1 02 Jan 2024
+CP EP2024000296-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0298
+PN EP2024000298-A1; WO2024000298-A1
+TI Thermal Management apparatus generation 8
+AB NOVELTY - improved thermal management structure generation 8. USE - heat transfer. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 10 Corp
+AU Inventor 18
+IP F28D-020/00
+PI PRIORITY000298 01 Jan 2023
+PD EP2024000298-A1 02 Jan 2024
+CP EP2024000297-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+PT P
+UT SYNTHETIC:0299
+PN EP2024000299-A1; WO2024000299-A1
+TI Robotic Sensor apparatus generation 9
+AB NOVELTY - improved robotic sensor structure generation 9. USE - precision measurement. ADVANTAGE - stable efficiency and reduced energy loss.
+AE Applicant 11 Corp
+AU Inventor 19
+IP G01D-005/00
+PI PRIORITY000299 01 Jan 2023
+PD EP2024000299-A1 02 Jan 2024
+CP EP2024000298-A1
+CR JOURNAL OF SYNTHETIC PATENTS 2018
+ER
+
+EF

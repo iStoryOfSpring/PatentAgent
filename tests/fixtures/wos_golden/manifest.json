@@ -1,0 +1,7 @@
+{
+  "dataset_id": "synthetic-wos-golden-v1",
+  "schema_version": 1,
+  "license": "CC0-1.0 synthetic test data",
+  "record_count": 300,
+  "generator": "scripts/generate_golden_wos_fixture.py"
+}

@@ -15,6 +15,10 @@ from typing import Any, Awaitable, Callable, Optional
 from uuid import uuid4
 
 from agent.llm import LLMClient, ChatResponse
+from agent.pipeline import (
+    AnswerSynthesizer, ExecutionPolicy, IntentParser, Planner,
+    ResultValidator, ToolExecutor,
+)
 from agent.final_answer import (
     normalize_final_answer,
     parse_canonical_final_answer,
@@ -30,6 +34,31 @@ from storage.datastore import PatentDataStore
 from tools.base import ToolRegistry
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_text_chunks(value: str, chunk_size: int) -> list[str]:
+    """Split large evidence without cutting an identifier/string token."""
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    chunks: list[str] = []
+    start = 0
+    token_char = lambda char: char.isalnum() or char in "_-.:/"
+    while start < len(value):
+        end = min(start + chunk_size, len(value))
+        if end < len(value) and token_char(value[end - 1]) and token_char(value[end]):
+            boundary = end
+            while boundary > start and token_char(value[boundary - 1]):
+                boundary -= 1
+            if boundary > start:
+                end = boundary
+            else:
+                boundary = end
+                while boundary < len(value) and token_char(value[boundary]):
+                    boundary += 1
+                end = boundary
+        chunks.append(value[start:end])
+        start = end
+    return chunks or [""]
 
 
 class AgentState(Enum):
@@ -104,6 +133,12 @@ class PatentAgentOrchestrator:
         self.state = AgentState.IDLE
         self.max_retries = 3
         self.enable_strategic_mode = True  # v2.0: enable cross-tool reasoning
+        self.intent_parser = IntentParser()
+        self.execution_policy = ExecutionPolicy()
+        self.planner = Planner(self._select_tools_with_llm)
+        self.tool_executor = ToolExecutor()
+        self.result_validator = ResultValidator()
+        self.answer_synthesizer = AnswerSynthesizer(self.result_validator)
 
     # ── 主入口 ──
     async def process_query(self,
@@ -135,24 +170,13 @@ class PatentAgentOrchestrator:
             session_status=final_status,
         )
 
-    def process_query_sync(self,
-                            user_message: str,
-                            session: Session,
-                            storage: PatentDataStore) -> AgentResponse:
-        """同步入口 — 用于 Streamlit 等同步环境。
-
-        与 process_query() 的区别：使用 chat_sync() 进行 LLM 调用，
-        避免每次调用都创建/销毁事件循环。整个流程只创建一次事件循环。
-        """
-        import asyncio
-        return asyncio.run(self.process_query(user_message, session, storage))
-
     async def stream_query(self, user_message: str, session: Session,
                            storage: PatentDataStore,
                            response_mode: str = "detailed",
                            historical_evidence: list[dict] | None = None,
                            turn_id: str | None = None,
-                           reuse_lookup: Callable[[str, dict, str], Awaitable[ToolExecution | None]] | None = None):
+                           reuse_lookup: Callable[[str, dict, str], Awaitable[ToolExecution | None]] | None = None,
+                           approval_granted: bool = False):
         """LLM chooses tools; local code validates/executes; LLM answers round two."""
         turn_id = turn_id or f"turn_{uuid4().hex}"
         historical_evidence = historical_evidence or []
@@ -164,13 +188,10 @@ class PatentAgentOrchestrator:
         session.tool_executions = []
         legacy_mode = False
         try:
-            plan = await self._select_tools_with_llm(
+            planner_context = self.intent_parser.context(
                 user_message, prior_messages, storage, historical_evidence,
-                allow_over_budget=any(
-                    token in user_message
-                    for token in ("确认执行", "同意执行", "按计划执行")
-                ),
             )
+            plan = await self.planner.plan(planner_context)
         except Exception:
             # Preserve extension/test subclasses which intentionally override the
             # old planning hooks; production instances never enter fixed chains.
@@ -181,6 +202,11 @@ class PatentAgentOrchestrator:
             plan = await self._plan_analysis(intent, storage, user_message)
             plan.decision_source = "legacy_extension"
             plan.decision_type = "analysis"
+
+        if approval_granted:
+            # The approval was already validated and persisted by the
+            # application layer. Do not ask the same budget question again.
+            plan.requires_confirmation = False
 
         yield {
             "type": "intent", "goal": user_message,
@@ -260,10 +286,10 @@ class PatentAgentOrchestrator:
                 await execution_queue.put(execution)
 
             # Normal production flow deliberately bypasses adaptive rule expansion.
-            executor = self._execute_plan if legacy_mode else self._execute_llm_plan
-            execution_task = asyncio.create_task(executor(
-                plan, storage, reuse_lookup=reuse_lookup,
-                on_execution=on_execution,
+            execution_task = asyncio.create_task(self.tool_executor.execute(
+                plan, storage, modern=self._execute_llm_plan,
+                legacy=self._execute_plan, legacy_mode=legacy_mode,
+                reuse_lookup=reuse_lookup, on_execution=on_execution,
             ))
             yielded_execution_ids: set[str] = set()
             try:
@@ -300,6 +326,7 @@ class PatentAgentOrchestrator:
             else "completed"
         )
         try:
+            self.answer_synthesizer.assert_validated(executions)
             if legacy_mode:
                 text = await self._synthesize(plan, executions, response_mode)
                 suggestions = []
@@ -599,8 +626,8 @@ class PatentAgentOrchestrator:
             if not steps:
                 repair = "The plan contained no executable analysis tool."
                 continue
-            needs_confirmation = (
-                (len(steps) > 4 or cost > 6) and not allow_over_budget
+            needs_confirmation = self.execution_policy.requires_confirmation(
+                len(steps), cost, approved=allow_over_budget,
             )
             return AnalysisPlan(
                 steps=steps, tool_calls=calls, cost_weight=cost,
@@ -695,7 +722,7 @@ class PatentAgentOrchestrator:
         if len(raw) <= 36000:
             analysis_payload: Any = payload
         else:
-            chunks = [raw[i:i + 12000] for i in range(0, len(raw), 12000)]
+            chunks = _safe_text_chunks(raw, 12000)
             extracted = []
             for index, chunk in enumerate(chunks, 1):
                 response = await self.llm.chat([{
@@ -1910,7 +1937,7 @@ class PatentAgentOrchestrator:
                 continue
             payload = execution.result.model_dump(exclude={"chart_html"})
             raw = json.dumps(payload, ensure_ascii=False, default=str)
-            chunks = [raw[i:i + chunk_size] for i in range(0, len(raw), chunk_size)] or ["{}"]
+            chunks = _safe_text_chunks(raw, chunk_size) or ["{}"]
             field_names = sorted(payload.keys())
             if len(raw) <= chunk_size * 3:
                 sections.append(

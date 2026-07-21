@@ -31,14 +31,21 @@ trap cleanup SIGINT SIGTERM
 
 # ── 检查依赖 ──
 echo -e "${BLUE}检查 Python 依赖...${NC}"
-python3 -c "import fastapi, uvicorn" 2>/dev/null || {
-    echo -e "${RED}缺少依赖: pip install fastapi uvicorn${NC}"
+if command -v uv >/dev/null 2>&1; then
+    PYTHON_RUN=(uv run --frozen python)
+elif [ -x "$SCRIPT_DIR/.venv/bin/python" ]; then
+    PYTHON_RUN=("$SCRIPT_DIR/.venv/bin/python")
+else
+    PYTHON_RUN=(python3)
+fi
+"${PYTHON_RUN[@]}" -c "import fastapi, uvicorn" 2>/dev/null || {
+    echo -e "${RED}缺少锁定环境，请先运行: uv sync --frozen --all-extras --group dev${NC}"
     exit 1
 }
 
 if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
     echo -e "${BLUE}安装前端依赖 (首次运行)...${NC}"
-    cd "$FRONTEND_DIR" && npm install --cache /tmp/npm-cache 2>/dev/null
+    cd "$FRONTEND_DIR" && npm ci --cache /tmp/npm-cache 2>/dev/null
 fi
 
 # ── 启动后端 ──
@@ -57,7 +64,7 @@ if lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
         exit 1
     fi
 else
-    MCP_INPUT_DIR="$DATA_DIR" PATENT_DATA_ROOT="$DATA_DIR" python3 -m uvicorn server:app --host 127.0.0.1 --port 8000 &
+    MCP_INPUT_DIR="$DATA_DIR" PATENT_DATA_ROOT="$DATA_DIR" "${PYTHON_RUN[@]}" -m uvicorn server:app --host 127.0.0.1 --port 8000 &
     BACKEND_PID=$!
     sleep 2
 

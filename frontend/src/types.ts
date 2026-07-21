@@ -10,6 +10,70 @@ export interface HealthResponse {
   connected_profile?: Pick<ProviderProfile, "id" | "name" | "protocol" | "model"> | null;
   credential_loaded?: boolean;
   llm_capabilities?: Record<string, unknown>;
+  active_generations?: number;
+  trace_id?: string;
+  dataset_snapshot?: DatasetVersion | null;
+}
+
+export interface DatasetVersion {
+  dataset_id: string;
+  version_id: string;
+  content_hash: string;
+  schema_version: string;
+  sources: string[];
+  record_count: number;
+  field_coverage: Record<string, number>;
+  created_at?: string;
+}
+
+export type TaskState =
+  | "created" | "planning" | "planned" | "waiting_approval" | "running"
+  | "validating" | "synthesizing" | "completed" | "partial" | "failed"
+  | "cancelled" | "interrupted" | "awaiting_clarification";
+
+export interface ErrorInfo {
+  category: "data_insufficient" | "input_validation" | "algorithm_failure"
+    | "provider_failure" | "synthesis_failure" | "system_failure";
+  message: string;
+  recoverable: boolean;
+  details?: Record<string, unknown>;
+}
+
+export interface ExecutionMetrics {
+  duration_ms: number;
+  cache_hit: boolean;
+  retry_count: number;
+}
+
+export interface ToolProvenance {
+  dataset_id: string;
+  dataset_version_id: string;
+  dataset_content_hash: string;
+  input_count: number;
+  analyzed_count: number;
+  sampled: boolean;
+  sampling_strategy: string | null;
+  missing_field_rates: Record<string, number>;
+  algorithm: string;
+  algorithm_version: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface AgentTask extends Record<string, unknown> {
+  id: string;
+  session_id: string;
+  status: TaskState;
+  trace_id?: string;
+  cancel_requested?: boolean;
+  error_category?: ErrorInfo["category"];
+}
+
+export interface TaskEvent {
+  id: number;
+  task_id: string;
+  event_type: string;
+  payload: SSEEvent | Record<string, unknown>;
+  created_at: string;
 }
 
 export interface DataSummary {
@@ -45,6 +109,7 @@ export interface Tool {
     reason?: string;
     field_coverage?: Record<string, number>;
   };
+  definition?: Record<string, unknown>;
 }
 
 export interface ToolResult {
@@ -55,6 +120,8 @@ export interface ToolResult {
   data_quality: Record<string, unknown>;
   warnings: string[];
   result_metadata: Record<string, unknown>;
+  provenance?: ToolProvenance;
+  metrics?: ExecutionMetrics;
   [key: string]: unknown;  // type-specific fields
 }
 
@@ -105,6 +172,9 @@ export interface ProviderProfile extends ProviderProfileInput {
   credential_loaded: boolean;
   connected: boolean;
   needs_reconnect: boolean;
+  probe_status: "not_tested" | "passed" | "failed";
+  probe_error_category: string;
+  last_probe_at: string;
   created_at: string;
   updated_at: string;
 }
@@ -115,12 +185,14 @@ export interface ProviderCredentials {
 }
 
 export interface ProviderProbeResult {
-  status: "passed" | "connected";
+  status: "passed" | "connected" | "failed";
   profile?: ProviderProfile;
   model?: string;
   latency_ms?: number;
   stages?: Record<string, { status: string; latency_ms?: number }>;
-  capabilities: Record<string, unknown>;
+  capabilities?: Record<string, unknown>;
+  error_category?: string;
+  message?: string;
 }
 
 export interface FollowupSuggestion {
@@ -159,6 +231,8 @@ export interface StoredExecution {
   error?: string;
   duration_ms?: number;
   stale?: boolean;
+  provenance?: ToolProvenance;
+  metrics?: ExecutionMetrics;
 }
 
 export interface SessionDetail {

@@ -10,6 +10,7 @@ from typing import Any, Optional
 import pandas as pd
 
 from engine.preprocessing import prepare_patent_df
+from patent_agent.domain import DatasetSnapshot
 
 # v2.2: Known field mapping — DataFrame columns → FullPatent field names
 _FIELD_MAP = {
@@ -341,6 +342,25 @@ class PatentDataStore:
             digest.update(value.encode("utf-8", errors="ignore"))
             digest.update(b"\0")
         return digest.hexdigest()
+
+    def snapshot(self) -> DatasetSnapshot:
+        """Return the versioned logical identity consumed by tool provenance."""
+        content_hash = self.dataset_fingerprint()
+        dataset_key = hashlib.sha256(
+            f"{self.adapter_name or 'unknown'}\0{self._source_dir}".encode(
+                "utf-8", errors="ignore",
+            )
+        ).hexdigest()[:24]
+        audit = self.audit()
+        return DatasetSnapshot(
+            dataset_id=f"dataset_{dataset_key}",
+            version_id=f"version_{content_hash[:24]}",
+            content_hash=content_hash,
+            adapter=self.adapter_name or "unknown",
+            sources=[self._source_dir] if self._source_dir else [],
+            record_count=len(self._df),
+            field_coverage=audit.get("field_coverage", {}),
+        )
 
     # ── 元数据 ──
     def get_summary(self) -> DatasetSummary:

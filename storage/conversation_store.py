@@ -42,7 +42,7 @@ def execution_cache_key(
 class ConversationStore:
     """Small aiosqlite repository with explicit, versioned schema."""
 
-    SCHEMA_VERSION = 3
+    SCHEMA_VERSION = 4
 
     def __init__(self, db_path: str | Path):
         self.db_path = Path(db_path)
@@ -79,6 +79,11 @@ class ConversationStore:
                     provider_profile_id TEXT NOT NULL DEFAULT '',
                     provider_name TEXT NOT NULL DEFAULT '',
                     provider_protocol TEXT NOT NULL DEFAULT '',
+                    dataset_version_id TEXT NOT NULL DEFAULT '',
+                    trace_id TEXT NOT NULL DEFAULT '',
+                    state_version INTEGER NOT NULL DEFAULT 0,
+                    error_category TEXT NOT NULL DEFAULT '',
+                    cancel_requested INTEGER NOT NULL DEFAULT 0,
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 );
@@ -104,6 +109,8 @@ class ConversationStore:
                     cache_key TEXT NOT NULL DEFAULT '',
                     provider_tool_call_id TEXT NOT NULL DEFAULT '',
                     validation_json TEXT NOT NULL DEFAULT '{}',
+                    provenance_json TEXT NOT NULL DEFAULT '{}',
+                    metrics_json TEXT NOT NULL DEFAULT '{}',
                     created_at TEXT NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS evidence_snapshots (
@@ -114,10 +121,64 @@ class ConversationStore:
                     stale INTEGER NOT NULL DEFAULT 0,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS datasets (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    source_root TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS dataset_versions (
+                    id TEXT PRIMARY KEY,
+                    dataset_id TEXT NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
+                    content_hash TEXT NOT NULL,
+                    schema_version INTEGER NOT NULL DEFAULT 1,
+                    adapter TEXT NOT NULL DEFAULT '',
+                    record_count INTEGER NOT NULL DEFAULT 0,
+                    field_coverage_json TEXT NOT NULL DEFAULT '{}',
+                    sources_json TEXT NOT NULL DEFAULT '[]',
+                    created_at TEXT NOT NULL,
+                    UNIQUE(dataset_id, content_hash)
+                );
+                CREATE TABLE IF NOT EXISTS imports (
+                    id TEXT PRIMARY KEY,
+                    dataset_version_id TEXT REFERENCES dataset_versions(id) ON DELETE SET NULL,
+                    status TEXT NOT NULL,
+                    source_path TEXT NOT NULL DEFAULT '',
+                    error_category TEXT NOT NULL DEFAULT '',
+                    error TEXT NOT NULL DEFAULT '',
+                    metrics_json TEXT NOT NULL DEFAULT '{}',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS approvals (
+                    id TEXT PRIMARY KEY,
+                    turn_id TEXT NOT NULL REFERENCES turns(id) ON DELETE CASCADE,
+                    decision TEXT NOT NULL,
+                    payload_json TEXT NOT NULL DEFAULT '{}',
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS reports (
+                    id TEXT PRIMARY KEY,
+                    session_id TEXT REFERENCES sessions(id) ON DELETE SET NULL,
+                    turn_id TEXT REFERENCES turns(id) ON DELETE SET NULL,
+                    title TEXT NOT NULL,
+                    format TEXT NOT NULL DEFAULT 'html',
+                    content_text TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS task_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    turn_id TEXT NOT NULL REFERENCES turns(id) ON DELETE CASCADE,
+                    event_type TEXT NOT NULL,
+                    payload_json TEXT NOT NULL DEFAULT '{}',
+                    created_at TEXT NOT NULL
+                );
                 CREATE INDEX IF NOT EXISTS idx_turns_session ON turns(session_id, created_at);
                 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, id);
                 CREATE INDEX IF NOT EXISTS idx_exec_session ON tool_executions(session_id, created_at);
                 CREATE INDEX IF NOT EXISTS idx_exec_cache ON tool_executions(cache_key);
+                CREATE INDEX IF NOT EXISTS idx_task_events_turn ON task_events(turn_id,id);
                 """
             )
             # Idempotent migration for databases created before provider-aware
@@ -141,6 +202,15 @@ class ConversationStore:
                 await db.execute(
                     "ALTER TABLE turns ADD COLUMN provider_protocol TEXT NOT NULL DEFAULT ''"
                 )
+            for column, ddl in {
+                "dataset_version_id": "TEXT NOT NULL DEFAULT ''",
+                "trace_id": "TEXT NOT NULL DEFAULT ''",
+                "state_version": "INTEGER NOT NULL DEFAULT 0",
+                "error_category": "TEXT NOT NULL DEFAULT ''",
+                "cancel_requested": "INTEGER NOT NULL DEFAULT 0",
+            }.items():
+                if column not in turn_columns:
+                    await db.execute(f"ALTER TABLE turns ADD COLUMN {column} {ddl}")
             execution_columns = {
                 row[1] for row in await db.execute_fetchall("PRAGMA table_info(tool_executions)")
             }
@@ -151,6 +221,14 @@ class ConversationStore:
             if "validation_json" not in execution_columns:
                 await db.execute(
                     "ALTER TABLE tool_executions ADD COLUMN validation_json TEXT NOT NULL DEFAULT '{}'"
+                )
+            if "provenance_json" not in execution_columns:
+                await db.execute(
+                    "ALTER TABLE tool_executions ADD COLUMN provenance_json TEXT NOT NULL DEFAULT '{}'"
+                )
+            if "metrics_json" not in execution_columns:
+                await db.execute(
+                    "ALTER TABLE tool_executions ADD COLUMN metrics_json TEXT NOT NULL DEFAULT '{}'"
                 )
             await db.execute(f"PRAGMA user_version={self.SCHEMA_VERSION}")
             await db.commit()
@@ -244,6 +322,7 @@ class ConversationStore:
         turn_id: str | None = None, provider: str = "", model: str = "",
         provider_profile_id: str = "", provider_name: str = "",
         provider_protocol: str = "",
+        dataset_version_id: str = "", trace_id: str = "",
     ) -> str:
         turn_id = turn_id or f"turn_{uuid4().hex}"
         now = _now()
@@ -252,10 +331,12 @@ class ConversationStore:
             await db.execute(
                 "INSERT INTO turns (id,session_id,origin,user_message,response_mode,status,"
                 "provider,model,provider_profile_id,provider_name,provider_protocol,"
-                "created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "dataset_version_id,trace_id,created_at,updated_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (turn_id, session_id, origin, user_message, response_mode,
-                 "understanding", provider, model, provider_profile_id,
-                 provider_name, provider_protocol, now, now),
+                 "created", provider, model, provider_profile_id,
+                 provider_name, provider_protocol, dataset_version_id, trace_id,
+                 now, now),
             )
             if user_message:
                 await db.execute(
@@ -275,6 +356,8 @@ class ConversationStore:
             "status", "intent_json", "plan_json", "final_text", "error",
             "pending_question_json", "provider", "model",
             "provider_profile_id", "provider_name", "provider_protocol",
+            "dataset_version_id", "trace_id", "error_category",
+            "cancel_requested",
         }
         clean = {key: value for key, value in values.items() if key in columns}
         if not clean:
@@ -286,7 +369,7 @@ class ConversationStore:
         assignments = ",".join(f"{key}=?" for key in clean)
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
-                f"UPDATE turns SET {assignments} WHERE id=?",
+                f"UPDATE turns SET {assignments},state_version=state_version+1 WHERE id=?",
                 (*clean.values(), turn_id),
             )
             await db.commit()
@@ -295,13 +378,16 @@ class ConversationStore:
         self, session_id: str, turn_id: str, final_text: str,
         status: str = "completed", error: str = "",
         metadata: dict[str, Any] | None = None,
+        error_category: str = "",
     ) -> None:
         now = _now()
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA foreign_keys=ON")
             await db.execute(
-                "UPDATE turns SET status=?,final_text=?,error=?,updated_at=? WHERE id=?",
-                (status, final_text, error, now, turn_id),
+                "UPDATE turns SET status=?,final_text=?,error=?,error_category=?,"
+                "updated_at=?,state_version=state_version+1 WHERE id=?",
+                (status, final_text, error,
+                 error_category or ("system_failure" if error else ""), now, turn_id),
             )
             if final_text:
                 await db.execute(
@@ -340,6 +426,8 @@ class ConversationStore:
         dataset_fingerprint: str = "", coverage: dict[str, Any] | None = None,
         provider_tool_call_id: str = "",
         validation: dict[str, Any] | None = None,
+        provenance: dict[str, Any] | None = None,
+        metrics: dict[str, Any] | None = None,
     ) -> str:
         cache_key = execution_cache_key(
             dataset_fingerprint, tool_name, parameters, algorithm_version,
@@ -351,11 +439,13 @@ class ConversationStore:
             await db.execute(
                 "INSERT OR REPLACE INTO tool_executions "
                 "(id,session_id,turn_id,tool_name,parameters_json,status,error,duration_ms,"
-                "algorithm_version,cache_key,provider_tool_call_id,validation_json,created_at) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "algorithm_version,cache_key,provider_tool_call_id,validation_json,"
+                "provenance_json,metrics_json,created_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (execution_id, session_id, turn_id, tool_name, _json(parameters),
                  status, error, duration_ms, algorithm_version, cache_key,
-                 provider_tool_call_id, _json(validation or {}), _now()),
+                 provider_tool_call_id, _json(validation or {}),
+                 _json(provenance or {}), _json(metrics or {}), _now()),
             )
             await db.execute(
                 "INSERT OR REPLACE INTO evidence_snapshots "
@@ -364,6 +454,125 @@ class ConversationStore:
             )
             await db.commit()
         return cache_key
+
+    async def mark_inflight_interrupted(self) -> int:
+        """Make process crashes explicit without replaying an LLM request."""
+        inflight = (
+            "created", "planning", "planned", "running", "executing",
+            "validating", "synthesizing",
+        )
+        async with aiosqlite.connect(self.db_path) as db:
+            placeholders = ",".join("?" for _ in inflight)
+            cursor = await db.execute(
+                f"UPDATE turns SET status='interrupted',error_category='system_failure',"
+                f"updated_at=?,state_version=state_version+1 WHERE status IN ({placeholders})",
+                (_now(), *inflight),
+            )
+            await db.execute(
+                "UPDATE sessions SET status='interrupted',updated_at=? WHERE status IN "
+                "('executing','running','planning','synthesizing')",
+                (_now(),),
+            )
+            await db.commit()
+            return cursor.rowcount
+
+    async def request_cancel(self, turn_id: str) -> dict[str, Any]:
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                "UPDATE turns SET cancel_requested=1,updated_at=?,"
+                "state_version=state_version+1 WHERE id=? AND status NOT IN "
+                "('completed','failed','cancelled')",
+                (_now(), turn_id),
+            )
+            await db.commit()
+            if cursor.rowcount == 0:
+                existing = await self.get_turn(turn_id)
+                if not existing:
+                    raise KeyError(turn_id)
+        return await self.get_turn(turn_id)
+
+    async def append_task_event(self, turn_id: str, payload: dict[str, Any]) -> int:
+        clean = dict(payload)
+        clean.pop("reasoning_content", None)
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                "INSERT INTO task_events(turn_id,event_type,payload_json,created_at) "
+                "VALUES(?,?,?,?)",
+                (turn_id, str(clean.get("type", "event")), _json(clean), _now()),
+            )
+            await db.commit()
+            return int(cursor.lastrowid)
+
+    async def list_task_events(
+        self, turn_id: str, after_id: int = 0, limit: int = 500,
+    ) -> list[dict[str, Any]]:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            rows = await db.execute_fetchall(
+                "SELECT * FROM task_events WHERE turn_id=? AND id>? "
+                "ORDER BY id LIMIT ?",
+                (turn_id, after_id, limit),
+            )
+        return [self._decode_row(row) for row in rows]
+
+    async def list_dataset_versions(self) -> list[dict[str, Any]]:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            rows = await db.execute_fetchall(
+                "SELECT v.*,d.name,d.source_root FROM dataset_versions v "
+                "JOIN datasets d ON d.id=v.dataset_id ORDER BY v.created_at DESC"
+            )
+        return [self._decode_row(row) for row in rows]
+
+    async def upsert_dataset_snapshot(self, snapshot: dict[str, Any]) -> None:
+        now = _now()
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("PRAGMA foreign_keys=ON")
+            await db.execute(
+                "INSERT INTO datasets(id,name,source_root,created_at,updated_at) "
+                "VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
+                "name=excluded.name,source_root=excluded.source_root,updated_at=excluded.updated_at",
+                (snapshot["dataset_id"], snapshot.get("name") or snapshot["dataset_id"],
+                 (snapshot.get("sources") or [""])[0], now, now),
+            )
+            await db.execute(
+                "INSERT OR IGNORE INTO dataset_versions "
+                "(id,dataset_id,content_hash,schema_version,adapter,record_count,"
+                "field_coverage_json,sources_json,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+                (snapshot["version_id"], snapshot["dataset_id"], snapshot["content_hash"],
+                 snapshot.get("schema_version", 1), snapshot.get("adapter", ""),
+                 snapshot.get("record_count", 0), _json(snapshot.get("field_coverage", {})),
+                 _json(snapshot.get("sources", [])), now),
+            )
+            await db.commit()
+
+    async def record_approval(
+        self, turn_id: str, decision: str, payload: dict[str, Any] | None = None,
+    ) -> str:
+        approval_id = f"approval_{uuid4().hex}"
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                "INSERT INTO approvals(id,turn_id,decision,payload_json,created_at) "
+                "VALUES(?,?,?,?,?)",
+                (approval_id, turn_id, decision, _json(payload or {}), _now()),
+            )
+            await db.commit()
+        return approval_id
+
+    async def save_report(
+        self, title: str, content: str, session_id: str | None = None,
+        turn_id: str | None = None, report_format: str = "html",
+    ) -> str:
+        report_id = f"report_{uuid4().hex}"
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("PRAGMA foreign_keys=ON")
+            await db.execute(
+                "INSERT INTO reports(id,session_id,turn_id,title,format,content_text,created_at) "
+                "VALUES(?,?,?,?,?,?,?)",
+                (report_id, session_id, turn_id, title, report_format, content, _now()),
+            )
+            await db.commit()
+        return report_id
 
     async def get_session_detail(self, session_id: str) -> dict[str, Any]:
         session = await self.get_session(session_id)

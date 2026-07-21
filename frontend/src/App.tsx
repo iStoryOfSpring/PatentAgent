@@ -8,13 +8,17 @@ import {
 import { MessageBubble } from "./components/MessageBubble";
 import { LLMAdvancedSettings } from "./components/LLMAdvancedSettings";
 import {
-  fetchHealth, fetchDataSummary, loadData,
+  fetchHealth, loadData,
   runTool, streamChat, exportReport, fetchTools,
   createSession, fetchSessions, fetchSession, renameSession, deleteSession,
   resynthesizeTurn, fetchProviderProfiles, disconnectLLM,
 } from "./api";
 import type { Message, DataSummary, ToolStep, Tool, SessionSummary, SessionDetail, ProviderProfile } from "./types";
 import { normalizeAssistantContent } from "./finalAnswer";
+import { useMessageState } from "./features/agent/useMessageState";
+import { useDataSummaryQuery } from "./features/datasets/queries";
+import { useHealthQuery, useProviderProfilesQuery } from "./features/providers/queries";
+import { useToolsQuery } from "./features/tools/queries";
 
 // ── Quick tools ──
 const TOOL_META: Record<string, { label: string; icon: typeof Database }> = {
@@ -99,6 +103,11 @@ function messagesFromSession(detail: SessionDetail): Message[] {
 }
 
 export default function App() {
+  const healthQuery = useHealthQuery();
+  const toolsQuery = useToolsQuery(healthQuery.isSuccess);
+  const profilesQuery = useProviderProfilesQuery(healthQuery.isSuccess);
+  const summaryQuery = useDataSummaryQuery((healthQuery.data?.patents_loaded || 0) > 0);
+
   // ── State ──
   const [dataSummary, setDataSummary] = useState<DataSummary | null>(null);
   const [dirInput, setDirInput] = useState("./my_patents");
@@ -121,7 +130,7 @@ export default function App() {
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Chat
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useMessageState([
     {
       id: "welcome",
       role: "assistant",
@@ -140,27 +149,28 @@ export default function App() {
 
   // ── Auto-load on mount ──
   useEffect(() => {
-    fetchHealth().then(h => {
-      console.log("[PatentAgent] Backend online:", h);
+    if (healthQuery.data) {
       setBackendOnline(true);
-      setLlmConfigured(h.agent_configured);
-      setConnectedProfileId(h.connected_profile?.id || "");
-      setConnectedSnapshot(h.connected_profile || null);
-      fetchProviderProfiles().then(result => setProviderProfiles(result.profiles)).catch(() => undefined);
-      fetchTools().then(r => setAvailableTools(r.tools)).catch(() => undefined);
-      if (h.patents_loaded > 0) {
-        fetchDataSummary().then(d => {
-          console.log("[PatentAgent] Data loaded:", d.total_patents, "patents");
-          setDataSummary(d);
-        }).catch(e => {
-          console.error("[PatentAgent] Data summary failed:", e);
-        });
-      }
-    }).catch(e => {
-      console.error("[PatentAgent] Backend unreachable:", e);
+      setLlmConfigured(healthQuery.data.agent_configured);
+      setConnectedProfileId(healthQuery.data.connected_profile?.id || "");
+      setConnectedSnapshot(healthQuery.data.connected_profile || null);
+    } else if (healthQuery.isError) {
       setBackendOnline(false);
-    });
-  }, []);
+    }
+  }, [healthQuery.data, healthQuery.isError]);
+
+  useEffect(() => {
+    if (profilesQuery.data) setProviderProfiles(profilesQuery.data.profiles);
+  }, [profilesQuery.data]);
+
+  useEffect(() => {
+    if (toolsQuery.data) setAvailableTools(toolsQuery.data.tools);
+  }, [toolsQuery.data]);
+
+  useEffect(() => {
+    if (summaryQuery.data) setDataSummary(summaryQuery.data);
+    if (summaryQuery.isError) setError("数据摘要加载失败: " + (summaryQuery.error as Error).message);
+  }, [summaryQuery.data, summaryQuery.error, summaryQuery.isError]);
 
   useEffect(() => {
     if (sessionInitializationStartedRef.current) return;
@@ -267,8 +277,7 @@ export default function App() {
 
   // ── LLM config ──
   const selectedProfile = providerProfiles.find(profile => profile.selected)
-    || providerProfiles.find(profile => profile.id === connectedProfileId)
-    || providerProfiles[0];
+    || providerProfiles.find(profile => profile.id === connectedProfileId);
 
   const handleDisconnectLLM = async () => {
     if (isStreaming || !llmConfigured) return;
@@ -707,15 +716,15 @@ export default function App() {
             </h2>
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <div className="flex items-start gap-2">
-                <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${llmConfigured ? "bg-emerald-500" : selectedProfile?.needs_reconnect ? "bg-amber-500" : "bg-slate-300"}`} />
+                <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${llmConfigured ? "bg-emerald-500" : selectedProfile?.probe_status === "failed" ? "bg-rose-500" : selectedProfile?.needs_reconnect ? "bg-amber-500" : "bg-slate-300"}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-slate-800 truncate">{connectedSnapshot?.name || selectedProfile?.name || "尚未配置供应商"}</span>
                     {(connectedSnapshot?.protocol || selectedProfile?.protocol) && <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">{(connectedSnapshot?.protocol || selectedProfile?.protocol)?.replace("_chat", "").replace("_messages", "")}</span>}
                   </div>
                   <div className="text-[11px] text-slate-500 truncate mt-0.5">{connectedSnapshot?.model || selectedProfile?.model || "请打开高级设置新增配置"}</div>
-                  <div className={`text-[10px] mt-1 ${llmConfigured ? "text-emerald-600" : selectedProfile?.credential_loaded ? "text-amber-600" : "text-slate-400"}`}>
-                    {llmConfigured ? "已连接，工具调用能力已验证" : selectedProfile?.needs_reconnect ? "配置已修改，需要重新连接" : selectedProfile?.credential_loaded || selectedProfile?.auth_mode === "none" ? "尚未连接" : "待输入凭证"}
+                  <div className={`text-[10px] mt-1 ${llmConfigured ? "text-emerald-600" : selectedProfile?.probe_status === "failed" ? "text-rose-600" : selectedProfile?.credential_loaded ? "text-amber-600" : "text-slate-400"}`}>
+                    {llmConfigured ? "已连接，工具调用能力已验证" : selectedProfile?.needs_reconnect ? "配置已修改，需要重新连接" : selectedProfile?.probe_status === "failed" ? `探测失败${selectedProfile.probe_error_category ? ` · ${selectedProfile.probe_error_category}` : ""}` : selectedProfile?.credential_loaded || selectedProfile?.auth_mode === "none" ? "尚未连接" : "待输入凭证"}
                   </div>
                 </div>
                 {selectedProfile?.website_url && <a href={selectedProfile.website_url} target="_blank" rel="noopener noreferrer" className="p-1 text-slate-400 hover:text-blue-600" title="访问供应商官网"><ExternalLink className="w-3.5 h-3.5" /></a>}

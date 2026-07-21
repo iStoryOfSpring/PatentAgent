@@ -306,7 +306,7 @@ class InMemoryVectorStore:
             if not m.get("is_deleted", False)
         ]
         valid_scores = [(i, scores[i]) for i in valid_idx]
-        valid_scores.sort(key=lambda x: x[1], reverse=True)
+        valid_scores.sort(key=lambda item: (-float(item[1]), self._ids[item[0]]))
 
         summaries = []
         for idx, score in valid_scores[:top_k]:
@@ -333,7 +333,7 @@ class InMemoryVectorStore:
         )
         scored = [(i, float(scores[i])) for i in range(len(self._ids))
                   if i != idx and not self._metadatas[i].get("is_deleted", False)]
-        scored.sort(key=lambda x: x[1], reverse=True)
+        scored.sort(key=lambda item: (-float(item[1]), self._ids[item[0]]))
 
         summaries = []
         for i, score in scored[:top_k]:

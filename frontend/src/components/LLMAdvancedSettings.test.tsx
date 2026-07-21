@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ProviderProfile } from "../types";
+import { createProviderProfile, discoverProviderModels } from "../api";
 import { LLMAdvancedSettings } from "./LLMAdvancedSettings";
 
 vi.mock("../api", () => ({
@@ -22,6 +23,7 @@ const profile: ProviderProfile = {
   temperature: null, reasoning_effort: "default", thinking_mode: "auto",
   model_discovery_path: "/models", extra_headers: [], extra_body: {}, credential_loaded: true,
   connected: false, needs_reconnect: false, created_at: "", updated_at: "",
+  probe_status: "not_tested", probe_error_category: "", last_probe_at: "",
 };
 
 describe("LLMAdvancedSettings", () => {
@@ -54,5 +56,25 @@ describe("LLMAdvancedSettings", () => {
     const editor = screen.getByDisplayValue("{}") as HTMLTextAreaElement;
     fireEvent.change(editor, { target: { value: '{"messages":[]}' } });
     expect(screen.getByText(/保留字段不能覆盖: messages/)).toBeTruthy();
+  });
+
+  it("can save an incomplete vLLM profile to discover models before choosing one", async () => {
+    const saved = {
+      ...profile, id: "provider-vllm", name: "本地 vLLM", model: "",
+      base_url: "http://localhost:8001/v1", auth_mode: "none" as const,
+      credential_loaded: true,
+    };
+    vi.mocked(createProviderProfile).mockResolvedValue(saved);
+    vi.mocked(discoverProviderModels).mockResolvedValue({
+      models: ["Qwen/Qwen3-32B"], latency_ms: 12, manual_entry_allowed: true,
+    });
+    render(<LLMAdvancedSettings open profiles={[]} isStreaming={false} onClose={vi.fn()} onRefresh={async () => [saved]} onConnected={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: "vLLM" }));
+    fireEvent.click(screen.getByRole("button", { name: /获取模型/ }));
+    await waitFor(() => expect(discoverProviderModels).toHaveBeenCalledWith(
+      "provider-vllm", { api_key: "", sensitive_headers: {} },
+    ));
+    expect(screen.getByRole("combobox", { name: "已发现模型" })).toBeTruthy();
+    expect(screen.getByText("Qwen/Qwen3-32B")).toBeTruthy();
   });
 });

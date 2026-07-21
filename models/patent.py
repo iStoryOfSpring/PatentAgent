@@ -1,6 +1,35 @@
-"""Pydantic 数据模型: FullPatent, Claim, Citation, PatentSummary"""
+"""Versioned canonical patent-domain models."""
+
+from typing import Literal
 
 from pydantic import BaseModel, Field
+
+
+class Party(BaseModel):
+    name: str
+    normalized_name: str = ""
+    country: str = ""
+
+
+class Classification(BaseModel):
+    scheme: Literal["IPC", "CPC", "OTHER"] = "IPC"
+    code: str
+    level: str = ""
+
+
+class DataSource(BaseModel):
+    adapter: str
+    source_name: str = ""
+    source_uri: str = ""
+    license_note: str = ""
+
+
+class RecordProvenance(BaseModel):
+    source: DataSource
+    source_record_id: str = ""
+    source_file: str = ""
+    imported_at: str = ""
+    raw_record_hash: str = ""
 
 
 class Claim(BaseModel):
@@ -17,11 +46,16 @@ class Citation(BaseModel):
     citation_type: str  # 'forward' | 'backward'
     cited_by: str | None = None
     cites: str | None = None
+    source_publication_number: str = ""
+    target_publication_number: str = ""
+    source: str = ""
 
 
 class FullPatent(BaseModel):
-    """完整专利数据模型（Phase 3 实现全字段解析）"""
+    """Canonical patent record v2 with legacy flat-field compatibility."""
+    schema_version: int = 2
     patent_number: str
+    application_number: str = ""
     source_record_id: str = ""
     publication_numbers: list[str] = Field(default_factory=list)
     title: str
@@ -43,6 +77,15 @@ class FullPatent(BaseModel):
     legal_status: str = ""
     source_file: str = ""
     imported_at: str = ""
+    applicant_parties: list[Party] = Field(default_factory=list)
+    inventor_parties: list[Party] = Field(default_factory=list)
+    classifications: list[Classification] = Field(default_factory=list)
+    citation_records: list[Citation] = Field(default_factory=list)
+    provenance: RecordProvenance | None = None
+
+
+# New code should use PatentRecord; FullPatent remains a compatible public name.
+PatentRecord = FullPatent
 
 
 class FamilyInfo(BaseModel):

@@ -1,7 +1,11 @@
 {
   "name": "patentagent-frontend",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.1.0",
+  "contributors": [
+    "Wu Jinhong",
+    "Chen Siyu"
+  ],
   "license": "AGPL-3.0",
   "type": "module",
   "scripts": {
@@ -10,6 +14,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.4",
     "echarts": "^6.1.0",
     "lucide-react": "^0.400.0",
     "react": "^19.0.0",

@@ -3,9 +3,26 @@ import type {
   HealthResponse, DataSummary, Tool, ToolResult, LLMConfig, SSEEvent,
   SessionSummary, SessionDetail,
   ProviderCredentials, ProviderProfile, ProviderProfileInput, ProviderProbeResult,
+  AgentTask, DatasetVersion, TaskEvent,
 } from "./types";
 
 const BASE = "/api";
+
+export interface ApiErrorDetail {
+  message?: string;
+  category?: string;
+  stages?: Record<string, { status: string; latency_ms?: number }>;
+}
+
+export class ApiError extends Error {
+  detail?: ApiErrorDetail;
+
+  constructor(message: string, detail?: ApiErrorDetail) {
+    super(message);
+    this.name = "ApiError";
+    this.detail = detail;
+  }
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(BASE + path, {
@@ -14,7 +31,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error((body as { detail?: string }).detail || res.statusText);
+    const raw = (body as { detail?: string | ApiErrorDetail }).detail;
+    const detail = typeof raw === "object" && raw ? raw : undefined;
+    const message = typeof raw === "string" ? raw : detail?.message || res.statusText;
+    throw new ApiError(message, detail);
   }
   return res.json();
 }
@@ -36,6 +56,14 @@ export function loadData(inputDir: string): Promise<DataSummary> {
     method: "POST",
     body: JSON.stringify({ input_dir: inputDir }),
   });
+}
+
+export function fetchDatasets(): Promise<{ datasets: Record<string, unknown>[]; trace_id?: string }> {
+  return request<{ datasets: Record<string, unknown>[]; trace_id?: string }>("/datasets");
+}
+
+export function fetchDatasetVersions(id: string): Promise<{ versions: DatasetVersion[] }> {
+  return request<{ versions: DatasetVersion[] }>(`/datasets/${id}/versions`);
 }
 
 // ── Tools ──
@@ -151,6 +179,62 @@ export function resynthesizeTurn(
   });
 }
 
+// ── Persistent Agent tasks ──
+
+export function fetchTask(id: string): Promise<AgentTask> {
+  return request<{ task: AgentTask }>(`/tasks/${id}`).then(result => result.task);
+}
+
+export function cancelTask(id: string): Promise<AgentTask> {
+  return request<{ task: AgentTask }>(`/tasks/${id}/cancel`, { method: "POST" }).then(result => result.task);
+}
+
+export function resumeTask(id: string, responseMode: "detailed" | "concise" = "detailed") {
+  return request(`/tasks/${id}/resume`, {
+    method: "POST",
+    body: JSON.stringify({ response_mode: responseMode }),
+  });
+}
+
+export function streamTaskEvents(
+  id: string,
+  onEvent: (event: TaskEvent) => void,
+  afterEventId = 0,
+): AbortController {
+  const controller = new AbortController();
+  void (async () => {
+    const response = await fetch(`${BASE}/tasks/${id}/events`, {
+      headers: afterEventId ? { "Last-Event-ID": String(afterEventId) } : undefined,
+      signal: controller.signal,
+    });
+    if (!response.ok || !response.body) throw new Error(response.statusText);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const blocks = buffer.split("\n\n");
+      buffer = blocks.pop() || "";
+      for (const block of blocks) {
+        const idLine = block.split("\n").find(line => line.startsWith("id: "));
+        const dataLine = block.split("\n").find(line => line.startsWith("data: "));
+        if (dataLine) {
+          const payload = JSON.parse(dataLine.slice(6)) as import("./types").SSEEvent;
+          onEvent({
+            id: Number(idLine?.slice(4) || 0), task_id: id,
+            event_type: payload.type, payload, created_at: "",
+          });
+        }
+      }
+    }
+  })().catch(error => {
+    if ((error as Error).name !== "AbortError") console.error("任务事件恢复失败", error);
+  });
+  return controller;
+}
+
 // ── SSE streaming chat ──
 
 export function streamChat(
@@ -202,17 +286,17 @@ export function streamChat(
         buffer = lines.pop() || "";
 
         for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith("data: ")) {
-            emit(trimmed.slice(6));
+          const dataLine = line.split("\n").find(part => part.startsWith("data: "));
+          if (dataLine) {
+            emit(dataLine.slice(6));
           }
         }
       }
 
       // Process remaining buffer
-      const trimmed = buffer.trim();
-      if (trimmed.startsWith("data: ")) {
-        emit(trimmed.slice(6));
+      const dataLine = buffer.trim().split("\n").find(part => part.startsWith("data: "));
+      if (dataLine) {
+        emit(dataLine.slice(6));
       }
 
       if (!sawDone) throw new Error("对话流在最终完成事件之前中断");

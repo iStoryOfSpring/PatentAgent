@@ -37,7 +37,7 @@
       "prohibited_claims": ["paper-exact text mining pipeline", "technology value"]
     },
     "analyze_burst_terms": {
-      "algorithm_id": "recent_document_frequency_growth", "version": "2.0", "evidence_type": "engineering_screening",
+      "algorithm_id": "recent_document_frequency_growth", "version": "2.1", "evidence_type": "engineering_screening",
       "formula": "smoothed recent-vs-history document-frequency ratio with minimum support",
       "fields": {"publication_date": 0.9, "title": 0.8, "abstract": 0.8}, "sources": [],
       "conditions": ["at least 5 complete years", "at least 50 records in each included year"],
@@ -65,7 +65,7 @@
       "prohibited_claims": ["family market coverage", "market attractiveness"]
     },
     "analyze_tech_roadmap": {
-      "algorithm_id": "annual_theme_timeline", "version": "2.0", "evidence_type": "engineering_screening",
+      "algorithm_id": "annual_theme_timeline", "version": "2.1", "evidence_type": "engineering_screening",
       "formula": "annual themes and representative records; citation paths only when resolved",
       "fields": {"publication_date": 0.9, "title": 0.8, "patent_number": 0.9}, "sources": [],
       "conditions": ["internal citation scope is disclosed"],
@@ -77,8 +77,8 @@
       "fields": {}, "sources": [], "conditions": [], "prohibited_claims": []
     },
     "search_patents": {
-      "algorithm_id": "tfidf_cosine_retrieval", "version": "2.0", "evidence_type": "engineering_screening",
-      "formula": "cosine similarity in word/phrase TF-IDF space",
+      "algorithm_id": "tfidf_cosine_retrieval", "version": "2.1", "evidence_type": "engineering_screening",
+      "formula": "cosine similarity in word/phrase TF-IDF space; deterministic patent-number tie break",
       "fields": {"title": 0.8, "abstract": 0.8, "patent_number": 0.9}, "sources": [],
       "conditions": ["lexical retrieval, not semantic embedding"],
       "prohibited_claims": ["vector embedding", "legal novelty search", "exhaustive prior-art search"]
@@ -91,14 +91,14 @@
       "prohibited_claims": ["full specification", "complete claims", "legal status conclusion"]
     },
     "analyze_tech_matrix": {
-      "algorithm_id": "derwent_abstract_proxy_te_matrix", "version": "2.0", "evidence_type": "engineering_screening",
+      "algorithm_id": "derwent_abstract_proxy_te_matrix", "version": "2.1", "evidence_type": "engineering_screening",
       "formula": "co-occurrence of technology phrases from NOVELTY with use/effect phrases from USE/ADVANTAGE",
       "fields": {"abstract": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
       "conditions": ["category cues must be present", "minimum support is required", "zero cells require record review"],
       "prohibited_claims": ["blue ocean", "validated white space", "paper-exact function matrix"]
     },
     "analyze_clustering": {
-      "algorithm_id": "tfidf_kmeans_cc05_labels", "version": "2.0", "evidence_type": "paper_adapted",
+      "algorithm_id": "tfidf_kmeans_cc05_labels", "version": "2.1", "evidence_type": "paper_adapted",
       "formula": "K-means in TF-IDF space; silhouette selects k; CC0.5 labels require cluster DF > 50% and document-level phi correlation",
       "fields": {"title": 0.8, "abstract": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
       "conditions": ["at least 100 valid texts", "only CC0.5 label criterion is paper-derived"],

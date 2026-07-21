@@ -33,7 +33,11 @@ def compute_roadmap_data(df: 'pd.DataFrame',
             terms.extend(set(filter_stopwords(tokenize_text(str(title), min_len=3))))
         from collections import Counter
         theme_counts = Counter(terms)
-        themes = [term for term, _ in theme_counts.most_common(5)]
+        themes = [
+            term for term, _ in sorted(
+                theme_counts.items(), key=lambda item: (-item[1], item[0]),
+            )[:5]
+        ]
         def score(row):
             title_terms = set(filter_stopwords(tokenize_text(str(row.get('title', '')), min_len=3)))
             theme_score = sum(theme_counts[t] for t in title_terms if t in themes)

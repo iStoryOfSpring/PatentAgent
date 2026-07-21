@@ -136,7 +136,10 @@ def run_clustering_pipeline(texts: list[str],
     n_pca = min(2, vectors.shape[1], vectors.shape[0])
     centroids_2d = []
     if n_pca >= 2:
-        pca = TruncatedSVD(n_components=n_pca, random_state=42)
+        algorithm = "arpack" if n_pca < min(sparse_vectors.shape) else "randomized"
+        pca = TruncatedSVD(
+            n_components=n_pca, algorithm=algorithm, random_state=42,
+        )
         reduced = pca.fit_transform(sparse_vectors)
     else:
         reduced = vectors[:, :2] if vectors.shape[1] >= 2 else vectors

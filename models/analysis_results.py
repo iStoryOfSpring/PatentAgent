@@ -4,6 +4,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from patent_agent.domain import ExecutionMetrics, ToolProvenance
+
 
 class AnalysisResult(BaseModel):
     """所有分析结果的基类"""
@@ -14,6 +16,8 @@ class AnalysisResult(BaseModel):
     data_quality: dict[str, Any] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
     result_metadata: dict[str, Any] = Field(default_factory=dict)
+    provenance: ToolProvenance | None = None
+    metrics: ExecutionMetrics = Field(default_factory=ExecutionMetrics)
 
 
 class GenericAnalysisResult(AnalysisResult):

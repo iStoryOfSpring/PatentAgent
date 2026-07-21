@@ -6,6 +6,8 @@ and HTTP transport (remote clients).
 """
 
 import json
+import hmac
+import ipaddress
 import logging
 import sys
 
@@ -42,7 +44,7 @@ def create_server(config):
     store_manager = MCPDataStoreManager(config)
     server = Server(
         name="patent-agent",
-        version="3.0.0",
+        version="3.1.0",
         instructions=(
             "PatentAgent exposes its runtime patent-analysis tool registry over MCP. "
             "data (Web of Science / Derwent format). Load patent data by setting "
@@ -206,6 +208,11 @@ async def run_http(config):
     """Run the MCP server over HTTP transport (for remote clients)."""
     from mcp.server.streamable_http import streamable_http_server
 
+    if not _is_loopback_bind(config.http_host) and not config.auth_token:
+        raise RuntimeError(
+            "MCP HTTP 绑定到非回环地址时必须设置 MCP_AUTH_TOKEN"
+        )
+
     server, store_manager = create_server(config)
     init_opts = server.create_initialization_options()
 
@@ -215,6 +222,8 @@ async def run_http(config):
     )
 
     app = streamable_http_server(server, init_opts)
+    if config.auth_token:
+        app = _BearerAuthMiddleware(app, config.auth_token)
     # Use uvicorn to serve the ASGI app
     import uvicorn
     uvicorn_config = uvicorn.Config(
@@ -232,6 +241,43 @@ async def run_http(config):
 # ═══════════════════════════════════════════════════════════════════
 
 _tools_imported = False
+
+
+def _is_loopback_bind(host: str) -> bool:
+    normalized = host.strip().strip("[]").lower()
+    if normalized == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(normalized).is_loopback
+    except ValueError:
+        return False
+
+
+class _BearerAuthMiddleware:
+    """Small ASGI guard used only by the optional MCP HTTP transport."""
+
+    def __init__(self, app, token: str):
+        self.app = app
+        self.expected = f"Bearer {token}".encode("utf-8")
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            headers = {key.lower(): value for key, value in scope.get("headers", [])}
+            supplied = headers.get(b"authorization", b"")
+            if not hmac.compare_digest(supplied, self.expected):
+                body = b'{"detail":"MCP authentication required"}'
+                await send({
+                    "type": "http.response.start",
+                    "status": 401,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                        (b"www-authenticate", b"Bearer"),
+                    ],
+                })
+                await send({"type": "http.response.body", "body": body})
+                return
+        await self.app(scope, receive, send)
 
 
 def _ensure_tools_imported() -> None:
