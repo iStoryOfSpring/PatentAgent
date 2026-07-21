@@ -12,6 +12,19 @@ from collections import Counter
 from models.analysis_results import ClusteringResult
 
 
+def _canonicalize_labels(labels: 'np.ndarray') -> 'np.ndarray':
+    """Make cluster IDs independent of K-means' platform-specific label order."""
+    cluster_ids = sorted(set(int(label) for label in labels))
+    ordered = sorted(
+        cluster_ids,
+        key=lambda cluster_id: (
+            int(np.flatnonzero(labels == cluster_id)[0]), cluster_id,
+        ),
+    )
+    mapping = {cluster_id: index for index, cluster_id in enumerate(ordered)}
+    return np.asarray([mapping[int(label)] for label in labels], dtype=int)
+
+
 def tfidf_vectorize(texts: list[str]) -> 'np.ndarray':
     """TF-IDF 向量化。
 
@@ -54,8 +67,16 @@ def kmeans_cluster(vectors: 'np.ndarray',
     from sklearn.cluster import KMeans
     k = min(n_clusters, vectors.shape[0])
     model = KMeans(n_clusters=k, random_state=42, n_init=10)
-    labels = model.fit_predict(vectors)
-    return labels, model.cluster_centers_
+    raw_labels = model.fit_predict(vectors)
+    labels = _canonicalize_labels(raw_labels)
+    ordered_centroids = np.asarray([
+        model.cluster_centers_[next(
+            raw_id for raw_id in range(k)
+            if np.any((raw_labels == raw_id) & (labels == canonical_id))
+        )]
+        for canonical_id in range(k)
+    ])
+    return labels, ordered_centroids
 
 
 def hierarchical_cluster(vectors: 'np.ndarray',
@@ -101,7 +122,16 @@ def compute_cluster_centroid_keywords(
         cluster_vectors = vectors[mask]
         centroid = cluster_vectors.mean(axis=0)
         # 取 centroid 中权重最高的特征索引
-        top_indices = np.argsort(centroid)[::-1][:top_k]
+        # Numerical libraries can differ at machine precision. Round only for
+        # ordering equal-weight terms, then use the vocabulary as a stable tie
+        # break; returned weights and clustering inputs remain unchanged.
+        top_indices = sorted(
+            range(len(centroid)),
+            key=lambda index: (
+                -round(float(centroid[index]), 12),
+                vocabulary[index] if index < len(vocabulary) else f"feature_{index}",
+            ),
+        )[:top_k]
         if vocabulary and len(vocabulary) > max(top_indices, default=0):
             keywords = [vocabulary[i] for i in top_indices if i < len(vocabulary)]
         else:
@@ -153,7 +183,7 @@ def run_clustering_pipeline(texts: list[str],
         selection_diagnostics = {"selection": "user_specified"}
     if k >= 2:
         model = KMeans(n_clusters=k, random_state=42, n_init=10)
-        labels = model.fit_predict(sparse_vectors)
+        labels = _canonicalize_labels(model.fit_predict(sparse_vectors))
         for c in range(k):
             mask = labels == c
             if mask.any():

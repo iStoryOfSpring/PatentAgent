@@ -44,7 +44,13 @@ def compute_roadmap_data(df: 'pd.DataFrame',
             refs = str(row.get('backward_citations', row.get('cited_refs', '')))
             return theme_score + len([x for x in refs.split(';') if x.strip()])
         df_year['_representative_score'] = df_year.apply(score, axis=1)
-        df_year = df_year.sort_values('_representative_score', ascending=False).head(top_n_per_year)
+        # Representative scores frequently tie in synthetic or sparse data.
+        # Patent number makes the selected records independent of input/cache
+        # row order while preserving the score as the primary criterion.
+        df_year = df_year.sort_values(
+            ['_representative_score', 'patent_number'],
+            ascending=[False, True], kind='mergesort',
+        ).head(top_n_per_year)
         data[year_int] = [
             {"patent_number": str(r.get('patent_number', '')),
              "title": str(r.get('title', ''))[:120],
