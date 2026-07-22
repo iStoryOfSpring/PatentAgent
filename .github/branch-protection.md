@@ -5,6 +5,8 @@ Protect the default branch and require these GitHub Actions checks before merge:
 - `backend-python-3.10`
 - `backend-python-3.11`
 - `backend-python-3.12`
+- `backend-python-3.13`
+- `backend-python-3.14`
 - `contracts-lock-migrations-mcp`
 - `frontend-node-20`
 

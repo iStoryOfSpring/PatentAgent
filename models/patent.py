@@ -1,4 +1,10 @@
-"""Versioned canonical patent-domain models."""
+"""Versioned canonical patent-domain models.
+
+The flat fields remain available for the sixteen analysis tools.  New source
+adapters additionally populate localized content, event history and field
+provenance so that a convenient display value is never mistaken for the only
+value supplied by an authority.
+"""
 
 from typing import Literal
 
@@ -32,12 +38,44 @@ class RecordProvenance(BaseModel):
     raw_record_hash: str = ""
 
 
+class LocalizedText(BaseModel):
+    language: str = "und"
+    text: str
+    truncated: bool = False
+
+
+class FieldProvenance(BaseModel):
+    field_name: str
+    source: str
+    source_record_id: str = ""
+    source_path: str = ""
+    observed_at: str = ""
+
+
+class FieldConflict(BaseModel):
+    field_name: str
+    kept_value: str
+    rejected_value: str
+    kept_source: str
+    rejected_source: str
+
+
+class LegalEvent(BaseModel):
+    event_code: str = ""
+    description: str = ""
+    event_date: str = ""
+    source: str = ""
+    jurisdiction: str = ""
+
+
 class Claim(BaseModel):
     """权利要求"""
     number: int
     text: str
     is_independent: bool
     depends_on: list[int] = Field(default_factory=list)
+    language: str = "und"
+    claim_id: str = ""
 
 
 class Citation(BaseModel):
@@ -52,19 +90,25 @@ class Citation(BaseModel):
 
 
 class FullPatent(BaseModel):
-    """Canonical patent record v2 with legacy flat-field compatibility."""
-    schema_version: int = 2
+    """Canonical patent record v3 with legacy flat-field compatibility."""
+    schema_version: int = 3
     patent_number: str
+    normalized_patent_number: str = ""
     application_number: str = ""
     source_record_id: str = ""
     publication_numbers: list[str] = Field(default_factory=list)
     title: str
     abstract: str
+    language: str = "und"
+    localized_titles: list[LocalizedText] = Field(default_factory=list)
+    localized_abstracts: list[LocalizedText] = Field(default_factory=list)
     applicants: list[str] = Field(default_factory=list)
     inventors: list[str] = Field(default_factory=list)
     ipc_codes: list[str] = Field(default_factory=list)
     cpc_codes: list[str] = Field(default_factory=list)
     publication_date: str = ""
+    filing_date: str = ""
+    grant_date: str = ""
     priority_date: str = ""
     priority_numbers: list[str] = Field(default_factory=list)
     claims: list[Claim] = Field(default_factory=list)
@@ -74,7 +118,13 @@ class FullPatent(BaseModel):
     non_patent_references: list[str] = Field(default_factory=list)
     family_members: list[str] = Field(default_factory=list)
     family_details: list[str] = Field(default_factory=list)
+    family_id: str = ""
     legal_status: str = ""
+    legal_status_as_of: str = ""
+    legal_events: list[LegalEvent] = Field(default_factory=list)
+    jurisdiction: str = ""
+    kind_code: str = ""
+    data_as_of: str = ""
     source_file: str = ""
     imported_at: str = ""
     applicant_parties: list[Party] = Field(default_factory=list)
@@ -82,6 +132,8 @@ class FullPatent(BaseModel):
     classifications: list[Classification] = Field(default_factory=list)
     citation_records: list[Citation] = Field(default_factory=list)
     provenance: RecordProvenance | None = None
+    field_provenance: list[FieldProvenance] = Field(default_factory=list)
+    field_conflicts: list[FieldConflict] = Field(default_factory=list)
 
 
 # New code should use PatentRecord; FullPatent remains a compatible public name.

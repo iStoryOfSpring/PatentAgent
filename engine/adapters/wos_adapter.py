@@ -1,10 +1,12 @@
 """WoS Derwent adapter — wraps existing PatentMiner parse logic."""
 
 import os
+import hashlib
 
 from engine.adapters.base import PatentAdapter
+from engine.adapters.common import normalized_document_number, split_publication_number
 from engine.parser import PatentMiner
-from models.patent import FullPatent
+from models.patent import DataSource, FullPatent, RecordProvenance
 
 
 class WoSAdapter(PatentAdapter):
@@ -17,9 +19,12 @@ class WoSAdapter(PatentAdapter):
         if not filepath.lower().endswith('.txt'):
             return False
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                head = f.read(200)
-            return 'FN Clarivate' in head or 'FN Thomson Reuters' in head
+            with open(filepath, 'r', encoding='utf-8-sig') as f:
+                head = f.read(4096)
+            return (
+                'FN Clarivate' in head or 'FN Thomson Reuters' in head or
+                ('VR 1.0' in head and '\nPT ' in f"\n{head}")
+            )
         except Exception:
             return False
 
@@ -32,9 +37,13 @@ class WoSAdapter(PatentAdapter):
         # Convert DataFrame rows to FullPatent
         patents = []
         for _, row in df.iterrows():
+            patent_number = str(row.get('patent_number', ''))
+            jurisdiction, _, kind_code = split_publication_number(patent_number)
+            source_record_id = str(row.get('source_record_id', ''))
             fp = FullPatent(
-                patent_number=str(row.get('patent_number', '')),
-                source_record_id=str(row.get('source_record_id', '')),
+                patent_number=patent_number,
+                normalized_patent_number=normalized_document_number(patent_number),
+                source_record_id=source_record_id,
                 publication_numbers=_split(row.get('publication_numbers', '')),
                 title=str(row.get('title', '')),
                 abstract=str(row.get('abstract', '')),
@@ -53,8 +62,22 @@ class WoSAdapter(PatentAdapter):
                 family_members=_split(row.get('family_members', '')),
                 family_details=_split(row.get('family_details', '')),
                 legal_status='',
+                jurisdiction=jurisdiction,
+                kind_code=kind_code,
                 source_file=os.path.basename(filepath),
                 imported_at='',
+                provenance=RecordProvenance(
+                    source=DataSource(
+                        adapter=self.name, source_name=self.display_name,
+                        source_uri="https://www.webofscience.com/",
+                        license_note="User-supplied Derwent export; redistribution is not implied.",
+                    ),
+                    source_record_id=source_record_id,
+                    source_file=os.path.basename(filepath),
+                    raw_record_hash=hashlib.sha256(
+                        f"{source_record_id}\0{patent_number}".encode()
+                    ).hexdigest(),
+                ),
             )
             patents.append(fp)
         return patents

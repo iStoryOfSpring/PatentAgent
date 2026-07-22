@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "applicationMetaData": {
+        "applicationNumberText": "16/629,734",
+        "patentNumber": "11325075",
+        "inventionTitle": "Carbon capture membrane",
+        "filingDate": "2018-12-21",
+        "grantDate": "2022-05-10",
+        "applicationStatusDescriptionText": "Patented Case",
+        "applicationStatusDate": "2022-05-10",
+        "applicantBag": [{"applicantNameText": "Agency for Science Technology and Research"}]
+      },
+      "eventDataBag": [
+        {"eventCode": "PGM", "eventDescriptionText": "Patent grant mailed", "eventDate": "2022-05-10"},
+        {"eventCode": "NOA", "eventDescriptionText": "Notice of allowance", "eventDate": "2021-12-15"}
+      ]
+    }
+  ]
+}

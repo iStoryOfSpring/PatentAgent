@@ -19,8 +19,8 @@ PatentAgent 适合降低专利全景、公开趋势、主题聚类、IPC 分布�
 ## 工程基线与模块边界
 
 项目采用模块化单体，不引入微服务或外部任务队列。`pyproject.toml` 是依赖声明源，
-`uv.lock` 固定 Python 3.10–3.12 的解析结果，`requirements.txt` 仅为自动导出的 pip
-兼容清单。GitHub Actions 对三个 Python 版本、Node 20、MCP、SQLite 幂等迁移、前端
+`uv.lock` 固定 Python 3.10+ 的解析结果，推荐本地使用 3.13 或 3.14，`requirements.txt`
+仅为自动导出的 pip 兼容清单。GitHub Actions 对 Python 3.10–3.14、Node 20、MCP、SQLite 幂等迁移、前端
 测试/构建和固定合成 WoS 金样执行持续门禁；标签发布只生成源码、前端产物和校验和。
 
 新增的 `patent_agent` 包按 application、domain、security、infrastructure 和 api 划定
@@ -78,7 +78,7 @@ von Wartburg 原文的实证边界尤其重要：节点是专利族，网络包�
 
 优势是 Engine/Tool 分层清楚、Pydantic Typed Result、单一 React/FastAPI 用户入口、可选 MCP 集成、10,000 件去重后的 DII 样例、已有测试与多 LLM 适配。统一执行契约可以把参数、耗时、字段覆盖、算法 ID、禁止结论和错误沿 REST、SSE、MCP 与 AI 证据通道传递。
 
-主要弱点仍是单一 DII 数据源的字段天花板、外部前向被引缺失、内部引证网络不闭合、同族覆盖不足、文本算法的领域依赖、部分重分析需抽样，以及 LLM 报告依赖供应商稳定性。动态能力门禁避免把这些限制隐藏成“正常的零值”。
+正式文件链路已扩展到 Google Patents JSONL、USPTO grant XML 和 Patent File Wrapper JSON，缓解但没有消除数据字段天花板：来源导出仍可能缺失全文、外部前向引证、完整同族或最新法律状态。其他主要弱点是内部引证网络不闭合、文本算法的领域依赖、部分重分析需抽样，以及 LLM 报告依赖供应商稳定性。动态能力门禁避免把这些限制隐藏成“正常的零值”；EPO/CNIPA 仍为规划中。
 
 其必要性在于把重复的数据清洗、统计、图表和证据整理自动化，并让分析人员把时间投入到检索策略、权利要求解释和业务判断。系统定位是透明的分析助手，不是自动法律结论机器。
 

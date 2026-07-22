@@ -130,7 +130,9 @@ class PatentAdapter(ABC):
         for f in sorted(files):
             fpath = os.path.join(input_dir, f)
             h.update(f.encode())
-            h.update(str(os.path.getmtime(fpath)).encode())
+            with open(fpath, "rb") as handle:
+                while chunk := handle.read(1024 * 1024):
+                    h.update(chunk)
         return h.hexdigest()[:16]
 
     def _load_cache(self, input_dir: str,
@@ -168,15 +170,22 @@ class PatentAdapter(ABC):
         for p in patents:
             rows.append({
                 'patent_number': p.patent_number,
+                'normalized_patent_number': p.normalized_patent_number,
+                'application_number': p.application_number,
                 'source_record_id': p.source_record_id,
                 'publication_numbers': ';'.join(p.publication_numbers),
                 'title': p.title,
                 'abstract': p.abstract,
+                'language': p.language,
+                'localized_titles_json': _json_dump(p.localized_titles),
+                'localized_abstracts_json': _json_dump(p.localized_abstracts),
                 'applicants': ';'.join(p.applicants),
                 'inventors': ';'.join(p.inventors),
                 'ipc_codes_str': ';'.join(p.ipc_codes),
                 'cpc_codes': ';'.join(p.cpc_codes) if p.cpc_codes else '',
                 'publication_date': p.publication_date,
+                'filing_date': p.filing_date,
+                'grant_date': p.grant_date,
                 'priority_date': p.priority_date,
                 'priority_numbers': ';'.join(p.priority_numbers),
                 'claims_json': _serialize_claims(p.claims),
@@ -186,7 +195,18 @@ class PatentAdapter(ABC):
                 'non_patent_references': '\n'.join(p.non_patent_references),
                 'family_members': ';'.join(p.family_members),
                 'family_details': ';'.join(p.family_details),
+                'family_id': p.family_id,
                 'legal_status': p.legal_status,
+                'legal_status_as_of': p.legal_status_as_of,
+                'legal_events_json': _json_dump(p.legal_events),
+                'jurisdiction': p.jurisdiction,
+                'kind_code': p.kind_code,
+                'data_as_of': p.data_as_of,
+                'field_provenance_json': _json_dump(p.field_provenance),
+                'field_conflicts_json': _json_dump(p.field_conflicts),
+                'record_provenance_json': (
+                    p.provenance.model_dump_json() if p.provenance else ''
+                ),
                 'source_file': p.source_file,
             })
         df = pd.DataFrame(rows)
@@ -212,7 +232,16 @@ class PatentAdapter(ABC):
 def _serialize_claims(claims: list) -> str:
     if not claims:
         return ''
-    parts = []
-    for c in claims:
-        parts.append(f"{c.number}.{'[I]' if c.is_independent else ''} {c.text[:200]}")
-    return '|'.join(parts)
+    import json
+    return json.dumps([
+        claim.model_dump(mode="json") if hasattr(claim, "model_dump") else claim
+        for claim in claims
+    ], ensure_ascii=False, separators=(",", ":"))
+
+
+def _json_dump(values: list) -> str:
+    import json
+    return json.dumps([
+        value.model_dump(mode="json") if hasattr(value, "model_dump") else value
+        for value in values
+    ], ensure_ascii=False, separators=(",", ":"))

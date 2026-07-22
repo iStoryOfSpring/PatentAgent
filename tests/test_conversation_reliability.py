@@ -4,7 +4,7 @@ from datetime import datetime
 import pytest
 
 from agent.llm import ChatResponse, LLMClient, LLMProvider
-from agent.orchestrator import AnalysisPlan, IntentAnalysis, PatentAgentOrchestrator
+from agent.orchestrator import AnalysisPlan, PatentAgentOrchestrator
 from models.analysis_results import GenericAnalysisResult
 from models.session import Session, ToolExecution
 from storage.conversation_store import ConversationStore, execution_cache_key
@@ -71,13 +71,10 @@ class _FailingLLM:
 
 
 class _FailingSynthesisOrchestrator(PatentAgentOrchestrator):
-    async def _understand_intent(self, message, history=None):
-        return IntentAnalysis(goal=message, analysis_type="general")
+    async def _select_tools_with_llm(self, *_args, **_kwargs):
+        return AnalysisPlan(steps=[], chain_id="", decision_type="analysis")
 
-    async def _plan_analysis(self, intent, storage, user_message=""):
-        return AnalysisPlan(steps=[], chain_id="")
-
-    async def _execute_plan(self, plan, storage, reuse_lookup=None, on_execution=None):
+    async def _execute_llm_plan(self, plan, storage, reuse_lookup=None, on_execution=None):
         execution = ToolExecution(
             id="exec-1", tool_name="synthetic_tool", parameters={},
             status="completed", result=GenericAnalysisResult(
@@ -89,7 +86,7 @@ class _FailingSynthesisOrchestrator(PatentAgentOrchestrator):
             await on_execution(execution)
         return [execution]
 
-    async def _synthesize(self, plan, executions, response_mode="detailed"):
+    async def _synthesize_tool_roundtrip(self, *_args, **_kwargs):
         raise RuntimeError("synthesis crashed")
 
 
@@ -117,14 +114,17 @@ def test_stream_always_finishes_with_fallback_after_synthesis_failure():
 
 
 class _ApprovalOrchestrator(_FailingSynthesisOrchestrator):
-    async def _plan_analysis(self, intent, storage, user_message=""):
-        return AnalysisPlan(steps=[], chain_id="", requires_confirmation=True)
+    async def _select_tools_with_llm(self, *_args, **_kwargs):
+        return AnalysisPlan(
+            steps=[], chain_id="", requires_confirmation=True,
+            decision_type="analysis",
+        )
 
-    async def _execute_plan(self, plan, storage, reuse_lookup=None, on_execution=None):
+    async def _execute_llm_plan(self, plan, storage, reuse_lookup=None, on_execution=None):
         return []
 
-    async def _synthesize(self, plan, executions, response_mode="detailed"):
-        return "审批后完成。"
+    async def _synthesize_tool_roundtrip(self, *_args, **_kwargs):
+        return "审批后完成。", [], []
 
 
 def test_persisted_approval_bypasses_repeated_budget_prompt():

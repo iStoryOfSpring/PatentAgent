@@ -10,7 +10,7 @@
 > 暂时以AGPL的形式开源。以后也许（但不保证）会转换为更宽松的模式。Contact: 2507380208@wtu.edu.cn 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10--3.12-blue" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
   <img src="https://img.shields.io/badge/Tools-16-orange" alt="Tools">
@@ -19,15 +19,16 @@
 
 ## 快速开始
 
-后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。官方支持
-Python 3.10、3.11 和 3.12：
+后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。要求 Python 3.10+，
+推荐使用 Python 3.13 或 3.14；CI 覆盖 3.10–3.14：
 
 ```bash
-uv sync --frozen --all-extras --group dev
+uv sync --frozen --extra mcp --group dev
 cd frontend && npm ci && cd ..
 ```
 
-`requirements.txt` 是由锁文件导出的 pip 兼容清单，不应手工编辑。
+`requirements.txt` 是由锁文件导出的 pip 兼容清单，不应手工编辑。MiniLM 运行库属于
+标准依赖；模型权重不会提交到仓库，只在首次显式启用 Beta 时下载约 471MB 到用户缓存目录。
 
 ### 一键启动（推荐）
 
@@ -76,6 +77,22 @@ python mcp_server.py
 - **报告导出** — HTML 报告（含完整中文排版），CSV 数据导出
 - **MCP 协议支持** — 标准 MCP (Model Context Protocol) stdio/HTTP 服务器，Claude Code / VS Code / Cursor 可直接调用全部工具
 - **算法证据登记表** — 16 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
+- **统一文件导入** — WoS、Google Patents JSONL、USPTO grant XML/PFW JSON 统一进入 PatentRecord v3，并返回字段覆盖、冲突与来源能力报告
+- **多语言检索 Beta** — 单次显式启用本地 MiniLM 与词法 RRF；失败会明确回退，不替代默认 TF-IDF 基线
+
+## 数据源能力
+
+正式支持 WoS Derwent tagged text、Google Patents Public Data JSONL、USPTO grant
+full-text XML 和 Patent File Wrapper JSON。EPO OPS 与 CNIPA 仅处于格式准备阶段，
+没有账号、抓取器或生产适配器。详细字段边界和官方来源见
+[数据源能力矩阵](docs/data-source-capabilities.md)。
+固定样例的字段覆盖、代理指标和 10 万条工程压力结果见
+[V3.1 验证报告](docs/validation-report-v3.1.md)。
+
+`POST /api/data/load` 可传 `source_format=auto|wos_dii|google_patents_jsonl|uspto_grant_xml|uspto_file_wrapper_json`；
+旧请求缺省仍为 `auto`。自动模式按内容签名识别已支持的标准格式，并在导入报告中逐文件
+返回识别依据；它不对任意厂商变体承诺 100% 命中。建议导入目录提供
+`patentagent-import.json` 和 SHA-256 以获得确定性识别，失败时也可手工指定格式。
 
 ## 工具清单
 
@@ -93,9 +110,9 @@ python mcp_server.py
 | `analyze_tech_roadmap` | 年度技术主题时间轴（引证充分时显示内部路径） |
 | `analyze_tech_matrix` | Derwent 摘要代理功效矩阵 + 低共现复核候选 |
 | `analyze_clustering` | TF-IDF 空间 K-means + silhouette 选 k + CC0.5 标题 |
-| `analyze_patent_valuation` | 稳健百分位价值筛查（不是财务估值） |
+| `analyze_patent_valuation` | 当前数据集内相对工程评分；含权重敏感性与缺失影响（不是财务估值） |
 | `analyze_competitor_evolution` | IPC profile cosine shift / entropy / dominant share |
-| `search_patents` | TF-IDF 词项相似度检索（不是语义嵌入或查全检索） |
+| `search_patents` | 默认 TF-IDF；可单次启用多语言 MiniLM+RRF Beta（都不是查全检索） |
 | `read_patent_details` | 当前数据源记录读取（Derwent 摘要不是完整说明书） |
 
 ## MCP 使用指南
@@ -315,7 +332,7 @@ cd frontend && npm test -- --run && npm run build
 `tests/fixtures/wos_golden/` 是固定的五年以上合成 WoS 数据集；16 个工具均校验统一的
 `ToolExecutionEnvelope`、数据版本、字段覆盖、算法参数和执行指标。更新金样必须显式运行
 `python scripts/generate_golden_wos_fixture.py` 并审查差异。GitHub Actions 在 Python
-3.10/3.11/3.12、Node 20、MCP、迁移、锁文件和金样回归全部通过后才满足合并门禁；`V*`
+3.10/3.11/3.12/3.13/3.14、Node 20、MCP、迁移、锁文件和金样回归全部通过后才满足合并门禁；`V*`
 标签只生成源码、前端产物与 SHA-256 校验和，不发布 PyPI。
 
 ## 配置

@@ -3,7 +3,7 @@ import type {
   HealthResponse, DataSummary, Tool, ToolResult, LLMConfig, SSEEvent,
   SessionSummary, SessionDetail,
   ProviderCredentials, ProviderProfile, ProviderProfileInput, ProviderProbeResult,
-  AgentTask, DatasetVersion, TaskEvent,
+  AgentTask, DatasetVersion, SearchCapabilityStatus, TaskEvent,
 } from "./types";
 
 const BASE = "/api";
@@ -51,10 +51,12 @@ export function fetchDataSummary(): Promise<DataSummary> {
   return request<DataSummary>("/data/summary");
 }
 
-export function loadData(inputDir: string): Promise<DataSummary> {
+export type SourceFormat = "auto" | "wos_dii" | "google_patents_jsonl" | "uspto_grant_xml" | "uspto_file_wrapper_json";
+
+export function loadData(inputDir: string, sourceFormat: SourceFormat = "auto"): Promise<DataSummary> {
   return request<DataSummary>("/data/load", {
     method: "POST",
-    body: JSON.stringify({ input_dir: inputDir }),
+    body: JSON.stringify({ input_dir: inputDir, source_format: sourceFormat }),
   });
 }
 
@@ -70,6 +72,10 @@ export function fetchDatasetVersions(id: string): Promise<{ versions: DatasetVer
 
 export function fetchTools(): Promise<{ tools: Tool[] }> {
   return request<{ tools: Tool[] }>("/tools");
+}
+
+export function fetchSearchStatus(): Promise<SearchCapabilityStatus> {
+  return request<SearchCapabilityStatus>("/search/status");
 }
 
 export function runTool(name: string, params: Record<string, unknown> = {}, sessionId?: string): Promise<ToolResult> {

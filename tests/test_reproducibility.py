@@ -93,6 +93,10 @@ def test_all_sixteen_tools_emit_traceable_contract(tool_name, golden_store):
     assert result.provenance.algorithm_id
     assert result.provenance.algorithm_version
     assert result.metrics.elapsed_ms >= 0
+    assert result.evidence_level
+    assert isinstance(result.source_capabilities, dict)
+    assert isinstance(result.unsupported_conclusions, list)
+    assert isinstance(result.data_as_of, str)
     envelope = tool.envelope(result)
     assert envelope.error is None
     assert envelope.tool.name == tool_name

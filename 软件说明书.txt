@@ -45,22 +45,23 @@
     - 专利全景分析（技术趋势、构成、分布）
     - 竞争对手专利布局对比
     - 技术创新机会发现（功效矩阵 + 空白点探照灯 + 聚类）
-    - 专利价值评估与排名（SS/RO/BC 引证指标 + 辅助维度）
+    - 数据集内相对工程评分（SS/RO/BC 满足门禁时 + 辅助维度，不是财务估值）
     - 技术路线图绘制（引证 + 功效 + 价值 + 时间四维）
-    - 侵权风险排查（FTO 检索 + 权利要求分析 + 规避设计建议）
+    - 初步相关专利筛查与证据整理（不能替代 FTO 或法律意见）
 
 ================================================================================
   二、系统架构
 ================================================================================
 
-  PatentAgent V3.1 采用前后端分离的模块化单体；本轮实际数据源为 WoS Derwent:
+  PatentAgent V3.1 采用前后端分离的模块化单体；正式文件导入覆盖 WoS Derwent、
+  Google Patents Public Data JSONL、USPTO grant XML 和 Patent File Wrapper JSON:
 
   ┌──────────────────────────────────────────────────────────────┐
   │  数据源适配层 (engine/adapters/)                               │
-  │  当前实现: WoS Derwent .txt → WoSAdapter                      │
-  │  其他来源需新增适配器，不会被当前入口自动识别                   │
+  │  WoS / Google JSONL / USPTO XML+PFW JSON → PatentRecord v3    │
+  │  EPO OPS / CNIPA: 仅能力接口准备，不宣称正式支持                │
   │                          │                                    │
-  │            PatentRecord v2 → DatasetSnapshot/DataFrame        │
+  │            PatentRecord v3 → DatasetSnapshot/DatasetView      │
   ├──────────────────────────────────────────────────────────────┤
   │  React Features ──HTTP/SSE──▶ FastAPI + AppContainer          │
   │  三栏布局 | TanStack Query | SSE reducer | 原生 ECharts       │
@@ -72,10 +73,10 @@
   │  数据访问层 (Parquet 缓存 + 列投影) | 知识库层 (3篇论文)        │
   └──────────────────────────────────────────────────────────────┘
 
-  v2.2 关键特性:
-    - 多数据源适配: 不同专利数据库格式统一为 FullPatent 模型
+  V3.1 关键特性:
+    - 多数据源适配: 不同官方文件格式统一为 PatentRecord v3
     - 字段可用性检测: DataStore.has_field() 在缺失字段时自动降级
-    - 已有 WoSAdapter; PatentSoul/Google/CNKI 适配器待开发
+    - ImportReport 披露字段覆盖、语言、重复合并、冲突、来源能力和禁止结论
 
   V3.1 工程边界:
     - patent_agent/application、domain、security、infrastructure 提供模块化单体边界；
@@ -85,24 +86,15 @@
     - turns 是持久 Agent 任务：SSE 有稳定 event_id/trace_id，重启将运行中任务标为
       interrupted，只允许复用已保存证据或仅重试综合，不自动重复 LLM 调用。
 
-  数据来源对比:
-
-  ┌──────────────┬────────┬───────────┬────────┬──────┐
-  │ 字段           │ WoS    │ PatentSoul│ Google │ CNKI │
-  ├──────────────┼────────┼───────────┼────────┼──────┤
-  │ 权利要求       │   ❌   │    ✅     │   ✅   │  ✅  │
-  │ 前向引用       │   ❌   │    ✅     │   ✅   │  ❌  │
-  │ CPC 分类      │   ❌   │    ✅     │   ✅   │  ❌  │
-  │ 法律状态       │   ❌   │    ✅     │   ✅   │  ❌  │
-  └──────────────┴────────┴───────────┴────────┴──────┘
-  ⚠️ WoS 缺失前向引用/权利要求——论文1/3的部分高级算法需全文数据源才能完整落地
+  完整能力矩阵见 docs/data-source-capabilities.md。能力取决于本次导出字段；Google
+  聚合字段与 USPTO 时点事件都不等于实时法律状态。EPO/CNIPA 本轮没有抓取器。
 
 ================================================================================
   三、安装与部署
 ================================================================================
 
   3.1 环境要求
-    - Python 3.10、3.11 或 3.12
+    - Python 3.10+（推荐 3.13 或 3.14；CI 覆盖 3.10-3.14）
     - Node.js 20+
     - 操作系统: macOS / Linux / Windows
     - 内存: 8GB+
@@ -110,7 +102,7 @@
   3.2 安装
 
     cd PatentAgent/
-    uv sync --frozen --all-extras --group dev
+    uv sync --frozen --extra mcp --group dev
     cd frontend && npm ci && cd ..
 
     pyproject.toml 是声明源，uv.lock 是锁文件；requirements.txt 是自动生成的 pip 兼容导出。
@@ -206,7 +198,7 @@
   analyze_tech_matrix          Derwent 摘要代理功效矩阵 + 低共现复核候选
   analyze_clustering           TF-IDF 空间 K-means + silhouette + CC0.5 标题
   analyze_patent_valuation     价值筛查分（稳健百分位，不是财务估值）
-  search_patents               TF-IDF 词项相似度检索（不是语义嵌入）
+  search_patents               默认 TF-IDF；单次可启用多语言 MiniLM+RRF Beta
   read_patent_details          专利深读（单次最多 5 篇，防止 Token 爆炸）
   analyze_competitor_evolution IPC profile cosine shift / entropy / dominant share
 
@@ -340,17 +332,19 @@
 
   ────────────────────────────────────────────────────────
 
-  8.6 相关专利筛查 —— TF-IDF 词项相似度检索
+  8.6 相关专利筛查 —— 稳定词法基线 + 显式多语言 Beta
 
-  嵌入策略（优先级从高到低）：
-    1. OpenAI text-embedding-3-small（需 API Key）
-    2. Sentence-Transformers paraphrase-multilingual-MiniLM-L12-v2（本地）
-    3. TF-IDF 降级方案（零外部依赖）
+  默认 retrieval_mode=lexical，完全使用现有 TF-IDF 行为，不调用远程 embedding。
+  只有单次选择 multilingual_hybrid_beta 时，才加载本地
+  paraphrase-multilingual-MiniLM-L12-v2（首次约 471MB），再以 RRF 融合词法排名。
 
   检索流程：
-    1. TF-IDF 词项余弦相似度 top_k × 3 候选（不是神经语义嵌入）
+    1. 词法和（Beta 时）本地向量各取候选
     2. 结构化过滤（年份、IPC、申请人）
-    3. 关键词匹配加权融合
+    3. RRF 只融合名次，不混加不可比的原始分数
+
+  索引以数据集哈希、模型 ID 和索引版本缓存。模型/索引失败会返回结构化警告并
+  明确回退词法模式，不会静默改变排序。代理 Recall/nDCG/MRR 不是专家查全率。
 
   返回专利摘要（PatentSummary，不含 claims/description/citations）
   防止 Token 爆炸。深读通过 read_patent_details 按需加载（最多5篇）。
@@ -535,7 +529,7 @@
 ================================================================================
 
   后端:
-    Python 3.10-3.12, FastAPI, Uvicorn, Pydantic v2, Pandas, NumPy
+    Python 3.10+（推荐 3.13/3.14）, FastAPI, Uvicorn, Pydantic v2, Pandas, NumPy
     Jieba (惰性加载), Scikit-learn, NetworkX, SciPy
     Anthropic SDK, OpenAI SDK, ChromaDB
     存储: SQLite + Parquet (Snappy 压缩) + DataFrame
@@ -549,7 +543,7 @@
     mcp SDK 1.x, Starlette, Uvicorn
 
   测试: pytest 后端测试 + 16 工具固定金样 + MCP/SQLite 迁移 + Vitest + TypeScript/Vite 构建
-  CI: Python 3.10/3.11/3.12 与 Node 20；V* 标签通过门禁后生成源码包、前端产物和校验和
+  CI: Python 3.10-3.14 与 Node 20；V* 标签通过门禁后生成源码包、前端产物和校验和
 
 ================================================================================
   十六、版本历史

@@ -3,7 +3,7 @@
   "tools": {
     "analyze_burst_terms": {
       "result_type": "burst_terms",
-      "sha256": "1aab8e0621f9bda40f75d6b21713058ee23bddc15e98608de4f42316ebecafbe",
+      "sha256": "c7c2131627f741e11cc82cb5f2379f685901537a3794e51d40bc32abb027d111",
       "projection": {
         "data": [
           {
@@ -147,6 +147,7 @@
             "term": "electrolyte"
           }
         ],
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -156,6 +157,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -175,7 +177,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -184,6 +188,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -197,12 +202,22 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "abstract": 1.0,
             "publication_date": 1.0,
             "title": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -225,6 +240,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "methodology": "近期/历史文档频率比（加性平滑、最小支持度）；不是 Kleinberg Burst。",
         "metrics": {
           "cache_hit": false,
@@ -254,6 +270,7 @@
           "algorithm_id": "recent_document_frequency_growth",
           "algorithm_version": "2.1",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
           "history_years": [
@@ -272,7 +289,17 @@
             2023,
             2024
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_burst_terms",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 600,
@@ -281,13 +308,23 @@
           }
         },
         "result_type": "burst_terms",
+        "source_capabilities": {},
         "summary": "burst_terms 已生成，共 20 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "analyze_clustering": {
       "result_type": "clustering",
-      "sha256": "21f0f501d8add0afa9b5c7f78a55a30134cad528dc09e035cf8fbf2e854104bb",
+      "sha256": "6f868682f89d9030dff0e93e250c9993a07950d4f842095146d0ad9f617f7ab4",
       "projection": {
         "centroids": [
           [
@@ -397,6 +434,7 @@
           "4": "heat_management",
           "5": "measurement_precision"
         },
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -406,6 +444,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -425,7 +464,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -434,6 +475,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -447,11 +489,21 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "abstract": 1.0,
             "title": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -474,6 +526,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "paper_adapted",
         "labels": [
           0,
           1,
@@ -814,6 +867,7 @@
           "algorithm_id": "tfidf_kmeans_cc05_labels",
           "algorithm_version": "2.2",
           "confidence": "high",
+          "data_as_of": "",
           "display_reduction": "TruncatedSVD-2D",
           "evidence_level": "paper_adapted",
           "evidence_sources": [
@@ -833,7 +887,17 @@
           "sample_size": 300,
           "sampled": false,
           "selected_k": 6,
+          "source_capabilities": {},
           "tool_name": "analyze_clustering",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -843,14 +907,25 @@
         },
         "result_type": "clustering",
         "silhouette_score": 1.0,
+        "source_capabilities": {},
         "summary": "clustering 分析已完成。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "analyze_co_network": {
       "result_type": "co_occurrence",
-      "sha256": "cff6f1fa2f877b3d4ede11aac81c1d8a1435819324e202d502014a0692f087c6",
+      "sha256": "0f83a666d310f069732b97e503aea12441a05838a35820016029e2efe6d74bad",
       "projection": {
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -860,6 +935,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -879,7 +955,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -888,6 +966,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -901,10 +980,20 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "applicants": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -1230,6 +1319,7 @@
             "weight": 1
           }
         ],
+        "evidence_level": "descriptive_statistic",
         "methodology": "同一专利的多申请人共现网络；不把名称相似自动视作同一主体。",
         "metrics": {
           "cache_hit": false,
@@ -1258,6 +1348,7 @@
           "algorithm_id": "co_applicant_network",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "parameters": {},
@@ -1266,7 +1357,17 @@
             "technology transfer",
             "co-invention"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_co_network",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 680,
@@ -1275,13 +1376,23 @@
           }
         },
         "result_type": "co_occurrence",
+        "source_capabilities": {},
         "summary": "co_occurrence 已生成，共 60 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "analyze_competitor_evolution": {
       "result_type": "competitor_evolution",
-      "sha256": "03c7870b70e3d5029992b30462a00a482e6ac6a4de81556bce901e4a18909af8",
+      "sha256": "44d546aa8e9c23d14f909c8c95fa1058fe60ab02712d67cd473bd22ac45aea6d",
       "projection": {
         "data": {
           "applicants": [
@@ -1582,6 +1693,7 @@
           ],
           "methodology": "IPC subclass profile cosine shift, IPC entropy, dominant IPC share"
         },
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -1591,6 +1703,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -1610,7 +1723,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -1619,6 +1734,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -1632,12 +1748,22 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "applicants": 1.0,
             "ipc": 1.0,
             "publication_date": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -1660,6 +1786,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "methodology": "IPC 小类/主组年度画像的熵、主导份额与相邻年份余弦距离；不是 PatentMiner DICT/PBC/HBC。",
         "metrics": {
           "cache_hit": false,
@@ -1691,6 +1818,7 @@
           "algorithm_id": "ipc_profile_evolution",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [
             "Tang et al. 2012, KDD PatentMiner"
@@ -1703,7 +1831,17 @@
             "heterogeneous-network co-ranking",
             "paper-exact competitor evolution"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_competitor_evolution",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -1712,13 +1850,23 @@
           }
         },
         "result_type": "competitor_evolution",
+        "source_capabilities": {},
         "summary": "competitor_evolution 已生成，共 5 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "analyze_country_distribution": {
       "result_type": "country_distribution",
-      "sha256": "2e0a70a4054052759e00a67377e6ca5821c15ee3653e627abb97f77cba103df1",
+      "sha256": "e967201140094da7e221571700116d6bf54aaf52cf8fab4eb34e5154b8bca174",
       "projection": {
         "data": [
           {
@@ -1726,6 +1874,7 @@
             "country": "EP"
           }
         ],
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -1735,6 +1884,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -1754,7 +1904,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -1763,6 +1915,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -1776,11 +1929,21 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "family_members": 1.0,
             "patent_number": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -1803,6 +1966,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "descriptive_statistic",
         "methodology": "按 PN 主公开号前缀统计首个公开局；另有同族数据时才可讨论市场覆盖。",
         "metrics": {
           "cache_hit": false,
@@ -1831,6 +1995,7 @@
           "algorithm_id": "primary_publication_office_count",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "geography_semantics": "first_publication_office",
@@ -1839,7 +2004,17 @@
             "family market coverage",
             "market attractiveness"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_country_distribution",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -1848,14 +2023,25 @@
           }
         },
         "result_type": "country_distribution",
+        "source_capabilities": {},
         "summary": "按主公开号统计 1 个首个公开局；该分布不是同族市场覆盖。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "analyze_ipc_distribution": {
       "result_type": "ipc_matrix",
-      "sha256": "d16406ab10fee81c6c71812f4bc7f3ba2c3102e4657f43da116b96cb73786185",
+      "sha256": "e09aba2a4c7ff6ec1494a8e9a176d5c8803ead36d1ddead0cf8fd0bba33c4ca6",
       "projection": {
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -1865,6 +2051,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -1884,7 +2071,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -1893,6 +2082,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -1906,11 +2096,21 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "ipc": 1.0,
             "publication_date": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -1933,6 +2133,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "descriptive_statistic",
         "matrix": [
           [
             9,
@@ -2005,13 +2206,24 @@
           "algorithm_id": "ipc_publication_matrix",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "parameters": {},
           "prohibited_claims": [
             "exclusive technology share"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_ipc_distribution",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -2027,7 +2239,17 @@
           "G",
           "H"
         ],
+        "source_capabilities": {},
         "summary": "ipc_matrix 已生成，共 6 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [],
         "years": [
           2019,
@@ -2041,7 +2263,7 @@
     },
     "analyze_lifecycle": {
       "result_type": "s_curve",
-      "sha256": "90a239feb6461fe5c6d17bfdb98473a70ce0e66103797805184f4557f70a52c0",
+      "sha256": "6892c87bc86d5f1d8ff9c30be5ed08bd63644c5093b313165f4d89ed90e8a69f",
       "projection": {
         "counts": [
           50,
@@ -2059,6 +2281,7 @@
           250,
           300
         ],
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -2068,6 +2291,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -2087,7 +2311,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2096,6 +2322,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -2109,10 +2336,20 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "publication_date": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -2135,6 +2372,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "fitted": [
           50.0,
           100.0,
@@ -2171,6 +2409,7 @@
           "algorithm_id": "publication_growth_summary",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "date_semantics": "publication_date",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
@@ -2181,7 +2420,17 @@
             "decline stage",
             "technology maturity"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_lifecycle",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -2190,7 +2439,17 @@
           }
         },
         "result_type": "s_curve",
+        "source_capabilities": {},
         "summary": "按公开日期统计年度公开量、累计公开量与同比变化；不输出生命周期阶段判定。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "尾年 2024 仅覆盖 1 个月，不应把下降解释为技术衰退。"
         ],
@@ -2206,7 +2465,7 @@
     },
     "analyze_patent_trend": {
       "result_type": "yearly_trend",
-      "sha256": "26b90e4b0be19a86ccf32218795efc3d7e8844382aeb503fb92b8c97d550da58",
+      "sha256": "02928cd207caaa2756905da9470baf0a4d0d0c472a95eb8a3d24e7eb2b6fc5e6",
       "projection": {
         "data": [
           {
@@ -2234,6 +2493,7 @@
             "year": 2024
           }
         ],
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -2243,6 +2503,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -2262,7 +2523,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2271,6 +2534,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -2284,12 +2548,22 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "applicants": 1.0,
             "ipc": 1.0,
             "publication_date": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -2312,6 +2586,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "descriptive_statistic",
         "methodology": "按 WoS PD 公开日期聚合；尾年月份不完整时不解释为技术衰退。",
         "metrics": {
           "cache_hit": false,
@@ -2343,6 +2618,7 @@
           "algorithm_id": "publication_count_trend",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "date_semantics": "publication_date",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
@@ -2355,7 +2631,17 @@
             "technology decline",
             "technology lifecycle"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_patent_trend",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -2364,7 +2650,17 @@
           }
         },
         "result_type": "yearly_trend",
+        "source_capabilities": {},
         "summary": "按专利公开日期生成 yearly 趋势，共 6 个时间点，筛选后 300 件记录。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "尾年 2024 仅覆盖 1 个月，下降可能来自数据未完整收录或公开滞后。"
         ]
@@ -2372,7 +2668,7 @@
     },
     "analyze_patent_valuation": {
       "result_type": "value_indicators",
-      "sha256": "6ab864886d8aaa11d1ab4dd75f14d7a5f5e37d75d8973edb22ed828adb977a38",
+      "sha256": "b81badadea47044e2afb931ac24f8ad2aab1a82212b13302cd9924de78306edf",
       "projection": {
         "coverage": {
           "backward_citations": 0.9967,
@@ -2645,6 +2941,7 @@
             "title": "Carbon Capture Membrane apparatus generation 9"
           }
         ],
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -2654,6 +2951,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -2673,7 +2971,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2682,6 +2982,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -2695,6 +2996,7 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "backward_citations": 0.9967,
             "family_members": 1.0,
@@ -2704,6 +3006,15 @@
             "publication_date": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -2726,6 +3037,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "paper_adapted",
         "methodology": "数据集内稳健百分位价值筛查；引证充分时使用三阶段可达性与耦合指标，字段不足时明确降级。",
         "metrics": {
           "cache_hit": false,
@@ -2762,6 +3074,7 @@
           "algorithm_version": "3.0",
           "citation_method_mode": "engineering_screening",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "paper_adapted",
           "evidence_sources": [
             "von Wartburg, Teichert & Rost 2005, Research Policy 34, 1591-1607",
@@ -2786,7 +3099,76 @@
           },
           "requested_citation_mode": "screening",
           "sampled": false,
+          "sensitivity_analysis": {
+            "interpretation": "衡量权重扰动下的排名稳定性，不是现实商业价值校准。",
+            "method": "one_factor_weight_perturbation",
+            "minimum_top_n_overlap": 1.0,
+            "perturbation": 0.2,
+            "scenarios": [
+              {
+                "dimension": "cited_refs_count",
+                "factor": 0.8,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "cited_refs_count",
+                "factor": 1.2,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "family_size",
+                "factor": 0.8,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "family_size",
+                "factor": 1.2,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "ipc_breadth",
+                "factor": 0.8,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "ipc_breadth",
+                "factor": 1.2,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "is_triadic",
+                "factor": 0.8,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "is_triadic",
+                "factor": 1.2,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "patent_age",
+                "factor": 0.8,
+                "top_n_overlap": 1.0
+              },
+              {
+                "dimension": "patent_age",
+                "factor": 1.2,
+                "top_n_overlap": 1.0
+              }
+            ],
+            "top_n": 10
+          },
+          "source_capabilities": {},
           "tool_name": "analyze_patent_valuation",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 600,
@@ -2795,8 +3177,18 @@
           }
         },
         "result_type": "value_indicators",
-        "score_label": "价值筛查分",
+        "score_label": "数据集内相对工程筛查分",
+        "source_capabilities": {},
         "summary": "value_indicators 已生成，共 10 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "当前数据不满足论文复现门禁，SS/RO/BC 未进入价值筛查分；结果为工程筛查，不是财务估值。",
           "当前加载数据中没有外部前向被引字段，不能直接计算外部前向被引次数。"
@@ -2805,8 +3197,9 @@
     },
     "analyze_tech_matrix": {
       "result_type": "tech_effect_matrix",
-      "sha256": "c81981d1e405ba79971c58826a5326499fcba0f4eb26f6a248f94284155d1a0f",
+      "sha256": "975c4e405f736b465b79913c3a68a64002ffc83cd41b1d2a3a40d7cde489ff2c",
       "projection": {
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -2816,6 +3209,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -2835,7 +3229,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2844,6 +3240,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -2857,10 +3254,20 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "abstract": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -2890,6 +3297,7 @@
           "conversion",
           "electrolysis"
         ],
+        "evidence_level": "engineering_screening",
         "functions": [
           "generation",
           "battery",
@@ -3035,6 +3443,7 @@
           "algorithm_id": "derwent_abstract_proxy_te_matrix",
           "algorithm_version": "2.1",
           "confidence": "high",
+          "data_as_of": "",
           "eligible_documents": 300,
           "evidence_level": "engineering_screening",
           "evidence_sources": [
@@ -3052,7 +3461,17 @@
           ],
           "sample_size": 300,
           "sampled": false,
+          "source_capabilities": {},
           "tool_name": "analyze_tech_matrix",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 680,
@@ -3061,7 +3480,17 @@
           }
         },
         "result_type": "tech_effect_matrix",
+        "source_capabilities": {},
         "summary": "tech_effect_matrix 分析已完成。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "零或低共现仅是人工复核候选，不能直接解释为蓝海机会。"
         ]
@@ -3069,7 +3498,7 @@
     },
     "analyze_tech_roadmap": {
       "result_type": "roadmap",
-      "sha256": "94196b3fabc3222ef003e9770573d980f7e8ac873b88879ce42e957f8d8ae1d2",
+      "sha256": "b2f99abe60c4820512f17073810b2986d54d668a0232be8be27150199c0737ab",
       "projection": {
         "data": {
           "2019": [
@@ -3229,6 +3658,7 @@
             }
           ]
         },
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -3238,6 +3668,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -3257,7 +3688,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3266,6 +3699,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -3279,6 +3713,7 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "backward_citations": 0.9967,
             "patent_number": 1.0,
@@ -3286,6 +3721,15 @@
             "title": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -3308,6 +3752,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "methodology": "按公开年度主题、代表性专利和数据可用的引证路径生成路线图。",
         "metrics": {
           "cache_hit": false,
@@ -3340,6 +3785,7 @@
           "algorithm_id": "annual_theme_timeline",
           "algorithm_version": "2.2",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
           "parameters": {
@@ -3349,7 +3795,17 @@
             "complete invention genealogy",
             "causal technology route"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_tech_roadmap",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 680,
@@ -3358,13 +3814,23 @@
           }
         },
         "result_type": "roadmap",
+        "source_capabilities": {},
         "summary": "roadmap 已生成，共 6 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "analyze_yearly_keywords": {
       "result_type": "yearly_keywords",
-      "sha256": "09727bfa9a12c1dbfa5a22bc1faf2debbf438fb61266f2e8896f20856fdf3c4c",
+      "sha256": "f4358d13b184487f1621ad65e7aaa5cd04f8f0c1475452e6e91a9e1335d51c53",
       "projection": {
         "data": {
           "2019": [
@@ -3620,6 +4086,7 @@
             ]
           ]
         },
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -3629,6 +4096,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -3648,7 +4116,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3657,6 +4127,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -3670,12 +4141,22 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "abstract": 1.0,
             "publication_date": 1.0,
             "title": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -3698,6 +4179,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "methodology": "按公开年份统计经过清洗与最小支持过滤的技术术语。",
         "metrics": {
           "cache_hit": false,
@@ -3729,6 +4211,7 @@
           "algorithm_id": "yearly_phrase_frequency",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
           "parameters": {
@@ -3737,7 +4220,17 @@
           "prohibited_claims": [
             "causal technology migration"
           ],
+          "source_capabilities": {},
           "tool_name": "analyze_yearly_keywords",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 620,
@@ -3746,13 +4239,23 @@
           }
         },
         "result_type": "yearly_keywords",
+        "source_capabilities": {},
         "summary": "yearly_keywords 已生成，共 6 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "generate_wordcloud": {
       "result_type": "word_freq",
-      "sha256": "759af21eae6d5a0bff4bb0a39fafbe67ce1f7b95635827ac75632a71a8ed8074",
+      "sha256": "e7e752be2723e18b310e170f5260b53d997b7da5b817a78fbee2bc78bbeefb6e",
       "projection": {
         "data": [
           {
@@ -3800,6 +4303,7 @@
             "word": "sensor"
           }
         ],
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -3809,6 +4313,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -3828,7 +4333,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3837,6 +4344,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -3850,11 +4358,21 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "abstract": 1.0,
             "title": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -3877,6 +4395,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "methodology": "Derwent 模板清洗、词形规范化、文档频率过滤后的技术术语频次。",
         "metrics": {
           "cache_hit": false,
@@ -3907,6 +4426,7 @@
           "algorithm_id": "derwent_phrase_frequency",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [
             "Tseng et al. 2007, Information Processing & Management 43, 1216-1247"
@@ -3918,7 +4438,17 @@
             "paper-exact text mining pipeline",
             "technology value"
           ],
+          "source_capabilities": {},
           "tool_name": "generate_wordcloud",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -3927,14 +4457,25 @@
           }
         },
         "result_type": "word_freq",
+        "source_capabilities": {},
         "summary": "word_freq 已生成，共 11 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": []
       }
     },
     "get_dataset_summary": {
       "result_type": "dataset_summary",
-      "sha256": "ef1e6fc6a82e1bb3081e52fd0643de6e10a10013d8f6aa06e7149e450ace2d8f",
+      "sha256": "deafe1e6860cc3812f7faf867a41dea87c0edad25af901cd033aaf1b9d729f4b",
       "projection": {
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -3944,6 +4485,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -3963,7 +4505,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3972,6 +4516,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -3985,8 +4530,18 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {},
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -4009,6 +4564,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "descriptive_statistic",
         "ipc_sections": [
           "B",
           "C",
@@ -4041,11 +4597,22 @@
           "algorithm_id": "dataset_field_audit",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "parameters": {},
           "prohibited_claims": [],
+          "source_capabilities": {},
           "tool_name": "get_dataset_summary",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -4054,6 +4621,7 @@
           }
         },
         "result_type": "dataset_summary",
+        "source_capabilities": {},
         "summary": "dataset_summary 分析已完成。",
         "top_applicants": [
           {
@@ -4098,6 +4666,15 @@
           }
         ],
         "total_patents": 300,
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "当前加载数据中没有外部前向被引字段，不能直接计算外部前向被引次数。",
           "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
@@ -4108,8 +4685,9 @@
     },
     "read_patent_details": {
       "result_type": "patent_details",
-      "sha256": "541072154df77b3c69837c556c070124772b164793e451da8c54421ec7067328",
+      "sha256": "66080da0275af14b7974d4e7dd8c8bd17d8ceedad87487ea56b5e072ec09c1e8",
       "projection": {
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -4119,6 +4697,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -4138,7 +4717,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -4147,6 +4728,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -4160,6 +4742,7 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "claims_json": 0.0,
             "description": 0.0,
@@ -4167,6 +4750,15 @@
             "patent_number": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -4189,6 +4781,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "descriptive_statistic",
         "methodology": "按公开号精确读取当前数据源已有字段；缺失全文和法律状态时不会推断。",
         "metrics": {
           "cache_hit": false,
@@ -4210,12 +4803,18 @@
             "claims": [],
             "classifications": [],
             "cpc_codes": [],
+            "data_as_of": "",
             "description": "",
             "family_details": [],
+            "family_id": "",
             "family_members": [
               "WO2019000000-A1"
             ],
+            "field_conflicts": [],
+            "field_provenance": [],
+            "filing_date": "",
             "forward_citations": [],
+            "grant_date": "",
             "inventor_parties": [],
             "inventors": [
               "Inventor 00"
@@ -4223,10 +4822,18 @@
             "ipc_codes": [
               "H01M-010/056"
             ],
+            "jurisdiction": "EP",
+            "kind_code": "A1",
+            "language": "und",
+            "legal_events": [],
             "legal_status": "",
+            "legal_status_as_of": "",
+            "localized_abstracts": [],
+            "localized_titles": [],
             "non_patent_references": [
               "JOURNAL OF SYNTHETIC PATENTS 2018"
             ],
+            "normalized_patent_number": "EP2019000000A1",
             "patent_number": "EP2019000000-A1",
             "priority_date": "2018-01-01",
             "priority_numbers": [],
@@ -4236,7 +4843,7 @@
               "EP2019000000-A1",
               "WO2019000000-A1"
             ],
-            "schema_version": 2,
+            "schema_version": 3,
             "source_file": "",
             "source_record_id": "SYNTHETIC:0000",
             "title": "Solid Electrolyte Battery apparatus generation 0"
@@ -4269,6 +4876,7 @@
           "algorithm_id": "structured_record_lookup",
           "algorithm_version": "2.0",
           "confidence": "high",
+          "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "parameters": {
@@ -4281,7 +4889,17 @@
             "complete claims",
             "legal status conclusion"
           ],
+          "source_capabilities": {},
           "tool_name": "read_patent_details",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -4290,7 +4908,17 @@
           }
         },
         "result_type": "patent_details",
+        "source_capabilities": {},
         "summary": "patent_details 已生成，共 1 项结构化结果。",
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "当前数据源不含权利要求全文。",
           "当前数据源不含法律状态。",
@@ -4300,8 +4928,9 @@
     },
     "search_patents": {
       "result_type": "patent_search",
-      "sha256": "86c60c64a26a749acf7ef7a26cad32ee9cf486258711e738f613b517ce09e88a",
+      "sha256": "0ff5b667658cb487d074e81feea3ccdb4fa70e282f74aec07fe72fb192dcf01f",
       "projection": {
+        "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
           "batch_completeness": {},
@@ -4311,6 +4940,7 @@
             "multi_applicant_patents": 60,
             "multi_applicant_rate": 0.2
           },
+          "data_as_of": "",
           "dataset_manifest": {
             "generator": "scripts/generate_golden_wos_fixture.py",
             "license": "CC0-1.0 synthetic test data",
@@ -4330,7 +4960,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
+            "legal_events": 1.0,
             "legal_status": 0.0,
+            "multilingual_text": 1.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -4339,6 +4971,7 @@
             "source_record_id": 1.0,
             "title": 1.0
           },
+          "import_report": {},
           "internal_citation_network": {
             "direction": "citing_patent_to_cited_patent",
             "edge_resolution_rate": 1.0,
@@ -4352,12 +4985,22 @@
             "total_edges": 299
           },
           "quality_level": "high",
+          "source_capabilities": {},
           "tool_field_coverage": {
             "abstract": 1.0,
             "patent_number": 1.0,
             "title": 1.0
           },
           "total_patents": 300,
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "warning_records": [
             {
               "affected_tools": [
@@ -4380,6 +5023,7 @@
             "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
           ]
         },
+        "evidence_level": "engineering_screening",
         "methodology": "标题与摘要的 TF-IDF 混合检索；结果是相关性筛查，不等同于查全检索。",
         "metrics": {
           "cache_hit": false,
@@ -4450,13 +5094,16 @@
           "sampled": false,
           "sampling_method": "none"
         },
-        "query_embedding_time_ms": 0.0,
         "result_metadata": {
           "algorithm_id": "tfidf_cosine_retrieval",
           "algorithm_version": "2.1",
+          "beta_fallback": false,
           "confidence": "high",
+          "data_as_of": "",
+          "embedding_model": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
+          "index": {},
           "parameters": {
             "query": "solid electrolyte battery",
             "top_k": 5
@@ -4466,7 +5113,19 @@
             "legal novelty search",
             "exhaustive prior-art search"
           ],
+          "retrieval_mode_requested": "lexical",
+          "retrieval_mode_used": "lexical",
+          "source_capabilities": {},
           "tool_name": "search_patents",
+          "unsupported_conclusions": [
+            "正式专利价值或交易价格结论",
+            "权利要求范围判断",
+            "侵权比对",
+            "正式 FTO 意见",
+            "实时有效性判断",
+            "当前权利状态判断",
+            "基于完整外部前向引证的影响力结论"
+          ],
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -4475,8 +5134,18 @@
           }
         },
         "result_type": "patent_search",
+        "source_capabilities": {},
         "summary": "patent_search 已生成，共 5 项结构化结果。",
         "total_hits": 5,
+        "unsupported_conclusions": [
+          "正式专利价值或交易价格结论",
+          "权利要求范围判断",
+          "侵权比对",
+          "正式 FTO 意见",
+          "实时有效性判断",
+          "当前权利状态判断",
+          "基于完整外部前向引证的影响力结论"
+        ],
         "warnings": [
           "当前加载数据缺少权利要求或法律状态，仅可进行初步相关专利筛查，不构成 FTO 法律意见。"
         ]

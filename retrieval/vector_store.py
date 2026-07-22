@@ -6,6 +6,8 @@ search() 默认 where={"is_deleted": False} 保证 Top-K 语义不被软删除�
 
 import os
 import logging
+import json
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -372,6 +374,42 @@ class InMemoryVectorStore:
 
     def count(self) -> int:
         return len(self._ids)
+
+    def save_index(self, directory: str | Path) -> int:
+        """Persist vectors without serializing executable Python objects."""
+        if self._vectors is None:
+            return 0
+        root = Path(directory)
+        root.mkdir(parents=True, exist_ok=True)
+        vectors_tmp = root / "vectors.tmp.npy"
+        records_tmp = root / "records.tmp.json"
+        np.save(vectors_tmp, self._vectors, allow_pickle=False)
+        records_tmp.write_text(json.dumps({
+            "ids": self._ids,
+            "metadatas": self._metadatas,
+            "documents": self._documents,
+        }, ensure_ascii=False), encoding="utf-8")
+        vectors_tmp.replace(root / "vectors.npy")
+        records_tmp.replace(root / "records.json")
+        return int((root / "vectors.npy").stat().st_size + (root / "records.json").stat().st_size)
+
+    def load_index(self, directory: str | Path) -> bool:
+        root = Path(directory)
+        vectors_path = root / "vectors.npy"
+        records_path = root / "records.json"
+        if not vectors_path.is_file() or not records_path.is_file():
+            return False
+        payload = json.loads(records_path.read_text(encoding="utf-8"))
+        vectors = np.load(vectors_path, allow_pickle=False)
+        ids = [str(item) for item in payload.get("ids", [])]
+        metadatas = list(payload.get("metadatas", []))
+        documents = [str(item) for item in payload.get("documents", [])]
+        if len(ids) != len(metadatas) or len(ids) != len(documents) or len(ids) != len(vectors):
+            return False
+        self._ids, self._metadatas, self._documents, self._vectors = (
+            ids, metadatas, documents, vectors,
+        )
+        return True
 
 
 def create_vector_store(persist_dir: str = "./data/chroma_db",

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "domains": ["solid_state_battery", "carbon_capture", "industrial_robotics"],
+  "documents": ["US11476497B2", "US11325075B2", "US11958200B2"],
+  "sources": [
+    {
+      "name": "Google Patents Public Data",
+      "status": "formally_supported_file_format",
+      "schema": "https://github.com/google/patents-public-data/blob/master/tables/dataset_Google%20Patents%20Public%20Datasets.md",
+      "export_recipe": "google_patents_export.sql",
+      "redistribution": "Commit only minimized records after reviewing source terms."
+    },
+    {
+      "name": "USPTO Open Data Portal",
+      "status": "formally_supported_file_format",
+      "portal": "https://data.uspto.gov/apis/bulk-data/search",
+      "export_recipe": "Download official grant XML or Patent File Wrapper JSON for the listed documents; record the exact URL and SHA-256 in patentagent-import.json.",
+      "redistribution": "Keep restricted or uncertain bulk artifacts out of Git; commit the manifest and verification recipe."
+    },
+    {
+      "name": "EPO OPS",
+      "status": "planned_interface_only",
+      "url": "https://www.epo.org/en/searching-for-patents/data/web-services/ops",
+      "note": "No credentials, scraping, or production adapter are included."
+    },
+    {
+      "name": "CNIPA public services",
+      "status": "planned_interface_only",
+      "url": "https://www.cnipa.gov.cn/art/2024/4/1/art_3359_191346.html",
+      "note": "No credentials, scraping, or production adapter are included."
+    }
+  ]
+}

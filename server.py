@@ -10,18 +10,15 @@ import os
 import sys
 import asyncio
 import re
-import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, HTMLResponse, JSONResponse
-from pydantic import BaseModel
-import httpx
+from fastapi.responses import StreamingResponse, JSONResponse
 
 _project_root = os.path.dirname(os.path.abspath(__file__))
 if _project_root not in sys.path:
@@ -33,7 +30,6 @@ from models.session import Session, ToolExecution
 from models.analysis_results import GenericAnalysisResult
 from tools import tool_registry
 from tools.base import Tool
-from agent.llm import LLMClient, LLMProvider
 from agent.final_answer import user_facing_content
 from agent.orchestrator import AnalysisPlan, PatentAgentOrchestrator, build_default_knowledge
 from reporting import ReportGenerator
@@ -41,7 +37,6 @@ from storage.conversation_store import ConversationStore, execution_cache_key
 from storage.provider_store import ProviderProfileStore
 from models.provider_profile import (
     ProviderCredentials,
-    ProviderProfile,
     ProviderProfileCreate,
     ProviderProfileUpdate,
 )
@@ -50,8 +45,49 @@ from patent_agent.infrastructure.observability import (
     RequestGuardMiddleware, TraceMiddleware, configure_json_logging,
     current_container, current_trace_id,
 )
-from patent_agent.security import assert_safe_provider_target
-from patent_agent.application import AnalysisService, DatasetService, ReportService
+from patent_agent.security import validate_input_dir
+from patent_agent.application import (
+    AnalysisService, DatasetImportService, ProviderService, ReportService,
+    SearchIndexService, TaskService,
+    ToolExecutionService,
+    normalize_evidence_history, normalize_history_messages,
+    normalize_session_detail,
+)
+from patent_agent.api.schemas import (
+    ChatRequest, ExportRequest, LLMConfigRequest, LoadRequest,
+    ProviderSecretRequest, ResynthesizeRequest, SessionCreateRequest,
+    SessionRenameRequest, ToolRequest,
+)
+from patent_agent.api.routes import (
+    datasets_router, providers_router, reports_router, sessions_router,
+    tasks_router, tools_router,
+)
+from patent_agent.api.routes.providers import (
+    activate_llm_profile as _activate_llm_profile_route,
+    agent_config as _agent_config_route,
+    create_llm_profile as _create_llm_profile_route,
+    delete_llm_profile as _delete_llm_profile_route,
+    disconnect_llm as _disconnect_llm_route,
+    discover_llm_models as _discover_llm_models_route,
+    list_llm_profiles as _list_llm_profiles_route,
+    probe_llm_profile as _probe_llm_profile_route,
+    update_llm_profile as _update_llm_profile_route,
+)
+from patent_agent.api.routes.datasets import (
+    data_summary as _data_summary_route,
+    list_datasets as _list_datasets_route,
+    list_dataset_versions as _list_dataset_versions_route,
+)
+from patent_agent.api.routes.reports import report_export as _report_export_route
+from patent_agent.api.routes.sessions import get_session as _get_session_route
+from patent_agent.api.routes.tools import (
+    list_tools as _list_tools_route, run_tool as _run_tool_route,
+)
+from patent_agent.api.routes.tasks import (
+    cancel_task as _cancel_task_route,
+    get_task as _get_task_route,
+    get_task_events as _get_task_events_route,
+)
 
 logger = logging.getLogger("patentagent.server")
 configure_json_logging(getattr(
@@ -69,14 +105,18 @@ def _new_container() -> AppContainer:
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
     runtime = fastapi_app.state.container
-    runtime.dataset_service = runtime.dataset_service or DatasetService(_load_store)
+    runtime.dataset_service = runtime.dataset_service or DatasetImportService()
     runtime.analysis_service = runtime.analysis_service or AnalysisService()
+    runtime.tool_execution_service = runtime.tool_execution_service or ToolExecutionService()
     runtime.report_service = runtime.report_service or ReportService(ReportGenerator)
+    runtime.search_index_service = runtime.search_index_service or SearchIndexService()
     if runtime.agent is not None:
-        await _close_current_agent(runtime)
+        await ProviderService(runtime).close_current()
     runtime.clear_ephemeral()
-    input_dir = _validate_input_dir(os.getenv("MCP_INPUT_DIR", "./my_patents"))
-    runtime.store = runtime.dataset_service.load(input_dir)
+    input_dir = validate_input_dir(
+        os.getenv("MCP_INPUT_DIR", "./my_patents"), runtime.settings.data_root,
+    )
+    runtime.store = runtime.dataset_service.load(input_dir, "auto")
     session_db = Path(os.getenv(
         "PATENTAGENT_SESSION_DB",
         os.path.join(_project_root, ".patentagent", "sessions.db"),
@@ -85,14 +125,16 @@ async def lifespan(fastapi_app: FastAPI):
     await runtime.conversation_store.initialize()
     runtime.provider_store = ProviderProfileStore(session_db)
     await runtime.provider_store.initialize()
+    runtime.provider_service = ProviderService(runtime)
     await runtime.conversation_store.upsert_dataset_snapshot(
         runtime.store.snapshot().model_dump(mode="json"),
     )
     await runtime.conversation_store.mark_inflight_interrupted()
+    runtime.task_service = TaskService(runtime.conversation_store, resynthesize_turn)
     try:
         yield
     finally:
-        await _close_current_agent(runtime)
+        await ProviderService(runtime).close_current()
         runtime.clear_ephemeral()
 
 
@@ -130,6 +172,12 @@ app.add_middleware(
     max_request_bytes=app.state.container.settings.max_request_bytes,
 )
 app.add_middleware(TraceMiddleware)
+app.include_router(datasets_router)
+app.include_router(tools_router)
+app.include_router(sessions_router)
+app.include_router(reports_router)
+app.include_router(providers_router)
+app.include_router(tasks_router)
 
 # ═══════════════════════════════════════════════════════════
 #  Application-owned state
@@ -139,106 +187,12 @@ def _runtime() -> AppContainer:
     return current_container() or app.state.container
 
 
-def _normalize_history_messages(messages: list[dict]) -> list[dict]:
-    """Repair legacy assistant JSON for display/context without rewriting SQLite."""
-    normalized_messages: list[dict] = []
-    for stored in messages:
-        item = dict(stored)
-        if item.get("role") == "assistant":
-            visible, canonical, mode = user_facing_content(str(item.get("content", "")))
-            item["content"] = visible
-            if canonical is not None:
-                metadata = dict(item.get("metadata") or {})
-                metadata["answer_format"] = "markdown"
-                metadata["normalization_mode"] = mode
-                if canonical.get("followup_suggestions"):
-                    # The stored suggestions may be an older deterministic
-                    # fallback created only because this JSON was not parsed.
-                    metadata["followup_suggestions"] = canonical["followup_suggestions"]
-                    metadata["followup_questions"] = [
-                        entry["text"] for entry in canonical["followup_suggestions"]
-                    ]
-                if canonical.get("evidence_refs"):
-                    metadata.setdefault("evidence_refs", canonical["evidence_refs"])
-                item["metadata"] = metadata
-        normalized_messages.append(item)
-    return normalized_messages
-
-
-def _normalize_session_detail(detail: dict) -> dict:
-    normalized = dict(detail)
-    normalized["messages"] = _normalize_history_messages(detail.get("messages", []))
-    turns = []
-    for stored in detail.get("turns", []):
-        turn = dict(stored)
-        if turn.get("final_text"):
-            turn["final_text"] = user_facing_content(str(turn["final_text"]))[0]
-        turns.append(turn)
-    normalized["turns"] = turns
-    return normalized
-
-
-def _normalize_evidence_history(evidence: list[dict]) -> list[dict]:
-    normalized = []
-    for stored in evidence:
-        item = dict(stored)
-        if item.get("final_text"):
-            item["final_text"] = user_facing_content(str(item["final_text"]))[0]
-        normalized.append(item)
-    return normalized
-
-
-def _allowed_data_root() -> Path:
-    return Path(os.getenv(
-        "PATENT_DATA_ROOT", os.path.join(_project_root, "my_patents")
-    )).expanduser().resolve()
-
-
-def _validate_input_dir(input_dir: str) -> str:
-    candidate = Path(input_dir).expanduser().resolve()
-    allowed = _allowed_data_root()
-    try:
-        candidate.relative_to(allowed)
-    except ValueError as exc:
-        raise HTTPException(
-            403, f"数据目录必须位于允许目录内: {allowed}",
-        ) from exc
-    return str(candidate)
-
-
 def _load_store(input_dir: str) -> PatentDataStore:
-    """Load patent data using WoSAdapter (default)."""
-    from engine.adapters.wos_adapter import WoSAdapter
-    adapter = WoSAdapter()
-    df = adapter.batch_parse(input_dir)
-    s = PatentDataStore(source_dir=input_dir)
-    if not df.empty:
-        s.load_dataframe(df)
-    s._adapter_name = adapter.name
+    """Compatibility loader routed through the registry-driven importer."""
+    s = DatasetImportService().load(input_dir, "auto")
     from storage.dataset_manifest import inspect_dii_batches
-    s._load_diagnostics = inspect_dii_batches(input_dir, len(df))
+    s._load_diagnostics = inspect_dii_batches(input_dir, len(s.get_all()))
     return s
-
-
-def _dataset_inventory() -> list[dict]:
-    """List manifest-backed datasets below the configured data root."""
-    root = _allowed_data_root()
-    inventory = []
-    if not root.is_dir():
-        return inventory
-    for path in sorted(root.rglob("manifest.json")):
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            payload = {"status": "invalid_manifest"}
-        inventory.append({
-            "dataset_id": payload.get("dataset_id", path.parent.name),
-            "status": payload.get("status", "unknown"),
-            "path": str(path.parent.relative_to(root)),
-            "retrieved_records": payload.get("retrieved_records", 0),
-            "query": payload.get("query", ""),
-        })
-    return inventory
 
 
 def _dataset_fingerprint() -> str:
@@ -257,47 +211,116 @@ def _provider_repo() -> ProviderProfileStore:
     return _runtime().provider_store
 
 
-# ═══════════════════════════════════════════════════════════
-#  Request models
-# ═══════════════════════════════════════════════════════════
-
-class LoadRequest(BaseModel):
-    input_dir: str = "./my_patents"
-
-class ToolRequest(BaseModel):
-    params: dict = {}
-    session_id: str | None = None
-
-class ChatRequest(BaseModel):
-    message: str
-    session_id: str | None = None
-    response_mode: str = "detailed"
-    reply_to_turn_id: str | None = None
-
-class SessionCreateRequest(BaseModel):
-    name: str = "新会话"
-
-class SessionRenameRequest(BaseModel):
-    name: str
-
-class ResynthesizeRequest(BaseModel):
-    response_mode: str = "detailed"
-
-class ExportRequest(BaseModel):
-    messages: list[dict]
-    title: str = "PatentAgent Report"
-    session_id: str | None = None
-    turn_id: str | None = None
-
-class LLMConfigRequest(BaseModel):
-    provider: str = "Claude"       # Claude | OpenAI | DeepSeek
-    api_key: str = ""
-    base_url: str = ""
-    model: str | None = None
+# Direct-call compatibility for embedded users and older unit tests.  HTTP
+# routing lives in patent_agent.api.routes; these wrappers do not own logic.
+def data_summary():
+    return _data_summary_route(_runtime())
 
 
-class ProviderSecretRequest(ProviderCredentials):
-    pass
+def list_tools():
+    return _list_tools_route(_runtime())
+
+
+async def run_tool(tool_name: str, req: ToolRequest = ToolRequest()):
+    return await _run_tool_route(tool_name, req, _runtime())
+
+
+async def list_datasets():
+    return await _list_datasets_route(_runtime())
+
+
+async def list_dataset_versions(dataset_id: str):
+    return await _list_dataset_versions_route(dataset_id, _runtime())
+
+
+async def get_session(session_id: str):
+    return await _get_session_route(session_id, _runtime())
+
+
+async def report_export(req: ExportRequest):
+    return await _report_export_route(req, _runtime())
+
+
+async def list_llm_profiles():
+    return await _list_llm_profiles_route(_runtime())
+
+
+async def create_llm_profile(req: ProviderProfileCreate):
+    return await _create_llm_profile_route(req, _runtime())
+
+
+async def update_llm_profile(profile_id: str, req: ProviderProfileUpdate):
+    return await _update_llm_profile_route(profile_id, req, _runtime())
+
+
+async def delete_llm_profile(profile_id: str):
+    return await _delete_llm_profile_route(profile_id, _runtime())
+
+
+async def probe_llm_profile(profile_id: str, req: ProviderSecretRequest = ProviderSecretRequest()):
+    service = ProviderService(_runtime())
+    service.probe_profile = _probe_profile
+    try:
+        return await service.probe(profile_id, req)
+    except KeyError as exc:
+        raise HTTPException(404, "供应商配置不存在") from exc
+    except Exception as exc:
+        category = service.error_category(exc)
+        service.record_probe_state(profile_id, "failed", error_category=category, stages=getattr(exc, "stages", {}))
+        raise HTTPException(502, {
+            "message": "连接探测失败: " + service.redacted_error(exc, [req.api_key, *req.sensitive_headers.values()]),
+            "category": category, "stages": getattr(exc, "stages", {}),
+        }) from exc
+
+
+async def discover_llm_models(profile_id: str, req: ProviderSecretRequest = ProviderSecretRequest()):
+    return await _discover_llm_models_route(profile_id, req, _runtime())
+
+
+async def activate_llm_profile(profile_id: str, req: ProviderSecretRequest = ProviderSecretRequest()):
+    service = ProviderService(_runtime())
+    service.probe_profile = _probe_profile
+    try:
+        return await service.activate(profile_id, req)
+    except KeyError as exc:
+        raise HTTPException(404, "供应商配置不存在") from exc
+    except Exception as exc:
+        category = service.error_category(exc)
+        service.record_probe_state(profile_id, "failed", error_category=category, stages=getattr(exc, "stages", {}))
+        raise HTTPException(502, {
+            "message": "无法激活供应商: " + service.redacted_error(exc, [req.api_key, *req.sensitive_headers.values()]),
+            "category": category, "stages": getattr(exc, "stages", {}),
+        }) from exc
+
+
+async def disconnect_llm():
+    return await _disconnect_llm_route(_runtime())
+
+
+async def agent_config(req: LLMConfigRequest):
+    return await _agent_config_route(req, _runtime())
+
+
+def _ensure_task_service() -> None:
+    runtime = _runtime()
+    repo = _conversation_repo()
+    if runtime.task_service is None or runtime.task_service.repository is not repo:
+        runtime.task_service = TaskService(repo, resynthesize_turn)
+
+
+async def get_task(turn_id: str):
+    _ensure_task_service()
+    return await _get_task_route(turn_id, _runtime())
+
+
+async def get_task_events(turn_id: str, last_event_id: str | None = None):
+    _ensure_task_service()
+    return await _get_task_events_route(turn_id, last_event_id, _runtime())
+
+
+async def cancel_task(turn_id: str):
+    _ensure_task_service()
+    return await _cancel_task_route(turn_id, _runtime())
 
 
 # ═══════════════════════════════════════════════════════════
@@ -314,7 +337,7 @@ async def health():
         "year_range": list(ds.year_range) if ds and ds.year_range != (0, 0) else None,
         "tools": len(tool_registry.get_all_names()),
         "agent_configured": _runtime().agent is not None,
-        "selected_profile": _public_profile(selected) if selected else None,
+        "selected_profile": ProviderService(_runtime()).public_profile(selected) if selected else None,
         "connected_profile": _runtime().connected_profile_snapshot,
         "credential_loaded": bool(
             selected and (
@@ -331,685 +354,10 @@ async def health():
         ),
     }
 
-# ═══════════════════════════════════════════════════════════
-#  Data
-# ═══════════════════════════════════════════════════════════
-
-@app.post("/api/data/load")
-async def data_load(req: LoadRequest):
-    service = _runtime().dataset_service or DatasetService(_load_store)
-    _runtime().dataset_service = service
-    _runtime().store = service.load(_validate_input_dir(req.input_dir))
-    await _conversation_repo().upsert_dataset_snapshot(
-        _runtime().store.snapshot().model_dump(mode="json"),
-    )
-    ds = _runtime().store.get_summary()
-    return {
-        "total_patents": ds.total_patents,
-        "year_range": list(ds.year_range),
-        "ipc_sections": ds.ipc_sections,
-        "top_applicants": [{"name": n, "count": c} for n, c in ds.top_applicants],
-        "datasets": _dataset_inventory(),
-        "dataset_snapshot": _runtime().store.snapshot().model_dump(mode="json"),
-        **_runtime().store.audit(),
-    }
-
-@app.get("/api/data/summary")
-def data_summary():
-    if not _runtime().store or _runtime().store.is_empty:
-        raise HTTPException(404, "No patent data loaded. POST /api/data/load first.")
-    ds = _runtime().store.get_summary()
-    return {
-        "total_patents": ds.total_patents,
-        "year_range": list(ds.year_range),
-        "ipc_sections": ds.ipc_sections,
-        "top_applicants": [{"name": n, "count": c} for n, c in ds.top_applicants[:10]],
-        "datasets": _dataset_inventory(),
-        "dataset_snapshot": _runtime().store.snapshot().model_dump(mode="json"),
-        **_runtime().store.audit(),
-    }
-
-
-@app.get("/api/datasets")
-async def list_datasets():
-    versions = await _conversation_repo().list_dataset_versions()
-    grouped: dict[str, dict] = {}
-    for version in versions:
-        dataset = grouped.setdefault(version["dataset_id"], {
-            "id": version["dataset_id"],
-            "name": version.get("name") or version["dataset_id"],
-            "source_root": version.get("source_root", ""),
-            "latest_version": version,
-            "version_count": 0,
-        })
-        dataset["version_count"] += 1
-    return {"datasets": list(grouped.values()), "trace_id": current_trace_id()}
-
-
-@app.get("/api/datasets/{dataset_id}/versions")
-async def list_dataset_versions(dataset_id: str):
-    versions = [
-        item for item in await _conversation_repo().list_dataset_versions()
-        if item["dataset_id"] == dataset_id
-    ]
-    if not versions:
-        raise HTTPException(404, "数据集不存在")
-    return {"dataset_id": dataset_id, "versions": versions,
-            "trace_id": current_trace_id()}
-
-# ═══════════════════════════════════════════════════════════
-#  Tools
-# ═══════════════════════════════════════════════════════════
-
-@app.get("/api/tools")
-def list_tools():
-    """列出工具参数、当前数据能力、方法与证据等级。"""
-    return {
-        "tools": [
-            {
-                "name": t.name,
-                "description": t.description,
-                "parameters": t.parameters,
-                "methodology": t.methodology,
-                "evidence_level": t.evidence_record.get("evidence_type", t.evidence_level),
-                "algorithm": t.evidence_record,
-                "cost_weight": t.cost_weight,
-                "returned_fields": t.returned_fields,
-                "definition": t.definition.model_dump(mode="json"),
-                "availability": t.availability(_runtime().store) if _runtime().store else {
-                    "available": False, "reason": "尚未加载数据",
-                },
-            }
-            for t in tool_registry.list_tools()
-        ]
-    }
-
-@app.post("/api/tools/{tool_name}")
-async def run_tool(tool_name: str, req: ToolRequest = ToolRequest()):
-    """Execute a single analysis tool."""
-    if not _runtime().store or _runtime().store.is_empty:
-        raise HTTPException(400, "No patent data. Call /api/data/load first.")
-    if len(_runtime().active_generation_turns) >= _runtime().settings.max_agent_concurrency:
-        raise HTTPException(429, "已有分析任务正在运行，请等待完成后重试")
-
-    try:
-        tool = tool_registry.get_tool(tool_name)
-    except KeyError:
-        names = tool_registry.get_all_names()
-        raise HTTPException(404, f"Unknown tool '{tool_name}'. Available: {names}")
-
-    try:
-        async with _runtime().tool_semaphore:
-            service = _runtime().analysis_service or AnalysisService()
-            _runtime().analysis_service = service
-            result = await service.run_tool(tool, _runtime().store, req.params)
-    except ValueError as e:
-        raise HTTPException(422, str(e))
-    except Exception as e:
-        raise HTTPException(500, f"Tool {tool_name} failed: {e}")
-
-    if hasattr(result, "model_dump"):
-        payload = result.model_dump()
-        if req.session_id:
-            repo = _conversation_repo()
-            await repo.ensure_session(req.session_id, _dataset_fingerprint())
-            turn_id = await repo.start_turn(
-                req.session_id, "", origin="quick_tool",
-                dataset_version_id=_runtime().store.snapshot().version_id,
-                trace_id=current_trace_id(),
-            )
-            execution_id = f"quick_{tool_name}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
-            metadata = payload.get("result_metadata", {})
-            await repo.record_execution(
-                req.session_id, turn_id, execution_id, tool_name, req.params,
-                "completed", payload,
-                duration_ms=float(metadata.get("elapsed_ms", 0) or 0),
-                algorithm_version=str(metadata.get("algorithm_version", "")),
-                dataset_fingerprint=_dataset_fingerprint(),
-                provenance=payload.get("provenance", {}),
-                metrics=payload.get("metrics", {}),
-            )
-            await repo.finish_turn(
-                req.session_id, turn_id,
-                payload.get("summary") or f"{tool_name} 已完成。",
-                metadata={"origin": "quick_tool", "execution_id": execution_id},
-            )
-            payload.setdefault("result_metadata", {}).update({
-                "session_id": req.session_id,
-                "turn_id": turn_id,
-                "execution_id": execution_id,
-                "origin": "quick_tool",
-            })
-        return payload
-    return {"result_type": "patent_details", "data": [
-        item.model_dump() if hasattr(item, "model_dump") else item
-        for item in result
-    ]}
-
-# ═══════════════════════════════════════════════════════════
-#  LLM Config
-# ═══════════════════════════════════════════════════════════
-
-_PROTOCOL_MAP = {
-    "openai_chat": LLMProvider.OPENAI,
-    "anthropic_messages": LLMProvider.CLAUDE,
-    "deepseek_chat": LLMProvider.DEEPSEEK,
-}
-
-
-def _public_profile(profile: dict | None) -> dict | None:
-    """Return a profile without ever exposing API keys or sensitive values."""
-    if not profile:
-        return None
-    profile_id = profile["id"]
-    vault = _runtime().credential_vault.get(profile_id, {})
-    loaded_headers = {
-        name.lower() for name in vault.get("sensitive_headers", {})
-    }
-    public_headers = []
-    for raw in profile.get("extra_headers", []):
-        header = dict(raw)
-        if header.get("sensitive"):
-            header["value"] = ""
-            header["credential_loaded"] = header.get("name", "").lower() in loaded_headers
-        else:
-            header["credential_loaded"] = False
-        public_headers.append(header)
-    item = dict(profile)
-    probe_state = _runtime().profile_probe_states.get(profile_id, {})
-    item.update({
-        "extra_headers": public_headers,
-        "credential_loaded": (
-            item.get("auth_mode") == "none" or bool(vault.get("api_key"))
-        ),
-        "connected": profile_id == _runtime().connected_profile_id and _runtime().agent is not None,
-        "needs_reconnect": profile_id in _runtime().profiles_needing_reconnect,
-        "probe_status": probe_state.get("status", "not_tested"),
-        "probe_error_category": probe_state.get("error_category", ""),
-        "last_probe_at": probe_state.get("at", ""),
-    })
-    return ProviderProfile.model_validate(item).model_dump()
-
-
-def _redacted_error(exc: Exception, secrets: list[str] | None = None) -> str:
-    text = str(exc)
-    for secret in secrets or []:
-        if secret:
-            text = text.replace(secret, "[redacted]")
-    text = re.sub(
-        r"(?i)(api[-_ ]?key|authorization|x-api-key)\s*[:=]\s*[^\s,}]+",
-        r"\1=[redacted]", text,
-    )
-    return f"{type(exc).__name__}: {text[:500]}"
-
-
-def _provider_error_category(exc: Exception) -> str:
-    """Map provider failures to stable, non-secret UI categories."""
-    text = str(exc).lower()
-    if any(token in text for token in ("401", "403", "unauthor", "forbidden", "api key", "authentication")):
-        return "authentication"
-    if any(token in text for token in ("404", "model_not_found", "unknown model", "does not exist")):
-        return "model"
-    if any(token in text for token in ("connect", "dns", "name or service", "timeout", "timed out", "ssl", "certificate")):
-        return "address"
-    if any(token in text for token in ("tool", "structured", "schema", "capabil")):
-        return "capability"
-    if any(token in text for token in ("400", "422", "protocol", "invalid request", "unsupported")):
-        return "protocol"
-    return "provider"
-
-
-def _record_probe_state(profile_id: str, status: str, **values) -> None:
-    _runtime().profile_probe_states[profile_id] = {
-        "status": status,
-        "at": datetime.now().astimezone().isoformat(),
-        **values,
-    }
-
-
-def _ensure_provider_mutation_allowed() -> None:
-    if _runtime().active_generation_turns:
-        raise HTTPException(
-            409, "Agent 正在生成回答，完成或取消当前轮次后才能切换、编辑、删除或断开供应商",
-        )
-
-
-def _merged_credentials(
-    profile: dict, supplied: ProviderCredentials | None,
-) -> dict:
-    cached = dict(_runtime().credential_vault.get(profile["id"], {}))
-    configured_names = {
-        header["name"].lower(): header["name"]
-        for header in profile.get("extra_headers", []) if header.get("sensitive")
-    }
-    cached_headers = {
-        configured_names.get(name.lower(), name): value
-        for name, value in cached.get("sensitive_headers", {}).items()
-        if name.lower() in configured_names
-    }
-    if supplied:
-        if supplied.api_key:
-            cached["api_key"] = supplied.api_key
-        cached_headers.update({
-            configured_names.get(name.lower(), name): value
-            for name, value in supplied.sensitive_headers.items()
-            if value and name.lower() in configured_names
-        })
-    cached["sensitive_headers"] = cached_headers
-    if profile["auth_mode"] != "none" and not cached.get("api_key"):
-        raise ValueError("该配置需要 API Key；凭证不会在重启后自动恢复")
-    missing = [
-        header["name"] for header in profile.get("extra_headers", [])
-        if header.get("sensitive") and not cached_headers.get(header["name"])
-    ]
-    if missing:
-        raise ValueError("缺少敏感 Header 值: " + ", ".join(missing))
-    return cached
-
-
-def _request_headers(profile: dict, credentials: dict) -> tuple[dict[str, str], str]:
-    headers: dict[str, str] = {}
-    secret_headers = credentials.get("sensitive_headers", {})
-    for header in profile.get("extra_headers", []):
-        value = secret_headers.get(header["name"], "") if header.get("sensitive") else header.get("value", "")
-        if value:
-            headers[header["name"]] = value
-    key = credentials.get("api_key", "")
-    auth_mode = profile["auth_mode"]
-    sdk_key = key
-    if auth_mode == "bearer":
-        header_name = profile.get("auth_header_name") or "Authorization"
-        prefix = profile.get("auth_prefix", "Bearer ")
-        headers.setdefault(header_name, f"{prefix}{key}")
-        if header_name.lower() != "authorization" or prefix != "Bearer ":
-            sdk_key = "patentagent-custom-auth"
-    elif auth_mode == "x_api_key":
-        headers.setdefault(profile.get("auth_header_name") or "x-api-key", key)
-        if profile["protocol"] != "anthropic_messages":
-            sdk_key = "patentagent-custom-auth"
-    elif auth_mode == "custom_header":
-        headers[profile["auth_header_name"]] = f"{profile.get('auth_prefix', '')}{key}"
-        sdk_key = "patentagent-custom-auth"
-    elif auth_mode == "none":
-        sdk_key = "patentagent-no-auth"
-    return headers, sdk_key
-
-
-def _build_llm_client(profile: dict, credentials: dict) -> LLMClient:
-    if not profile.get("base_url"):
-        raise ValueError("请求地址不能为空")
-    if not profile.get("model"):
-        raise ValueError("模型 ID 不能为空")
-    headers, sdk_key = _request_headers(profile, credentials)
-    return LLMClient(
-        provider=_PROTOCOL_MAP[profile["protocol"]],
-        api_key=sdk_key,
-        base_url=profile["base_url"],
-        model=profile["model"],
-        max_retries=profile["max_retries"],
-        timeout_seconds=profile["timeout_seconds"],
-        max_output_tokens=profile["max_output_tokens"],
-        temperature=profile.get("temperature"),
-        reasoning_effort=profile["reasoning_effort"],
-        thinking_mode=profile["thinking_mode"],
-        extra_headers=headers,
-        extra_body=profile.get("extra_body", {}),
-    )
-
-
-async def _close_current_agent(runtime: AppContainer | None = None) -> None:
-    runtime = runtime or _runtime()
-    client = getattr(runtime.agent, "llm", None) if runtime.agent else None
-    runtime.agent = None
-    runtime.connected_profile_id = None
-    runtime.connected_profile_snapshot = None
-    runtime.llm_capabilities = {}
-    if client and hasattr(client, "close"):
-        try:
-            await client.close()
-        except Exception:
-            logger.warning("Failed to close previous LLM client", exc_info=False)
-
-
-async def _probe_profile(profile: dict, supplied: ProviderCredentials) -> tuple[LLMClient, dict, dict]:
-    credentials = _merged_credentials(profile, supplied)
-    await assert_safe_provider_target(profile["base_url"])
-    client = _build_llm_client(profile, credentials)
-    try:
-        probe = await client.probe_detailed()
-    except Exception:
-        await client.close()
-        raise
-    return client, probe, credentials
-
-
-@app.get("/api/llm/profiles")
-async def list_llm_profiles():
-    return {"profiles": [
-        _public_profile(profile) for profile in await _provider_repo().list_profiles()
-    ]}
-
-
-@app.post("/api/llm/profiles")
-async def create_llm_profile(req: ProviderProfileCreate):
-    try:
-        # Selection is an activation outcome, never a side effect of saving.
-        profile = await _provider_repo().create_profile(
-            req.model_copy(update={"selected": False})
-        )
-    except Exception as exc:
-        raise HTTPException(422, _redacted_error(exc))
-    return _public_profile(profile)
-
-
-@app.patch("/api/llm/profiles/{profile_id}")
-async def update_llm_profile(profile_id: str, req: ProviderProfileUpdate):
-    try:
-        current = await _provider_repo().get_profile(profile_id)
-        if (current.get("selected") or profile_id == _runtime().connected_profile_id) and _runtime().active_generation_turns:
-            _ensure_provider_mutation_allowed()
-        changes = req.model_dump(exclude_unset=True)
-        # PATCH cannot silently select a profile; only /activate owns selection.
-        changes.pop("selected", None)
-        changed = any(current.get(key) != value for key, value in changes.items())
-        profile = await _provider_repo().update_profile(
-            profile_id, changes,
-        )
-    except KeyError:
-        raise HTTPException(404, "供应商配置不存在")
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(422, _redacted_error(exc))
-    if changed and current.get("selected"):
-        _runtime().profiles_needing_reconnect.add(profile_id)
-        _runtime().profile_probe_states.pop(profile_id, None)
-    if changed and profile_id == _runtime().connected_profile_id:
-        await _close_current_agent()
-    return _public_profile(profile)
-
-
-@app.delete("/api/llm/profiles/{profile_id}")
-async def delete_llm_profile(profile_id: str):
-    try:
-        profile = await _provider_repo().get_profile(profile_id)
-    except KeyError:
-        raise HTTPException(404, "供应商配置不存在")
-    if profile_id == _runtime().connected_profile_id or (
-        profile.get("selected") and _runtime().agent is not None
-    ):
-        if _runtime().active_generation_turns:
-            _ensure_provider_mutation_allowed()
-        raise HTTPException(409, "当前已连接配置不能删除；请先断开连接")
-    await _provider_repo().delete_profile(profile_id)
-    _runtime().credential_vault.pop(profile_id, None)
-    _runtime().profiles_needing_reconnect.discard(profile_id)
-    _runtime().profile_probe_states.pop(profile_id, None)
-    return {"status": "deleted", "profile_id": profile_id}
-
-
-@app.post("/api/llm/profiles/{profile_id}/probe")
-async def probe_llm_profile(profile_id: str, req: ProviderSecretRequest = ProviderSecretRequest()):
-    try:
-        profile = await _provider_repo().get_profile(profile_id)
-        client, probe, credentials = await _probe_profile(profile, req)
-        _runtime().credential_vault.set(profile_id, credentials)
-        await client.close()
-        _record_probe_state(
-            profile_id, "passed", latency_ms=probe.get("latency_ms", 0),
-            stages=probe.get("stages", {}),
-        )
-        return {
-            "status": "passed", "profile": _public_profile(profile),
-            "model": profile["model"], "latency_ms": probe["latency_ms"],
-            "capabilities": probe, "stages": probe["stages"],
-        }
-    except KeyError:
-        raise HTTPException(404, "供应商配置不存在")
-    except Exception as exc:
-        category = _provider_error_category(exc)
-        _record_probe_state(
-            profile_id, "failed", error_category=category,
-            stages=getattr(exc, "stages", {}),
-        )
-        secrets = [req.api_key, *req.sensitive_headers.values()]
-        raise HTTPException(502, {
-            "message": "连接探测失败: " + _redacted_error(exc, secrets),
-            "category": category,
-            "stages": getattr(exc, "stages", {}),
-        })
-
-
-@app.post("/api/llm/profiles/{profile_id}/models")
-async def discover_llm_models(profile_id: str, req: ProviderSecretRequest = ProviderSecretRequest()):
-    try:
-        profile = await _provider_repo().get_profile(profile_id)
-        if not profile.get("base_url"):
-            raise ValueError("请求地址不能为空")
-        await assert_safe_provider_target(profile["base_url"])
-        credentials = _merged_credentials(profile, req)
-        headers, sdk_key = _request_headers(profile, credentials)
-        if profile["protocol"] == "anthropic_messages":
-            headers.setdefault("anthropic-version", "2023-06-01")
-        url = profile["base_url"].rstrip("/") + "/" + profile["model_discovery_path"].lstrip("/")
-        started = time.perf_counter()
-        async with httpx.AsyncClient(timeout=profile["timeout_seconds"], follow_redirects=False) as client:
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-            payload = response.json()
-        raw_models = payload.get("data", payload.get("models", [])) if isinstance(payload, dict) else []
-        models = sorted({
-            str(item.get("id") or item.get("name")) if isinstance(item, dict) else str(item)
-            for item in raw_models if item
-        })
-        if not models:
-            raise ValueError("模型端点未返回可识别的模型列表")
-        _runtime().credential_vault.set(profile_id, credentials)
-        return {
-            "models": models,
-            "latency_ms": round((time.perf_counter() - started) * 1000, 1),
-            "manual_entry_allowed": True,
-        }
-    except KeyError:
-        raise HTTPException(404, "供应商配置不存在")
-    except Exception as exc:
-        secrets = [req.api_key, *req.sensitive_headers.values()]
-        raise HTTPException(502, "获取模型失败，可继续手工填写模型 ID。" + _redacted_error(exc, secrets))
-
-
-@app.post("/api/llm/profiles/{profile_id}/activate")
-async def activate_llm_profile(profile_id: str, req: ProviderSecretRequest = ProviderSecretRequest()):
-    _ensure_provider_mutation_allowed()
-    try:
-        profile = await _provider_repo().get_profile(profile_id)
-        new_client, probe, credentials = await _probe_profile(profile, req)
-        if not probe.get("tool_roundtrip") or not probe.get("structured_output"):
-            await new_client.close()
-            raise RuntimeError("模型可聊天，但未通过 PatentAgent 工具与结构化输出能力门禁")
-    except KeyError:
-        raise HTTPException(404, "供应商配置不存在")
-    except Exception as exc:
-        category = _provider_error_category(exc)
-        if "profile" in locals():
-            _record_probe_state(
-                profile_id, "failed", error_category=category,
-                stages=getattr(exc, "stages", {}),
-            )
-        secrets = [req.api_key, *req.sensitive_headers.values()]
-        raise HTTPException(502, {
-            "message": "无法激活供应商: " + _redacted_error(exc, secrets),
-            "category": category,
-            "stages": getattr(exc, "stages", {}),
-        })
-
-    old_agent = _runtime().agent
-    new_agent = PatentAgentOrchestrator(
-        llm_client=new_client,
-        tool_registry=tool_registry,
-        knowledge_base=build_default_knowledge(),
-    )
-    try:
-        await _provider_repo().select_profile(profile_id)
-    except Exception:
-        await new_client.close()
-        raise
-    _runtime().agent = new_agent
-    _runtime().credential_vault.set(profile_id, credentials)
-    _runtime().connected_profile_id = profile_id
-    _runtime().llm_capabilities = probe
-    _runtime().profiles_needing_reconnect.discard(profile_id)
-    _record_probe_state(
-        profile_id, "passed", latency_ms=probe.get("latency_ms", 0),
-        stages=probe.get("stages", {}),
-    )
-    selected = await _provider_repo().get_profile(profile_id)
-    _runtime().connected_profile_snapshot = {
-        "id": profile_id, "name": selected["name"],
-        "protocol": selected["protocol"], "model": selected["model"],
-    }
-    if old_agent and getattr(old_agent, "llm", None) is not new_client:
-        try:
-            await old_agent.llm.close()
-        except Exception:
-            logger.warning("Failed to close replaced LLM client", exc_info=False)
-    return {
-        "status": "connected", "profile": _public_profile(selected),
-        "capabilities": probe,
-    }
-
-
-@app.post("/api/llm/disconnect")
-async def disconnect_llm():
-    _ensure_provider_mutation_allowed()
-    await _close_current_agent()
-    return {"status": "disconnected"}
-
-@app.post("/api/agent/config")
-async def agent_config(req: LLMConfigRequest):
-    """Legacy compatibility endpoint routed through the profile adapter."""
-    _ensure_provider_mutation_allowed()
-    if not req.api_key:
-        raise HTTPException(400, "API key required.")
-
-    pmap = {"Claude": LLMProvider.CLAUDE, "OpenAI": LLMProvider.OPENAI,
-            "DeepSeek": LLMProvider.DEEPSEEK}
-    if req.provider not in pmap:
-        raise HTTPException(400, f"Unknown provider '{req.provider}'. Use: Claude, OpenAI, DeepSeek")
-
-    defaults = {
-        "Claude": {
-            "protocol": "anthropic_messages", "base_url": "https://api.anthropic.com",
-            "model": LLMClient.DEFAULT_MODELS[LLMProvider.CLAUDE],
-            "auth_mode": "x_api_key", "auth_header_name": "x-api-key", "auth_prefix": "",
-        },
-        "OpenAI": {
-            "protocol": "openai_chat", "base_url": "https://api.openai.com/v1",
-            "model": LLMClient.DEFAULT_MODELS[LLMProvider.OPENAI],
-            "auth_mode": "bearer", "auth_header_name": "Authorization", "auth_prefix": "Bearer ",
-        },
-        "DeepSeek": {
-            "protocol": "deepseek_chat", "base_url": "https://api.deepseek.com/v1",
-            "model": LLMClient.DEFAULT_MODELS[LLMProvider.DEEPSEEK],
-            "auth_mode": "bearer", "auth_header_name": "Authorization", "auth_prefix": "Bearer ",
-        },
-    }
-    candidate = None
-    try:
-        preset = defaults[req.provider]
-        temporary = ProviderProfileCreate(
-            id="legacy", name=req.provider, protocol=preset["protocol"],
-            base_url=req.base_url or preset["base_url"], model=req.model or preset["model"],
-            auth_mode=preset["auth_mode"], auth_header_name=preset["auth_header_name"],
-            auth_prefix=preset["auth_prefix"],
-        ).model_dump()
-        await assert_safe_provider_target(temporary["base_url"])
-        candidate = _build_llm_client(
-            temporary, {"api_key": req.api_key, "sensitive_headers": {}},
-        )
-        client = candidate
-        probe = await client.probe_detailed()
-        old_agent = _runtime().agent
-        _runtime().agent = PatentAgentOrchestrator(
-            llm_client=client,
-            tool_registry=tool_registry,
-            knowledge_base=build_default_knowledge(),
-        )
-        _runtime().connected_profile_id = None
-        _runtime().connected_profile_snapshot = {
-            "id": "legacy", "name": req.provider,
-            "protocol": {
-                "Claude": "anthropic_messages", "OpenAI": "openai_chat",
-                "DeepSeek": "deepseek_chat",
-            }[req.provider],
-            "model": probe["model"],
-        }
-        _runtime().llm_capabilities = probe
-        if old_agent and getattr(old_agent, "llm", None) is not client:
-            try:
-                await old_agent.llm.close()
-            except Exception:
-                pass
-        return {"status": "ok", "provider": req.provider,
-                "model": probe["model"], "probe": "passed",
-                "tool_roundtrip": probe.get("tool_roundtrip", False),
-                "structured_output": probe.get("structured_output", False)}
-    except Exception as exc:
-        if candidate is not None and getattr(_runtime().agent, "llm", None) is not candidate:
-            try:
-                await candidate.close()
-            except Exception:
-                pass
-        raise HTTPException(
-            502, "Failed to create agent: " + _redacted_error(exc, [req.api_key]),
-        )
-
-# ═══════════════════════════════════════════════════════════
-#  Persistent conversations
-# ═══════════════════════════════════════════════════════════
-
-@app.post("/api/sessions")
-async def create_session(req: SessionCreateRequest = SessionCreateRequest()):
-    return await _conversation_repo().create_session(
-        req.name, _dataset_fingerprint(),
-    )
-
-
-@app.get("/api/sessions")
-async def list_sessions():
-    return {"sessions": await _conversation_repo().list_sessions()}
-
-
-@app.get("/api/sessions/{session_id}")
-async def get_session(session_id: str):
-    try:
-        await _conversation_repo().ensure_session(
-            session_id, _dataset_fingerprint(),
-        )
-        detail = await _conversation_repo().get_session_detail(session_id)
-        return _normalize_session_detail(detail)
-    except KeyError:
-        raise HTTPException(404, "会话不存在")
-
-
-@app.patch("/api/sessions/{session_id}")
-async def rename_session(session_id: str, req: SessionRenameRequest):
-    try:
-        return await _conversation_repo().rename_session(session_id, req.name)
-    except KeyError:
-        raise HTTPException(404, "会话不存在")
-    except ValueError as exc:
-        raise HTTPException(422, str(exc))
-
-
-@app.delete("/api/sessions/{session_id}")
-async def delete_session(session_id: str):
-    try:
-        await _conversation_repo().delete_session(session_id)
-    except KeyError:
-        raise HTTPException(404, "会话不存在")
-    _runtime().sessions.pop(session_id, None)
-    return {"status": "deleted", "session_id": session_id}
-
+# Provider probing lives in ProviderService. This hook remains patchable for
+# embedded callers and contract tests; HTTP routes use the same service.
+async def _probe_profile(profile: dict, supplied: ProviderCredentials):
+    return await ProviderService(_runtime()).probe_profile(profile, supplied)
 
 # ═══════════════════════════════════════════════════════════
 #  Agent Chat (SSE streaming)
@@ -1034,7 +382,7 @@ async def agent_chat(req: ChatRequest):
     persisted_session = await repo.ensure_session(
         session_id, _dataset_fingerprint(), "API Chat",
     )
-    recent_messages = _normalize_history_messages(
+    recent_messages = normalize_history_messages(
         await repo.get_recent_messages(session_id),
     )
     effective_message = req.message
@@ -1078,7 +426,7 @@ async def agent_chat(req: ChatRequest):
         messages=recent_messages,
     )
     _runtime().sessions[session_id] = session
-    historical_evidence = _normalize_evidence_history(
+    historical_evidence = normalize_evidence_history(
         await repo.get_evidence(session_id),
     )
 
@@ -1328,7 +676,7 @@ async def resynthesize_turn(
     turn = await repo.get_turn(turn_id)
     if not turn or turn.get("session_id") != session_id:
         raise HTTPException(404, "轮次不存在")
-    detail = _normalize_session_detail(await repo.get_session_detail(session_id))
+    detail = normalize_session_detail(await repo.get_session_detail(session_id))
     executions: list[ToolExecution] = []
     for item in detail["tool_executions"]:
         if item.get("turn_id") != turn_id:
@@ -1399,69 +747,6 @@ async def resynthesize_turn(
     }
 
 
-@app.get("/api/tasks/{turn_id}")
-async def get_task(turn_id: str):
-    task = await _conversation_repo().get_turn(turn_id)
-    if not task:
-        raise HTTPException(404, "任务不存在")
-    return {"task": task, "trace_id": current_trace_id()}
-
-
-@app.get("/api/tasks/{turn_id}/events")
-async def get_task_events(
-    turn_id: str,
-    last_event_id: str | None = Header(default=None, alias="Last-Event-ID"),
-):
-    repo = _conversation_repo()
-    task = await repo.get_turn(turn_id)
-    if not task:
-        raise HTTPException(404, "任务不存在")
-    try:
-        after_id = max(0, int(last_event_id or 0))
-    except ValueError:
-        raise HTTPException(422, "Last-Event-ID 必须是整数")
-
-    async def replay():
-        cursor = after_id
-        terminal = {"completed", "partial", "failed", "cancelled", "interrupted"}
-        while True:
-            events = await repo.list_task_events(turn_id, cursor)
-            for stored in events:
-                cursor = int(stored["id"])
-                payload = stored.get("payload", {})
-                yield _sse(payload, cursor)
-            current = await repo.get_turn(turn_id)
-            if not current or current.get("status") in terminal:
-                break
-            await asyncio.sleep(0.25)
-
-    return StreamingResponse(
-        replay(), media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-    )
-
-
-@app.post("/api/tasks/{turn_id}/cancel")
-async def cancel_task(turn_id: str):
-    try:
-        task = await _conversation_repo().request_cancel(turn_id)
-    except KeyError:
-        raise HTTPException(404, "任务不存在")
-    return {"task": task, "trace_id": current_trace_id()}
-
-
-@app.post("/api/tasks/{turn_id}/resume")
-async def resume_task(turn_id: str, req: ResynthesizeRequest = ResynthesizeRequest()):
-    repo = _conversation_repo()
-    task = await repo.get_turn(turn_id)
-    if not task:
-        raise HTTPException(404, "任务不存在")
-    if task.get("status") not in {"interrupted", "partial", "failed"}:
-        raise HTTPException(409, "只有中断、部分完成或失败的任务可以恢复")
-    await repo.update_turn(turn_id, cancel_requested=0)
-    return await resynthesize_turn(task["session_id"], turn_id, req)
-
-
 async def _persist_sse(repo: ConversationStore, turn_id: str, data: dict) -> str:
     payload = dict(data)
     payload.setdefault("trace_id", current_trace_id())
@@ -1500,27 +785,6 @@ def _server_fallback_summary(summaries: list[str], error: str = "") -> str:
         lines.append("- 本轮没有可用的工具结果。")
     lines.extend(["", "### 数据限制", "- 本回复为异常降级结果，可使用“仅重试总结”恢复完整报告。"])
     return "\n".join(lines)
-
-
-# ═══════════════════════════════════════════════════════════
-#  Report export
-# ═══════════════════════════════════════════════════════════
-
-@app.post("/api/report/export")
-async def report_export(req: ExportRequest):
-    service = _runtime().report_service or ReportService(ReportGenerator)
-    _runtime().report_service = service
-    html = service.export_html(req.title, req.messages)
-    report_id = ""
-    if _runtime().conversation_store is not None:
-        try:
-            report_id = await _conversation_repo().save_report(
-                req.title, html, req.session_id, req.turn_id,
-            )
-        except Exception as exc:
-            raise HTTPException(422, f"报告记录保存失败: {type(exc).__name__}")
-    headers = {"X-Report-ID": report_id} if report_id else None
-    return HTMLResponse(content=html, headers=headers)
 
 
 # ═══════════════════════════════════════════════════════════

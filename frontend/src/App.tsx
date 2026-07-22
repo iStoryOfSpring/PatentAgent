@@ -1,132 +1,58 @@
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Database, Settings, Download, Send, Bot,
-  TrendingUp, Activity, Map, Network, Zap,
-  Layers, PieChart, FolderSearch, Loader2, AlertTriangle,
-  Plus, MessageSquare, Pencil, Trash2, ExternalLink, SlidersHorizontal, Power,
+  FolderSearch, Loader2, AlertTriangle,
+  Plus, MessageSquare, Pencil, Trash2, ExternalLink, SlidersHorizontal, Power, X,
 } from "lucide-react";
 import { MessageBubble } from "./components/MessageBubble";
 import { LLMAdvancedSettings } from "./components/LLMAdvancedSettings";
+import { QuickToolsPanel, TOOL_META } from "./features/tools/QuickToolsPanel";
 import {
   fetchHealth, loadData,
   runTool, streamChat, exportReport, fetchTools,
   createSession, fetchSessions, fetchSession, renameSession, deleteSession,
   resynthesizeTurn, fetchProviderProfiles, disconnectLLM,
 } from "./api";
-import type { Message, DataSummary, ToolStep, Tool, SessionSummary, SessionDetail, ProviderProfile } from "./types";
+import type { Message, ToolStep, SessionSummary, ProviderProfile } from "./types";
+import type { SourceFormat } from "./api";
 import { normalizeAssistantContent } from "./finalAnswer";
 import { useMessageState } from "./features/agent/useMessageState";
-import { useDataSummaryQuery } from "./features/datasets/queries";
-import { useHealthQuery, useProviderProfilesQuery } from "./features/providers/queries";
-import { useToolsQuery } from "./features/tools/queries";
-
-// ── Quick tools ──
-const TOOL_META: Record<string, { label: string; icon: typeof Database }> = {
-  get_dataset_summary: { label: "数据总览", icon: Database },
-  analyze_patent_trend: { label: "公开趋势", icon: TrendingUp },
-  analyze_lifecycle: { label: "增长趋势", icon: Activity },
-  analyze_ipc_distribution: { label: "IPC 热力图", icon: Layers },
-  generate_wordcloud: { label: "词云热点", icon: PieChart },
-  analyze_burst_terms: { label: "近期增长词", icon: Zap },
-  analyze_yearly_keywords: { label: "逐年关键词", icon: TrendingUp },
-  analyze_country_distribution: { label: "首个公开局", icon: Map },
-  analyze_co_network: { label: "合作网络", icon: Network },
-  analyze_tech_roadmap: { label: "技术路线图", icon: Activity },
-  analyze_tech_matrix: { label: "代理功效矩阵", icon: Layers },
-  analyze_clustering: { label: "专利聚类", icon: Network },
-  analyze_patent_valuation: { label: "价值筛查", icon: TrendingUp },
-  analyze_competitor_evolution: { label: "竞对 IPC 演化", icon: Network },
-  search_patents: { label: "相关专利检索", icon: FolderSearch },
-  read_patent_details: { label: "专利深读", icon: FolderSearch },
-};
-
-function messagesFromSession(detail: SessionDetail): Message[] {
-  const turns = new globalThis.Map(detail.turns.map(turn => [String(turn.id), turn]));
-  const byTurn = new globalThis.Map<string, ToolStep[]>();
-  for (const execution of detail.tool_executions) {
-    const result = execution.result || null;
-    const step: ToolStep = {
-      id: execution.id,
-      execution_id: execution.id,
-      tool: execution.tool_name,
-      status: execution.status,
-      duration_ms: execution.duration_ms,
-      error: execution.error || null,
-      parameters: execution.parameters || {},
-      result,
-      summary: String(result?.summary || ""),
-      methodology: String(result?.methodology || ""),
-      data_quality: (result?.data_quality || {}) as Record<string, unknown>,
-      warnings: (result?.warnings || []) as string[],
-      stale: execution.stale,
-      origin: "restored",
-    };
-    byTurn.set(execution.turn_id, [...(byTurn.get(execution.turn_id) || []), step]);
-  }
-  return detail.messages.map(stored => {
-    const turnId = stored.turn_id || undefined;
-    const turn = turnId ? turns.get(turnId) : undefined;
-    const status = String(turn?.status || "completed") as Message["finalStatus"];
-    const metadata = stored.metadata || {};
-    const normalizedContent = stored.role === "assistant"
-      ? normalizeAssistantContent(stored.content)
-      : { content: stored.content, followupSuggestions: [], followupQuestions: [] };
-    const pendingQuestion = (turn?.pending_question || {}) as Record<string, unknown>;
-    const structuredSuggestions = (
-      (metadata.followup_suggestions as { text?: string }[] | undefined) ||
-      normalizedContent.followupSuggestions
-    );
-    const awaiting = status === "awaiting_clarification";
-    return {
-      id: `stored-${stored.id}`,
-      role: stored.role,
-      content: normalizedContent.content,
-      turnId,
-      steps: stored.role === "assistant" && turnId ? byTurn.get(turnId) : undefined,
-      finalStatus: status,
-      followupQuestions: awaiting ? ["按默认条件继续"] : (
-        (metadata.followup_questions || (
-          structuredSuggestions.length
-            ? structuredSuggestions.map(item => item.text).filter(Boolean)
-            : normalizedContent.followupQuestions
-        )) as string[]
-      ),
-      followupSuggestions: structuredSuggestions as Message["followupSuggestions"],
-      clarification: awaiting && turnId ? {
-        turnId,
-        missingFields: (pendingQuestion.missing_fields || []) as string[],
-        allowDefaults: Boolean(pendingQuestion.allow_defaults),
-      } : undefined,
-      canResynthesize: stored.role === "assistant" && ["partial", "failed"].includes(String(status)) && Boolean(turnId),
-    };
-  });
-}
+import { datasetKeys, useDataSummaryQuery } from "./features/datasets/queries";
+import { providerKeys, useHealthQuery, useProviderProfilesQuery } from "./features/providers/queries";
+import { sessionKeys, useSessionsQuery } from "./features/sessions/queries";
+import { messagesFromSession } from "./features/sessions/restoreMessages";
+import { toolKeys, useSearchStatusQuery, useToolsQuery } from "./features/tools/queries";
 
 export default function App() {
+  const queryClient = useQueryClient();
   const healthQuery = useHealthQuery();
   const toolsQuery = useToolsQuery(healthQuery.isSuccess);
+  const searchStatusQuery = useSearchStatusQuery(healthQuery.isSuccess);
   const profilesQuery = useProviderProfilesQuery(healthQuery.isSuccess);
   const summaryQuery = useDataSummaryQuery((healthQuery.data?.patents_loaded || 0) > 0);
+  const sessionsQuery = useSessionsQuery();
+
+  const dataSummary = summaryQuery.data || null;
+  const availableTools = toolsQuery.data?.tools || [];
+  const providerProfiles = profilesQuery.data?.profiles || [];
+  const sessions = sessionsQuery.data?.sessions || [];
+  const backendOnline = healthQuery.isError ? false : healthQuery.data ? true : null;
+  const llmConfigured = Boolean(healthQuery.data?.agent_configured);
+  const connectedProfileId = healthQuery.data?.connected_profile?.id || "";
+  const connectedSnapshot = healthQuery.data?.connected_profile || null;
 
   // ── State ──
-  const [dataSummary, setDataSummary] = useState<DataSummary | null>(null);
   const [dirInput, setDirInput] = useState("./my_patents");
+  const [sourceFormat, setSourceFormat] = useState<SourceFormat>("auto");
   const [isDataLoading, setIsDataLoading] = useState(false);
-  const [backendOnline, setBackendOnline] = useState<boolean | null>(null); // null=checking
   const [quickToolLoading, setQuickToolLoading] = useState<string | null>(null);
-  const [availableTools, setAvailableTools] = useState<Tool[]>([]);
-  const [selectedTool, setSelectedTool] = useState<string | null>(null);
-  const [toolParams, setToolParams] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [activeSessionId, setActiveSessionId] = useState("");
 
   // LLM
-  const [providerProfiles, setProviderProfiles] = useState<ProviderProfile[]>([]);
-  const [connectedProfileId, setConnectedProfileId] = useState("");
-  const [connectedSnapshot, setConnectedSnapshot] = useState<{ id: string; name: string; protocol: ProviderProfile["protocol"]; model: string } | null>(null);
   const [showAdvancedLLM, setShowAdvancedLLM] = useState(false);
-  const [llmConfigured, setLlmConfigured] = useState(false);
+  const [showMobileTools, setShowMobileTools] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Chat
@@ -147,30 +73,9 @@ export default function App() {
   const sessionInitializationStartedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ── Auto-load on mount ──
   useEffect(() => {
-    if (healthQuery.data) {
-      setBackendOnline(true);
-      setLlmConfigured(healthQuery.data.agent_configured);
-      setConnectedProfileId(healthQuery.data.connected_profile?.id || "");
-      setConnectedSnapshot(healthQuery.data.connected_profile || null);
-    } else if (healthQuery.isError) {
-      setBackendOnline(false);
-    }
-  }, [healthQuery.data, healthQuery.isError]);
-
-  useEffect(() => {
-    if (profilesQuery.data) setProviderProfiles(profilesQuery.data.profiles);
-  }, [profilesQuery.data]);
-
-  useEffect(() => {
-    if (toolsQuery.data) setAvailableTools(toolsQuery.data.tools);
-  }, [toolsQuery.data]);
-
-  useEffect(() => {
-    if (summaryQuery.data) setDataSummary(summaryQuery.data);
     if (summaryQuery.isError) setError("数据摘要加载失败: " + (summaryQuery.error as Error).message);
-  }, [summaryQuery.data, summaryQuery.error, summaryQuery.isError]);
+  }, [summaryQuery.error, summaryQuery.isError]);
 
   useEffect(() => {
     if (sessionInitializationStartedRef.current) return;
@@ -188,7 +93,7 @@ export default function App() {
             selected = created.id;
           }
         }
-        setSessions(available);
+        queryClient.setQueryData(sessionKeys.all, { sessions: available });
         setActiveSessionId(selected);
         localStorage.setItem("patentagent_session_id", selected);
         const detail = await fetchSession(selected);
@@ -202,7 +107,7 @@ export default function App() {
       }
     };
     initializeSessions();
-  }, []);
+  }, [queryClient, setMessages]);
 
   // Auto-scroll
   useEffect(() => {
@@ -210,15 +115,15 @@ export default function App() {
   }, [messages]);
 
   const refreshSessionList = async () => {
-    setSessions((await fetchSessions()).sessions);
+    const result = await fetchSessions();
+    queryClient.setQueryData(sessionKeys.all, result);
+    return result.sessions;
   };
 
   const refreshProviderProfiles = async (): Promise<ProviderProfile[]> => {
     const [profileResult, health] = await Promise.all([fetchProviderProfiles(), fetchHealth()]);
-    setProviderProfiles(profileResult.profiles);
-    setLlmConfigured(health.agent_configured);
-    setConnectedProfileId(health.connected_profile?.id || "");
-    setConnectedSnapshot(health.connected_profile || null);
+    queryClient.setQueryData(providerKeys.profiles, profileResult);
+    queryClient.setQueryData(providerKeys.health, health);
     return profileResult.profiles;
   };
 
@@ -252,7 +157,7 @@ export default function App() {
     if (!window.confirm(`确认删除会话“${session.name}”？此操作不可恢复。`)) return;
     await deleteSession(session.id);
     const remaining = (await fetchSessions()).sessions;
-    setSessions(remaining);
+    queryClient.setQueryData(sessionKeys.all, { sessions: remaining });
     if (session.id === activeSessionId) {
       const next = remaining[0] || await createSession("新会话");
       await refreshSessionList();
@@ -265,10 +170,11 @@ export default function App() {
     setIsDataLoading(true);
     setError(null);
     try {
-      const data = await loadData(dirInput);
-      setDataSummary(data);
+      const data = await loadData(dirInput, sourceFormat);
+      queryClient.setQueryData(datasetKeys.summary, data);
       const tools = await fetchTools();
-      setAvailableTools(tools.tools);
+      queryClient.setQueryData(toolKeys.all, tools);
+      await queryClient.invalidateQueries({ queryKey: providerKeys.health });
     } catch (e) {
       setError("加载失败: " + (e as Error).message);
     }
@@ -597,6 +503,10 @@ export default function App() {
               <button onClick={() => setError(null)} className="ml-1 font-bold">&times;</button>
             </div>
           )}
+          <button onClick={() => setShowMobileTools(true)}
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-md border border-indigo-200">
+            <FolderSearch className="w-4 h-4" /> <span className="hidden sm:inline">MiniLM Beta / 工具</span>
+          </button>
           <button onClick={() => setShowAdvancedLLM(true)} disabled={isStreaming}
             className="xl:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md border border-slate-200 disabled:opacity-50">
             <SlidersHorizontal className="w-4 h-4" /> <span className="hidden sm:inline">LLM 设置</span>
@@ -661,6 +571,21 @@ export default function App() {
                 />
               </div>
             </div>
+            <div className="mb-3">
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">文件格式</label>
+              <select
+                value={sourceFormat}
+                onChange={event => setSourceFormat(event.target.value as SourceFormat)}
+                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              >
+                <option value="auto">自动识别（推荐）</option>
+                <option value="wos_dii">WoS / Derwent tagged text</option>
+                <option value="google_patents_jsonl">Google Patents JSONL</option>
+                <option value="uspto_grant_xml">USPTO grant XML</option>
+                <option value="uspto_file_wrapper_json">USPTO File Wrapper JSON</option>
+              </select>
+              <p className="mt-1 text-[10px] text-slate-400">标准格式无需选择；只有自动识别失败时才手动指定。</p>
+            </div>
             <button
               onClick={handleLoadData}
               disabled={isDataLoading}
@@ -705,6 +630,23 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+                {dataSummary.import_report?.file_detections?.length ? (
+                  <div className="mt-3 border-t border-slate-200 pt-3">
+                    <div className="text-[11px] text-slate-500 mb-1.5">格式识别</div>
+                    <div className="space-y-1">
+                      {dataSummary.import_report.file_detections.map(item => (
+                        <div key={item.file} className="text-[10px] text-slate-500">
+                          <span className="font-medium text-slate-700">{item.file}</span>
+                          <span> · {item.source_format} · {
+                            item.method === "manifest" ? "清单声明" :
+                            item.method === "user_selected" ? "手动指定" :
+                            item.method === "content_signature" ? "内容签名匹配" : "未识别"
+                          }</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
@@ -808,79 +750,36 @@ export default function App() {
           </div>
         </section>
 
-        {/* Right sidebar: quick tools */}
-        <aside className="hidden lg:flex w-[280px] bg-white border-l border-slate-200 overflow-y-auto flex-col shrink-0">
-          <div className="p-5 sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 z-20">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" /> 快捷工具
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">{availableTools.length} 个工具 &middot; 按数据能力启用</p>
-          </div>
-          <div className="p-4 space-y-1">
-            {availableTools.map(t => {
-              const meta = TOOL_META[t.name] || { label: t.name, icon: Zap };
-              const Icon = meta.icon;
-              const availability = t.availability || { available: true, reason: "" };
-              const hasParams = Object.keys(t.parameters).length > 0;
-              const expanded = selectedTool === t.name;
-              const requiredMissing = Object.entries(t.parameters).some(
-                ([name, schema]) => schema.required && !(toolParams[name] || "").trim(),
-              );
-              return (
-                <div key={t.name} className="border-b border-slate-50 pb-1">
-                  <button
-                    onClick={() => hasParams ? setSelectedTool(expanded ? null : t.name) : handleQuickTool(t.name)}
-                    disabled={isStreaming || !availability.available}
-                    title={availability.reason || t.description}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 text-slate-700 transition-all disabled:opacity-40 group"
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                      {quickToolLoading === t.name ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5" />}
-                    </div>
-                    <span className="text-sm font-medium text-left flex-1">{meta.label}</span>
-                    {hasParams && <span className="text-slate-400 text-xs">{expanded ? "−" : "+"}</span>}
-                  </button>
-                  {!availability.available && availability.reason && (
-                    <p className="px-3 pb-2 text-[10px] text-amber-700">{availability.reason}</p>
-                  )}
-                  {expanded && (
-                    <div className="mx-2 mb-2 p-3 bg-slate-50 rounded-lg space-y-2">
-                      {Object.entries(t.parameters).map(([name, schema]) => (
-                        <label key={name} className="block text-[11px] text-slate-600">
-                          {name}{schema.required ? " *" : ""}
-                          {schema.enum ? (
-                            <select value={toolParams[name] || ""} onChange={e => setToolParams(p => ({...p, [name]: e.target.value}))}
-                              className="mt-1 w-full p-1.5 border rounded bg-white">
-                              <option value="">默认</option>
-                              {schema.enum.map(v => <option key={v}>{v}</option>)}
-                            </select>
-                          ) : (
-                            <input value={toolParams[name] || ""} onChange={e => setToolParams(p => ({...p, [name]: e.target.value}))}
-                              placeholder={schema.description}
-                              className="mt-1 w-full p-1.5 border rounded bg-white" />
-                          )}
-                        </label>
-                      ))}
-                      <button disabled={requiredMissing || quickToolLoading === t.name} onClick={() => {
-                        const params: Record<string, unknown> = {};
-                        Object.entries(t.parameters).forEach(([name, schema]) => {
-                          const raw = toolParams[name];
-                          if (!raw) return;
-                          params[name] = schema.type === "integer" ? Number(raw) :
-                            schema.type === "array" ? raw.split(",").map(v => v.trim()).filter(Boolean) : raw;
-                        });
-                        handleQuickTool(t.name, params);
-                      }} className="w-full py-1.5 bg-indigo-600 text-white text-xs rounded disabled:opacity-40 disabled:cursor-not-allowed">
-                        执行
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </aside>
+        <QuickToolsPanel
+          tools={availableTools}
+          isStreaming={isStreaming}
+          loadingTool={quickToolLoading}
+          searchStatus={searchStatusQuery.data}
+          onRun={handleQuickTool}
+        />
       </main>
+      {showMobileTools && (
+        <div className="lg:hidden fixed inset-0 z-40 flex justify-end bg-slate-900/40" role="dialog" aria-modal="true" aria-label="快捷工具">
+          <div className="relative h-full w-full max-w-sm bg-white shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setShowMobileTools(false)}
+              className="absolute right-3 top-3 z-50 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:text-slate-800"
+              aria-label="关闭快捷工具"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <QuickToolsPanel
+              className="flex h-full w-full flex-col overflow-y-auto bg-white"
+              tools={availableTools}
+              isStreaming={isStreaming}
+              loadingTool={quickToolLoading}
+              searchStatus={searchStatusQuery.data}
+              onRun={handleQuickTool}
+            />
+          </div>
+        </div>
+      )}
       <LLMAdvancedSettings
         open={showAdvancedLLM}
         profiles={providerProfiles}
@@ -888,9 +787,7 @@ export default function App() {
         onClose={() => setShowAdvancedLLM(false)}
         onRefresh={refreshProviderProfiles}
         onConnected={profile => {
-          setLlmConfigured(true);
-          setConnectedProfileId(profile.id);
-          setConnectedSnapshot({ id: profile.id, name: profile.name, protocol: profile.protocol, model: profile.model });
+          void refreshProviderProfiles();
         }}
       />
     </div>

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "proxy_label_source": "Fixed publication identities and technology-domain membership in the minimized official-format fixtures; future larger sets may additionally use DOCDB family, known citations, CPC/IPC overlap and bilingual titles.",
+  "limitations": [
+    "These labels were not judged by patent search professionals.",
+    "They cannot estimate novelty-search recall, FTO coverage or legal relevance."
+  ],
+  "queries": {
+    "solid_state_battery": {"US11476497B2": 2},
+    "carbon_capture": {"US11325075B2": 2},
+    "industrial_robotics": {"US11958200B2": 2}
+  }
+}

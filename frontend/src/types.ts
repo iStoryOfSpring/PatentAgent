@@ -84,6 +84,55 @@ export interface DataSummary {
   adapter?: string;
   field_coverage?: Record<string, number>;
   warnings?: string[];
+  data_as_of?: string;
+  source_capabilities?: Record<string, SourceCapabilities>;
+  unsupported_conclusions?: string[];
+  import_report?: ImportReport;
+}
+
+export interface SourceCapabilities {
+  bibliographic: boolean;
+  multilingual_text: boolean;
+  claims: boolean;
+  description: boolean;
+  classifications: boolean;
+  citations: boolean;
+  family: boolean;
+  legal_events: boolean;
+  prosecution_events: boolean;
+  current_legal_status: boolean;
+}
+
+export interface ImportReport {
+  source_formats: string[];
+  files_seen: number;
+  records_parsed: number;
+  records_imported: number;
+  records_failed: number;
+  duplicates_merged: number;
+  field_conflicts: number;
+  field_coverage: Record<string, number>;
+  language_distribution: Record<string, number>;
+  source_capabilities: Record<string, SourceCapabilities>;
+  file_detections: {
+    file: string;
+    source_format: string;
+    method: "manifest" | "user_selected" | "content_signature" | "unknown";
+    matched: boolean;
+  }[];
+  issues: { file: string; record_id: string; code: string; message: string }[];
+  warnings: string[];
+}
+
+export interface SearchCapabilityStatus {
+  model_id: string;
+  dependency_installed: boolean;
+  model_cached: boolean;
+  model_cache_directory: string;
+  index_cache_directory: string;
+  index_count: number;
+  download_size_mb: number;
+  modes: ["lexical", "multilingual_hybrid_beta"];
 }
 
 export interface ToolParameter {

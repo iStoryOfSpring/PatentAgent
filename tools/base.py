@@ -233,6 +233,12 @@ class Tool(ABC):
                 "quality_level": quality_level,
                 **result.data_quality,
             }
+            result.evidence_level = self.evidence_record.get(
+                "evidence_type", self.evidence_level,
+            )
+            result.source_capabilities = audit.get("source_capabilities", {})
+            result.unsupported_conclusions = audit.get("unsupported_conclusions", [])
+            result.data_as_of = audit.get("data_as_of", "")
             result.result_metadata = {
                 "tool_name": self.name,
                 "parameters": clean,
@@ -243,6 +249,9 @@ class Tool(ABC):
                 "evidence_sources": self.evidence_record.get("sources", []),
                 "prohibited_claims": self.evidence_record.get("prohibited_claims", []),
                 "confidence": quality_level,
+                "source_capabilities": result.source_capabilities,
+                "unsupported_conclusions": result.unsupported_conclusions,
+                "data_as_of": result.data_as_of,
                 **result.result_metadata,
             }
             analyzed_count = int(result.result_metadata.get(

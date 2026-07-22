@@ -18,6 +18,10 @@ class AnalysisResult(BaseModel):
     result_metadata: dict[str, Any] = Field(default_factory=dict)
     provenance: ToolProvenance | None = None
     metrics: ExecutionMetrics = Field(default_factory=ExecutionMetrics)
+    evidence_level: str = ""
+    source_capabilities: dict[str, Any] = Field(default_factory=dict)
+    unsupported_conclusions: list[str] = Field(default_factory=list)
+    data_as_of: str = ""
 
 
 class GenericAnalysisResult(AnalysisResult):
@@ -124,7 +128,7 @@ class TechEffectMatrix(AnalysisResult):
 class ValueIndicators(AnalysisResult):
     result_type: str = "value_indicators"
     data: list[dict]  # [{"patent_number": "...", "citation_count": 12, ...}, ...]
-    score_label: str = "价值筛查分"
+    score_label: str = "数据集内相对工程筛查分"
     coverage: dict[str, float] = Field(default_factory=dict)
 
 

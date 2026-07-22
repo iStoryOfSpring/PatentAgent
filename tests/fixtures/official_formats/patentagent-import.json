@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "dataset_id": "official-format-smoke-v1",
+  "source_name": "Google Patents Public Data and USPTO Open Data Portal",
+  "source_uri": "https://github.com/google/patents-public-data/; https://data.uspto.gov/",
+  "retrieved_at": "2026-07-22",
+  "data_as_of": "2026-07-22",
+  "license_note": "Minimized schema fixtures. Google source is CC BY 4.0; USPTO records are official public records.",
+  "files": [
+    {"path": "google_patents_sample.jsonl", "source_format": "google_patents_jsonl", "sha256": "de355726b7f7a74878d5af784f5ef3dccfbff19583c718d30348242682031856"},
+    {"path": "uspto_grant_sample.xml", "source_format": "uspto_grant_xml", "sha256": "c62727ee362c5d27a12fbe5770dd001023e3caa7e71661356ab855fb39c66fb1"},
+    {"path": "uspto_file_wrapper_sample.json", "source_format": "uspto_file_wrapper_json", "sha256": "0e992007f1d64393080967efae038078dba42dd1b35c8623f089e46436c0c89b"}
+  ]
+}

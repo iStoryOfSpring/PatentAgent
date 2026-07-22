@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     env:
       PYTHONHASHSEED: "0"
       OMP_NUM_THREADS: "1"
@@ -27,7 +27,7 @@ jobs:
           version: "0.11.30"
           enable-cache: true
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --frozen --all-extras --group dev
+      - run: uv sync --frozen --extra mcp --group dev
       - run: uv run python -m pytest -q
 
   contracts:
@@ -46,9 +46,9 @@ jobs:
           enable-cache: true
           python-version: "3.12"
       - run: uv lock --check
-      - run: uv export --frozen --all-extras --group dev --format requirements-txt --no-emit-project --output-file requirements.txt
+      - run: uv export --frozen --extra mcp --group dev --format requirements-txt --no-emit-project --output-file requirements.txt
       - run: git diff --exit-code -- requirements.txt
-      - run: uv sync --frozen --all-extras --group dev
+      - run: uv sync --frozen --extra mcp --group dev
       - run: uv run python -m pytest tests/test_mcp_integration.py tests/test_provider_profiles.py tests/test_reproducibility.py -q
 
   frontend:

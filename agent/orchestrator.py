@@ -186,22 +186,10 @@ class PatentAgentOrchestrator:
             "created_at": datetime.now().isoformat(),
         })
         session.tool_executions = []
-        legacy_mode = False
-        try:
-            planner_context = self.intent_parser.context(
-                user_message, prior_messages, storage, historical_evidence,
-            )
-            plan = await self.planner.plan(planner_context)
-        except Exception:
-            # Preserve extension/test subclasses which intentionally override the
-            # old planning hooks; production instances never enter fixed chains.
-            if type(self)._plan_analysis is PatentAgentOrchestrator._plan_analysis:
-                raise
-            legacy_mode = True
-            intent = await self._understand_intent(user_message, prior_messages)
-            plan = await self._plan_analysis(intent, storage, user_message)
-            plan.decision_source = "legacy_extension"
-            plan.decision_type = "analysis"
+        planner_context = self.intent_parser.context(
+            user_message, prior_messages, storage, historical_evidence,
+        )
+        plan = await self.planner.plan(planner_context)
 
         if approval_granted:
             # The approval was already validated and persisted by the
@@ -287,8 +275,7 @@ class PatentAgentOrchestrator:
 
             # Normal production flow deliberately bypasses adaptive rule expansion.
             execution_task = asyncio.create_task(self.tool_executor.execute(
-                plan, storage, modern=self._execute_llm_plan,
-                legacy=self._execute_plan, legacy_mode=legacy_mode,
+                plan, storage, executor=self._execute_llm_plan,
                 reuse_lookup=reuse_lookup, on_execution=on_execution,
             ))
             yielded_execution_ids: set[str] = set()
@@ -327,15 +314,10 @@ class PatentAgentOrchestrator:
         )
         try:
             self.answer_synthesizer.assert_validated(executions)
-            if legacy_mode:
-                text = await self._synthesize(plan, executions, response_mode)
-                suggestions = []
-                evidence_refs = []
-            else:
-                text, evidence_refs, suggestions = await self._synthesize_tool_roundtrip(
-                    user_message, plan, executions, prior_messages,
-                    response_mode,
-                )
+            text, evidence_refs, suggestions = await self._synthesize_tool_roundtrip(
+                user_message, plan, executions, prior_messages,
+                response_mode,
+            )
             if not text.strip():
                 raise RuntimeError("综合模型返回空文本")
         except Exception as exc:

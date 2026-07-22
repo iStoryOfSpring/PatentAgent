@@ -19,6 +19,8 @@ _FIELD_MAP = {
     "claims_json": "claims_json",
     "description": "description",
     "legal_status": "legal_status",
+    "legal_events": "legal_events_json",
+    "multilingual_text": "localized_titles_json",
 }
 
 
@@ -42,6 +44,7 @@ class PatentDataStore:
         self._adapter_name: str = ""
         self._source_dir = source_dir
         self._load_diagnostics: dict[str, Any] = {}
+        self._import_report: dict[str, Any] = {}
         self._cached_summary = None
         if not self._df.empty:
             self._ensure_columns()
@@ -89,6 +92,7 @@ class PatentDataStore:
                 "description", "legal_status",
                 "source_record_id", "publication_numbers",
                 "priority_numbers", "non_patent_references",
+                "legal_events", "multilingual_text",
             )
         }
         network = self._citation_network_audit()
@@ -141,9 +145,43 @@ class PatentDataStore:
             "collaboration_coverage": collaboration,
             "dataset_manifest": self._load_manifest(),
             "batch_completeness": self._load_diagnostics,
+            "import_report": self._import_report,
+            "source_capabilities": self._import_report.get("source_capabilities", {}),
+            "data_as_of": self._data_as_of(),
+            "unsupported_conclusions": self._unsupported_conclusions(
+                fields, self._import_report.get("source_capabilities", {}),
+            ),
             "warning_records": warning_records,
             "warnings": warnings,
         }
+
+    def _data_as_of(self) -> str:
+        if "data_as_of" not in self._df.columns or self._df.empty:
+            return ""
+        values = self._df["data_as_of"].dropna().astype(str)
+        values = values[values.str.strip().ne("")]
+        return max(values) if not values.empty else ""
+
+    @staticmethod
+    def _unsupported_conclusions(
+        fields: dict[str, float], source_capabilities: dict | None = None,
+    ) -> list[str]:
+        unsupported = ["正式专利价值或交易价格结论"]
+        if (
+            fields.get("claims_json", 0) < 1.0 or
+            fields.get("legal_status", 0) < 1.0
+        ):
+            unsupported.extend(["权利要求范围判断", "侵权比对", "正式 FTO 意见"])
+        capabilities = source_capabilities or {}
+        has_current_status = any(
+            bool(item.get("current_legal_status"))
+            for item in capabilities.values() if isinstance(item, dict)
+        )
+        if fields.get("legal_status", 0) < 1.0 or not has_current_status:
+            unsupported.extend(["实时有效性判断", "当前权利状态判断"])
+        if fields.get("external_forward_citations", fields.get("forward_citations", 0)) == 0:
+            unsupported.append("基于完整外部前向引证的影响力结论")
+        return unsupported
 
     @staticmethod
     def _split_values(value: Any) -> list[str]:
@@ -309,6 +347,7 @@ class PatentDataStore:
         scoped._adapter_name = self._adapter_name
         scoped._source_dir = self._source_dir
         scoped._load_diagnostics = self._load_diagnostics
+        scoped._import_report = self._import_report
         return scoped
 
     def get_columns(self, columns: list[str]) -> pd.DataFrame:

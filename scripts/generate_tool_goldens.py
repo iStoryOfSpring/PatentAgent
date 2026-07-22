@@ -40,7 +40,9 @@ PARAMETERS = {
 # dataset_id is a local installation identity derived from the source directory.
 # The portable content identity is dataset_content_hash, which the regression
 # test validates separately before comparing the golden projection.
-VOLATILE_KEYS = {"chart_html", "elapsed_ms", "imported_at", "dataset_id"}
+VOLATILE_KEYS = {
+    "chart_html", "elapsed_ms", "query_embedding_time_ms", "imported_at", "dataset_id",
+}
 
 
 def canonical(value: Any) -> Any:

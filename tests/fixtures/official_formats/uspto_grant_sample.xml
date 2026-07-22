@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<us-patent-grant lang="EN">
+  <us-bibliographic-data-grant>
+    <publication-reference><document-id><country>US</country><doc-number>11325075</doc-number><kind>B2</kind><date>20220510</date></document-id></publication-reference>
+    <application-reference><document-id><country>US</country><doc-number>16629734</doc-number><date>20181221</date></document-id></application-reference>
+    <invention-title lang="EN">Carbon capture membrane</invention-title>
+    <classifications-ipcr><classification-ipcr><section>B</section><class>01</class><subclass>D</subclass><main-group>71</main-group><subgroup>68</subgroup></classification-ipcr></classifications-ipcr>
+    <parties><applicants><applicant><addressbook><orgname>Agency for Science Technology and Research</orgname></addressbook></applicant></applicants></parties>
+    <references-cited><citation><patcit><document-id><country>US</country><doc-number>7650331</doc-number><kind>B1</kind></document-id></patcit></citation></references-cited>
+  </us-bibliographic-data-grant>
+  <abstract><p>A supported selective layer separates carbon dioxide from a gas stream.</p></abstract>
+  <description><p>This minimized fixture retains only text needed to verify the official XML field mapping.</p></description>
+  <claims>
+    <claim id="CLM-00001" num="1"><claim-text>A membrane comprising a porous support and a selective carbon-capture layer.</claim-text></claim>
+    <claim id="CLM-00002" num="2"><claim-text>The membrane of <claim-ref idref="CLM-00001" num="1">claim 1</claim-ref>, wherein the support is polymeric.</claim-text></claim>
+  </claims>
+</us-patent-grant>

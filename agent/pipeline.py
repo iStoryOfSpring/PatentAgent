@@ -67,15 +67,13 @@ class ExecutionPolicy:
 
 
 class ToolExecutor:
-    """Select the modern or explicit legacy executor without planning policy."""
+    """Execute the validated LLM-directed plan without a parallel legacy path."""
 
     async def execute(
-        self, plan: Any, dataset: Any, *, modern: Callable[..., Awaitable[list]],
-        legacy: Callable[..., Awaitable[list]], legacy_mode: bool,
+        self, plan: Any, dataset: Any, *, executor: Callable[..., Awaitable[list]],
         reuse_lookup=None, on_execution=None,
     ) -> list[ToolExecution]:
-        callback = legacy if legacy_mode else modern
-        return await callback(
+        return await executor(
             plan, dataset, reuse_lookup=reuse_lookup, on_execution=on_execution,
         )
 

@@ -78,13 +78,16 @@ class ValuationTool(Tool):
         }
         result = ValueIndicators(
             result_type="value_indicators", data=ranked[:top_n], coverage=coverage,
-            score_label="价值筛查分",
+            score_label="数据集内相对工程筛查分",
             result_metadata={
                 "population_size": len(df), "sampled": False,
                 "citation_method_mode": applied_mode,
                 "requested_citation_mode": citation_mode,
                 "replication_gates": replication_gates,
                 "paper_exact": False,
+                "sensitivity_analysis": _ranking_sensitivity(
+                    patents, scoring_weights, graph if use_ss else None, ranked, top_n,
+                ),
             },
         )
         if not use_ss:
@@ -97,8 +100,8 @@ class ValuationTool(Tool):
         # 构建 HTML 展示
         rows_html = [
             '<div style="background:#1a1a2e;color:#e0e0e0;padding:20px;border-radius:8px;overflow-x:auto">',
-            f'<h3 style="color:#FFD700">专利价值筛查 Top {min(top_n, len(ranked))}</h3>',
-            f'<p style="color:#888;font-size:12px">模式: {applied_mode}；SS/RO/BC 仅在论文复现门禁通过时参与评分</p>',
+            f'<h3 style="color:#FFD700">数据集内相对工程筛查 Top {min(top_n, len(ranked))}</h3>',
+            f'<p style="color:#aaa;font-size:12px">模式: {applied_mode}；分值仅用于当前数据集内排序，不代表交易价格或财务价值。</p>',
             '<table style="width:100%;border-collapse:collapse;font-size:11px">',
             '<tr style="background:#333">'
             '<th>#</th><th>专利号</th><th>分值</th>'
@@ -128,3 +131,35 @@ class ValuationTool(Tool):
 
 
 tool_registry.register(ValuationTool())
+
+
+def _ranking_sensitivity(patents, weights, graph, baseline, top_n: int) -> dict:
+    """Report how much the top set moves under a ±20% one-factor perturbation."""
+    from engine.valuation import rank_patents_by_value
+
+    baseline_ids = [item["patent_number"] for item in baseline[:top_n]]
+    baseline_set = set(baseline_ids)
+    scenarios = []
+    for dimension in sorted(weights):
+        for factor in (0.8, 1.2):
+            perturbed = dict(weights)
+            perturbed[dimension] *= factor
+            ranked = rank_patents_by_value(
+                patents, weights=perturbed, citation_graph=graph,
+            )
+            candidate = [item["patent_number"] for item in ranked[:top_n]]
+            overlap = len(baseline_set.intersection(candidate)) / max(1, len(baseline_set))
+            scenarios.append({
+                "dimension": dimension, "factor": factor,
+                "top_n_overlap": round(overlap, 4),
+            })
+    return {
+        "method": "one_factor_weight_perturbation",
+        "perturbation": 0.2,
+        "top_n": min(top_n, len(baseline_ids)),
+        "minimum_top_n_overlap": min(
+            (item["top_n_overlap"] for item in scenarios), default=1.0,
+        ),
+        "scenarios": scenarios,
+        "interpretation": "衡量权重扰动下的排名稳定性，不是现实商业价值校准。",
+    }

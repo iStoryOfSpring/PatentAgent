@@ -1,9 +1,4 @@
-"""文本向量化 — OpenAI API + 本地 fallback
-
-默认: OpenAI text-embedding-3-small
-本地: sentence-transformers (paraphrase-multilingual-MiniLM-L12-v2)
-降级: TF-IDF + cosine similarity（无外部依赖时可用）
-"""
+"""Text embedding providers used by explicitly selected retrieval modes."""
 
 import os
 import logging
@@ -12,6 +7,8 @@ from typing import Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+MULTILINGUAL_BETA_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 # ── 嵌入文本构建 ──
 def build_embedding_text(patent) -> str:
@@ -84,7 +81,7 @@ class SentenceTransformerEmbedding(EmbeddingProvider):
                 "sentence-transformers not installed. "
                 "Run: pip install sentence-transformers"
             )
-        self.model_name = model_name or "paraphrase-multilingual-MiniLM-L12-v2"
+        self.model_name = model_name or MULTILINGUAL_BETA_MODEL
         self._model = SentenceTransformer(self.model_name)
 
     def embed(self, texts: list[str]) -> np.ndarray:
