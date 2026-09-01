@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "registry_version": "2026.07.19",
+  "registry_version": "2026.09.01",
   "evidence_types": {
     "descriptive_statistic": "Direct descriptive statistic with no paper-method claim",
     "paper_exact": "Formula and data conditions reproduced and independently tested",
@@ -23,15 +23,20 @@
       "prohibited_claims": ["S-curve lifecycle stage", "decline stage", "technology maturity"]
     },
     "analyze_ipc_distribution": {
-      "algorithm_id": "ipc_publication_matrix", "version": "2.0", "evidence_type": "descriptive_statistic",
-      "formula": "count all normalized multi-value IPC assignments by year and selected granularity",
+      "algorithm_id": "ipc_publication_matrix_assignment_count", "version": "2.1", "evidence_type": "descriptive_statistic",
+      "formula": "count valid A-H IPC section assignments by publication year; optional patent or family deduplication",
+      "implementations": {
+        "assignment_count": {"algorithm_id": "ipc_publication_matrix_assignment_count", "version": "2.1"},
+        "unique_patents": {"algorithm_id": "ipc_publication_matrix_unique_patents", "version": "2.1"},
+        "family_normalized": {"algorithm_id": "ipc_publication_matrix_family_normalized", "version": "2.1"}
+      },
       "fields": {"publication_date": 0.9, "ipc": 0.9}, "sources": [],
       "conditions": ["one patent may contribute to multiple IPC cells"],
       "prohibited_claims": ["exclusive technology share"]
     },
     "generate_wordcloud": {
       "algorithm_id": "derwent_phrase_frequency", "version": "2.0", "evidence_type": "engineering_screening",
-      "formula": "document-aware cleaned phrase frequency",
+      "formula": "cleaned unigram/phrase document frequency with term frequency and document ratio diagnostics",
       "fields": {"title": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
       "conditions": ["Derwent template noise is removed", "frequency is not importance"],
       "prohibited_claims": ["paper-exact text mining pipeline", "technology value"]
@@ -45,14 +50,14 @@
     },
     "analyze_yearly_keywords": {
       "algorithm_id": "yearly_phrase_frequency", "version": "2.0", "evidence_type": "engineering_screening",
-      "formula": "cleaned phrase document frequency by publication year",
+      "formula": "cleaned unigram/phrase document frequency by publication year",
       "fields": {"publication_date": 0.9, "title": 0.8}, "sources": [],
       "conditions": ["tail-year completeness is shown"],
       "prohibited_claims": ["causal technology migration"]
     },
     "analyze_co_network": {
-      "algorithm_id": "co_applicant_network", "version": "2.0", "evidence_type": "descriptive_statistic",
-      "formula": "undirected edge for each pair of co-applicants on the same record",
+      "algorithm_id": "co_applicant_network", "version": "2.1", "evidence_type": "descriptive_statistic",
+      "formula": "undirected edge for each pair of deterministically normalized co-applicants on the same record",
       "fields": {"applicants": 0.9}, "sources": [],
       "conditions": ["at least 30 multi-applicant patents", "multi-applicant rate at least 1%"],
       "prohibited_claims": ["alliance", "technology transfer", "co-invention"]
@@ -66,9 +71,13 @@
     },
     "analyze_tech_roadmap": {
       "algorithm_id": "annual_theme_timeline", "version": "2.2", "evidence_type": "engineering_screening",
-      "formula": "annual themes and representative records with patent-number tie break; citation paths only when resolved",
+      "formula": "annual title themes and representative records ranked by theme coverage plus available backward-reference count",
+      "implementations": {
+        "annual_theme_timeline": {"algorithm_id": "annual_theme_timeline", "version": "2.2"},
+        "family_citation_route_draft": {"algorithm_id": "family_citation_route_draft", "version": "1.0"}
+      },
       "fields": {"publication_date": 0.9, "title": 0.8, "patent_number": 0.9}, "sources": [],
-      "conditions": ["internal citation scope is disclosed"],
+      "conditions": ["year is publication year", "family citation paths require family, priority-date and edge-resolution gates", "every route edge retains source citation evidence"],
       "prohibited_claims": ["complete invention genealogy", "causal technology route"]
     },
     "get_dataset_summary": {
@@ -77,8 +86,12 @@
       "fields": {}, "sources": [], "conditions": [], "prohibited_claims": []
     },
     "search_patents": {
-      "algorithm_id": "tfidf_cosine_retrieval", "version": "2.1", "evidence_type": "engineering_screening",
+      "algorithm_id": "tfidf_cosine_retrieval", "version": "2.2", "evidence_type": "engineering_screening",
       "formula": "cosine similarity in word/phrase TF-IDF space; deterministic patent-number tie break",
+      "implementations": {
+        "lexical": {"algorithm_id": "tfidf_cosine_retrieval", "version": "2.2"},
+        "multilingual_hybrid_beta": {"algorithm_id": "multilingual_minilm_rrf_beta", "version": "1.0-beta"}
+      },
       "fields": {"title": 0.8, "abstract": 0.8, "patent_number": 0.9}, "sources": [],
       "conditions": ["lexical retrieval, not semantic embedding"],
       "prohibited_claims": ["vector embedding", "legal novelty search", "exhaustive prior-art search"]
@@ -91,25 +104,29 @@
       "prohibited_claims": ["full specification", "complete claims", "legal status conclusion"]
     },
     "analyze_tech_matrix": {
-      "algorithm_id": "derwent_abstract_proxy_te_matrix", "version": "2.1", "evidence_type": "engineering_screening",
-      "formula": "co-occurrence of technology phrases from NOVELTY with use/effect phrases from USE/ADVANTAGE",
+      "algorithm_id": "derwent_abstract_proxy_te_matrix", "version": "2.3", "evidence_type": "engineering_screening",
+      "formula": "co-occurrence plus marginal support, expected count, lift and Pearson residual for NOVELTY vs USE/ADVANTAGE proxy terms",
       "fields": {"abstract": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
       "conditions": ["category cues must be present", "minimum support is required", "zero cells require record review"],
       "prohibited_claims": ["blue ocean", "validated white space", "paper-exact function matrix"]
     },
     "analyze_clustering": {
-      "algorithm_id": "tfidf_kmeans_cc05_labels", "version": "2.2", "evidence_type": "paper_adapted",
-      "formula": "K-means in TF-IDF space with canonical cluster IDs and lexical tie breaks; silhouette selects k; CC0.5 labels require cluster DF > 50% and document-level phi correlation",
+      "algorithm_id": "multilingual_char_ngram_kmeans_cc05", "version": "3.2", "evidence_type": "paper_adapted",
+      "formula": "K-means in character n-gram TF-IDF space with deterministic multi-start random-point initialization and canonical cluster IDs; silhouette and ARI select k; readable labels use segmented terms and CC0.5",
+      "implementations": {
+        "char_ngram_tfidf": {"algorithm_id": "multilingual_char_ngram_kmeans_cc05", "version": "3.2"},
+        "segmented_word_tfidf": {"algorithm_id": "segmented_word_tfidf_kmeans_cc05", "version": "1.2"}
+      },
       "fields": {"title": 0.8, "abstract": 0.8}, "sources": ["Tseng et al. 2007, Information Processing & Management 43, 1216-1247"],
       "conditions": ["at least 100 valid texts", "only CC0.5 label criterion is paper-derived"],
       "prohibited_claims": ["complete Tseng multi-stage pipeline", "ground-truth technology taxonomy"]
     },
     "analyze_patent_valuation": {
-      "algorithm_id": "patent_family_citation_screening", "version": "3.0", "evidence_type": "paper_adapted",
-      "formula": "robust percentile screening; SS diagnostic = RO + BC only when family/network gates pass",
+      "algorithm_id": "patent_family_citation_screening", "version": "3.1", "evidence_type": "paper_adapted",
+      "formula": "source-stratified percentile screening with per-record available-weight normalization and uncertainty interval; citation-network position is normalized by publication year and IPC subclass; SS diagnostic = RO + BC only when family/network gates pass",
       "fields": {"patent_number": 0.9, "publication_date": 0.9, "ipc": 0.9},
       "sources": ["von Wartburg, Teichert & Rost 2005, Research Policy 34, 1591-1607", "Kim & Bae 2017, Technological Forecasting and Social Change 117, 228-237"],
-      "conditions": ["family nodes", "citation direction citing-to-cited", "European-style share and network closure disclosed", "triadic means US+EP+JP"],
+      "conditions": ["missing cells remain missing rather than zero", "ranks apply only within a source and available-dimension comparability group", "family nodes", "citation direction citing-to-cited", "European-style share and network closure disclosed", "triadic means US+EP+JP"],
       "prohibited_claims": ["financial valuation", "market value", "universal patent quality", "paper_exact unless manually verified"]
     },
     "analyze_competitor_evolution": {
@@ -119,6 +136,62 @@
       "sources": ["Tang et al. 2012, KDD PatentMiner"],
       "conditions": ["metrics are engineering descriptors at IPC subclass/main-group level"],
       "prohibited_claims": ["PatentMiner DICT", "heterogeneous-network co-ranking", "paper-exact competitor evolution"]
+    },
+    "analyze_entity_portfolio": {
+      "algorithm_id": "deterministic_entity_portfolio", "version": "1.1", "evidence_type": "descriptive_statistic",
+      "formula": "rank canonical party entities by publication, family, grant or source-provided forward-citation count",
+      "fields": {"patent_number": 0.9}, "sources": [],
+      "conditions": ["party roles remain separate", "parent grouping requires a reviewed mapping"],
+      "prohibited_claims": ["R&D strength", "market share", "patent quality"]
+    },
+    "analyze_concentration": {
+      "algorithm_id": "fractional_concentration_metrics", "version": "1.1", "evidence_type": "descriptive_statistic",
+      "formula": "fractional multi-assignment CR3/5/10, HHI, Gini, Shannon entropy and effective entity count with deterministic bootstrap",
+      "fields": {"patent_number": 0.9}, "sources": [],
+      "conditions": ["dimension and publication/family counting unit are explicit"],
+      "prohibited_claims": ["competitive conduct", "market power", "causal market event"]
+    },
+    "analyze_citation_network": {
+      "algorithm_id": "internal_external_citation_network", "version": "1.1", "evidence_type": "engineering_screening",
+      "formula": "citing-to-cited graph with internal/external edge separation, PageRank diagnostics, co-citation, bibliographic coupling and citation age",
+      "fields": {"patent_number": 0.9, "backward_citations": 0.2}, "sources": [],
+      "conditions": ["edge resolution and node participation are reported", "key-path conclusions require an internal-network gate"],
+      "prohibited_claims": ["backward references as impact", "universal key patent", "causal technology path"]
+    },
+    "analyze_family_geography": {
+      "algorithm_id": "separated_family_geography_counts", "version": "1.1", "evidence_type": "descriptive_statistic",
+      "formula": "separate counts for priority origin, first publication office, family publication offices, designated states and authoritative active-right jurisdictions",
+      "fields": {"patent_number": 0.9}, "sources": [],
+      "conditions": ["each geography semantic is reported separately"],
+      "prohibited_claims": ["market coverage from PN", "export intent", "active right without authoritative status"]
+    },
+    "audit_search_strategy": {
+      "algorithm_id": "versioned_lexical_search_set_audit", "version": "1.1", "evidence_type": "engineering_screening",
+      "formula": "version hashes, returned-set increments, removals, unique records, known-patent recovery and citation/family snowball candidates",
+      "fields": {"patent_number": 0.9, "title": 0.8, "abstract": 0.8}, "sources": [],
+      "conditions": ["all versions use the same lexical baseline", "expert labels are required for recall"],
+      "prohibited_claims": ["100% recall", "validated exhaustive prior-art search"]
+    },
+    "analyze_legal_status": {
+      "algorithm_id": "dated_authoritative_legal_status_composition", "version": "1.1", "evidence_type": "descriptive_statistic",
+      "formula": "current source status composition separated from dated legal-event counts",
+      "fields": {"legal_status": 0.8, "legal_status_as_of": 0.8, "jurisdiction": 0.8}, "sources": [],
+      "conditions": ["source declares current_legal_status capability", "at least 80% have status as-of dates and jurisdictions", "adapter identity is known"],
+      "prohibited_claims": ["freedom to operate", "non-infringement", "validity opinion"]
+    },
+    "monitor_patent_changes": {
+      "algorithm_id": "versioned_patent_change_monitor", "version": "1.1", "evidence_type": "engineering_screening",
+      "formula": "persisted strategy baseline set and selected record-field hashes compared to the current content fingerprint",
+      "fields": {"patent_number": 0.9, "title": 0.8, "abstract": 0.8}, "sources": [],
+      "conditions": ["content fingerprint and versioned search strategy are stored", "notifications are deduplicated by deterministic run id"],
+      "prohibited_claims": ["infringement alert", "legal risk event", "complete external change coverage"]
+    },
+    "analyze_claim_elements": {
+      "algorithm_id": "reversible_claim_element_draft", "version": "1.1", "evidence_type": "engineering_screening",
+      "formula": "source claim dependency tree plus reversible punctuation/conjunction split and literal product-feature matching",
+      "fields": {"claims_json": 0.8, "legal_status": 0.8}, "sources": [],
+      "conditions": ["claim text, language and dependency are source fields", "publication/grant version and legal status are recognizable", "human patent-professional review is mandatory"],
+      "prohibited_claims": ["infringement", "doctrine of equivalents", "invalidity", "FTO opinion"]
     }
   }
 }

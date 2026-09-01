@@ -1,10 +1,11 @@
-"""技术路线图分析（对应书第10章）
+"""Annual theme timeline plus an experimental, currently unused roadmap helper.
 
 Engine 层:
-  - compute_roadmap_data: 轻量版（每年 Top N 专利）
+  - compute_roadmap_data: production annual theme timeline (每年 Top N 专利)
   - build_technology_roadmap: 完整版（引证 + 功效矩阵 + 价值 + 时间）
 
-Phase 6 重写，综合 4 个维度构建技术路线图。
+The public tool calls only compute_roadmap_data and must not claim a complete
+technical genealogy.
 """
 
 from models.analysis_results import RoadmapResult
@@ -13,7 +14,7 @@ import pandas as pd
 
 def compute_roadmap_data(df: 'pd.DataFrame',
                          top_n_per_year: int = 3) -> RoadmapResult:
-    """每年 Top N 专利数据（轻量版，向后兼容 Phase 1）。"""
+    """每年主题和 Top N 代表专利；不构造技术谱系。"""
     df = df.copy()
     if 'date' in df.columns:
         df['year'] = pd.to_datetime(df['date'], errors='coerce').dt.year

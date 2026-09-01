@@ -5,7 +5,6 @@ import {
   BarChart3, Download, Expand, Minimize2, MoveHorizontal,
   Shrink, Table2,
 } from "lucide-react";
-import { ChartFrame } from "./ChartFrame";
 import { EChartCanvas, type EChartCanvasHandle } from "./EChartCanvas";
 
 type ResultRecord = Record<string, unknown>;
@@ -103,10 +102,10 @@ function IPCHeatmapRenderer({ result, fit, chartRef }: RendererProps) {
   matrix.forEach((row, yi) => row.forEach((value, si) => values.push([yi, si, Number(value) || 0])));
   const max = Math.max(1, ...values.map(v => v[2]));
   const option: EChartsOption = {
-    ...baseOption("IPC 分类年度分布"),
+    ...baseOption(String((result.result_metadata as ResultRecord | undefined)?.metric_label || "IPC 标注次数") + "年度分布"),
     tooltip: { position: "top", formatter: (p: unknown) => {
       const value = (p as { value: number[] }).value;
-      return `${years[value[0]]} · IPC ${sections[value[1]]}<br/><b>${value[2].toLocaleString()} 件</b>`;
+      return `${years[value[0]]} · IPC ${sections[value[1]]}<br/><b>${value[2].toLocaleString()} · ${String((result.result_metadata as ResultRecord | undefined)?.metric_label || "IPC 标注次数")}</b>`;
     } },
     grid: { left: 82, right: 100, top: 78, bottom: 64 },
     xAxis: { type: "category", data: years, splitArea: { show: true }, axisLine, axisLabel },
@@ -216,7 +215,7 @@ function CountryRenderer({ result, fit, chartRef }: RendererProps) {
   const other = all.slice(10).reduce((sum, d) => sum + (Number(d.count) || 0), 0);
   if (other) top.push({ name: "其他", value: other });
   const option: EChartsOption = {
-    ...baseOption("首个公开局分布"),
+    ...baseOption("主公开号首次公开局分布"),
     legend: { orient: "vertical", left: 42, top: 92, textStyle: axisLabel },
     tooltip: { trigger: "item", formatter: "{b}<br/><b>{c} 件</b>（{d}%）" },
     series: [{ type: "pie", radius: ["40%", "70%"], center: ["62%", "54%"], avoidLabelOverlap: true, data: top,
@@ -240,7 +239,7 @@ function DatasetRenderer({ result }: RendererProps) {
 function RoadmapRenderer({ result }: RendererProps) {
   const data = result.data && typeof result.data === "object" ? result.data as Record<string, unknown> : {};
   const years = Object.keys(data).sort();
-  if (!years.length) return <EmptyState title="暂无路线图" text="当前筛选范围没有可用的年度代表性专利。" />;
+  if (!years.length) return <EmptyState title="暂无年度主题时间线" text="当前筛选范围没有可用的年度代表性专利。" />;
   return <div className="overflow-x-auto p-5"><div className="flex gap-5 min-w-max pb-3">
     {years.map(year => <div key={year} className="w-72 shrink-0">
       <div className="flex items-center gap-2 mb-3"><span className="w-3 h-3 bg-blue-600 rounded-full"/><h4 className="font-semibold text-slate-800">{year}</h4></div>
@@ -259,10 +258,9 @@ function SearchRenderer({ result }: RendererProps) {
   const patents = list(result.patents);
   if (!patents.length) return <EmptyState title="没有匹配结果" text="请扩大检索词、年份或 IPC 范围后重试。" />;
   return <div className="p-4 grid gap-3">{patents.map((patent, i) => {
-    const score = Math.max(0, Math.min(1, Number(patent.relevance_score) || 0));
+    const score = Number(patent.relevance_score) || 0;
     return <div key={`${patent.patent_number}-${i}`} className="border border-slate-200 rounded-xl p-4 bg-white">
-      <div className="flex gap-3 justify-between"><div><span className="font-mono text-xs text-blue-700">{String(patent.patent_number || "")}</span><h4 className="font-medium text-slate-800 mt-1">{String(patent.title || "")}</h4></div><span className="text-xs font-semibold text-blue-700">{(score * 100).toFixed(0)}%</span></div>
-      <div className="h-1.5 bg-slate-100 rounded mt-3"><div className="h-full bg-blue-500 rounded" style={{ width: `${score * 100}%` }}/></div>
+      <div className="flex gap-3 justify-between"><div><span className="font-mono text-xs text-blue-700">{String(patent.patent_number || "")}</span><h4 className="font-medium text-slate-800 mt-1">{String(patent.title || "")}</h4></div><span className="text-xs font-semibold text-blue-700">排序分数 {score.toFixed(4)}</span></div>
       <p className="text-xs text-slate-500 mt-2 line-clamp-2">{String(patent.abstract || patent.applicants || "")}</p>
     </div>;
   })}</div>;
@@ -310,7 +308,7 @@ function ValuationRenderer({ result, fit, chartRef }: RendererProps) {
   const option: EChartsOption = {
     ...baseOption(`${label} Top ${rows.length}`), grid: { left: 170, right: 70, top: 76, bottom: 36 },
     xAxis: { type: "value", name: label, max: 100, axisLabel, splitLine }, yAxis: { type: "category", data: rows.map(r => String(r.patent_number)), axisLabel: { ...axisLabel, fontFamily: "monospace" }, axisLine },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params: unknown) => { const p = (Array.isArray(params) ? params[0] : params) as { dataIndex: number }; const row = rows[p.dataIndex] || {}; return `${row.patent_number}<br/>${label}：<b>${Number(row.score || 0).toFixed(1)}</b><br/>同族：${row.family_size ?? 0} · IPC广度：${row.ipc_breadth ?? 0}<br/>SS：${Number(row.shared_specialization || 0).toFixed(2)}`; } },
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params: unknown) => { const p = (Array.isArray(params) ? params[0] : params) as { dataIndex: number }; const row = rows[p.dataIndex] || {}; const interval = Array.isArray(row.score_interval) ? row.score_interval : []; return `${row.patent_number}<br/>${label}：<b>${Number(row.score || 0).toFixed(1)}</b>${interval.length === 2 ? `<br/>不确定区间：${Number(interval[0]).toFixed(1)}–${Number(interval[1]).toFixed(1)}` : ""}<br/>同族规模：${row.family_size ?? "缺失"} · IPC小类广度：${row.ipc_breadth ?? "缺失"}<br/>专利年龄：${row.patent_age ?? "缺失"}<br/>可用权重：${(Number(row.available_weight_ratio || 0) * 100).toFixed(0)}% · 置信：${row.confidence_level ?? "未知"}`; } },
     series: [{ type: "bar", data: rows.map(r => Number(r.score) || 0), label: { show: true, position: "right", formatter: "{c}", color: "#475569" }, barMaxWidth: 24, itemStyle: { color: "#0f766e", borderRadius: [0, 5, 5, 0] } }],
   };
   return <EChartCanvas ref={chartRef} option={option} fit={fit} height={Math.max(520, rows.length * 42 + 130)} />;
@@ -336,6 +334,54 @@ function CompetitorRenderer({ result, fit, chartRef }: RendererProps) {
   return <div><div className="p-3 flex flex-wrap gap-2 items-center"><label className="text-xs text-slate-500">申请人</label><select value={selected} onChange={e => setSelected(Number(e.target.value))} className="max-w-md border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">{evolution.map((e, i) => <option key={i} value={i}>{String(e.applicant)}（{Number(e.total_patents).toLocaleString()} 件）</option>)}</select><span className="text-xs text-slate-500">{String(current.trend_summary || "")}</span></div><EChartCanvas ref={chartRef} option={option} fit={fit}/><div className="px-5 pb-4 flex gap-3 overflow-x-auto">{years.map((year, i) => <div key={year} className="shrink-0 text-xs border border-slate-200 rounded-lg p-2"><b>{year}</b><div className="mt-1 flex gap-1">{strings(topIpc[i]).map(code => <span key={code} className="bg-blue-50 text-blue-700 px-1.5 rounded">{code}</span>)}</div></div>)}</div></div>;
 }
 
+function GenericStructuredRenderer({ result }: RendererProps) {
+  const rows = list(result.data);
+  const metadata = result.result_metadata && typeof result.result_metadata === "object"
+    ? result.result_metadata as ResultRecord : {};
+  const warnings = strings(result.warnings);
+  return <div className="p-5 space-y-4">
+    <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+      <div className="text-sm font-medium text-slate-800">{String(result.summary || "结构化分析结果")}</div>
+      {warnings.map((warning, index) => <p key={index} className="mt-1 text-xs leading-5 text-amber-800">⚠ {warning}</p>)}
+    </div>
+    {rows.length ? <SimpleTable rows={rows.slice(0, 200)}/> : <EmptyState title="暂无结果记录" text="当前作用域内没有满足条件的分析记录。"/>}
+    <details className="rounded-xl border border-slate-200 bg-white">
+      <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-slate-700">口径、覆盖与审计元数据</summary>
+      <pre className="border-t border-slate-100 p-4 max-h-72 overflow-auto text-xs leading-5 text-slate-600">{JSON.stringify(metadata, null, 2)}</pre>
+    </details>
+  </div>;
+}
+
+function ClaimReviewRenderer({ result }: RendererProps) {
+  const patents = list(result.data);
+  const [reviewed, setReviewed] = useState<Record<string, boolean>>({});
+  const toggle = (key: string) => setReviewed(current => ({ ...current, [key]: !current[key] }));
+  return <div className="p-5 space-y-4">
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <div className="text-sm font-semibold text-amber-950">人工复核草稿</div>
+      <p className="mt-1 text-xs leading-5 text-amber-800">要素拆分和产品特征映射仅按规则与词面匹配生成，不构成侵权、等同、无效或 FTO 结论。下列勾选只记录当前界面的复核进度，导出 JSON 后应进入正式法律审阅流程。</p>
+    </div>
+    {patents.map((patent, patentIndex) => <section key={patentIndex} className="rounded-xl border border-slate-200 overflow-hidden">
+      <header className="px-4 py-3 bg-slate-50 text-sm font-semibold text-slate-800">
+        <span className="font-mono text-blue-700 mr-2">{String(patent.patent_number || "")}</span>
+        {String(patent.kind_code || "版本未知")} · {String(patent.legal_status || "状态未知")}
+      </header>
+      <div className="divide-y divide-slate-100">{list(patent.claims).map((claim, claimIndex) => {
+        const key = `${patent.patent_number}:${claim.claim_number}`;
+        return <div key={key} className="p-4">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
+            <input type="checkbox" checked={Boolean(reviewed[key])} onChange={() => toggle(key)} />
+            权利要求 {String(claim.claim_number)} · {claim.is_independent ? "独立" : "从属"} · {String(claim.language || "und")}
+          </label>
+          <div className="mt-3 space-y-2">{list(claim.elements).map((element, elementIndex) => <div key={elementIndex} className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs leading-5 text-slate-700"><b className="mr-2">要素 {String(element.element_number)}</b>{String(element.text || "")}</div>)}</div>
+          <div className="mt-3"><SimpleTable rows={list(claim.product_feature_mapping_draft)} labels={{ feature: "产品特征", matched_element_numbers: "词面匹配要素", match_method: "匹配方法" }}/></div>
+          <p className="mt-2 font-mono text-[10px] text-slate-400 break-all">{String(claim.source_evidence_path || "")} · {String(claim.source_text_sha256 || "")}</p>
+        </div>;
+      })}</div>
+    </section>)}
+  </div>;
+}
+
 const visualizationRegistry: Record<string, ComponentType<RendererProps>> = {
   monthly_trend: TrendRenderer,
   yearly_trend: TrendRenderer,
@@ -355,6 +401,14 @@ const visualizationRegistry: Record<string, ComponentType<RendererProps>> = {
   clustering: ClusteringRenderer,
   value_indicators: ValuationRenderer,
   competitor_evolution: CompetitorRenderer,
+  entity_portfolio: GenericStructuredRenderer,
+  concentration: GenericStructuredRenderer,
+  citation_network: GenericStructuredRenderer,
+  family_geography: GenericStructuredRenderer,
+  search_strategy_audit: GenericStructuredRenderer,
+  legal_status: GenericStructuredRenderer,
+  patent_monitor: GenericStructuredRenderer,
+  claim_elements: ClaimReviewRenderer,
 };
 
 export function VisualizationPanel({ result, chartHtml, toolName }: { result?: ResultRecord | null; chartHtml?: string | null; toolName: string }) {
@@ -391,7 +445,7 @@ export function VisualizationPanel({ result, chartHtml, toolName }: { result?: R
       </div>
     </div>
     <div className={fullscreen ? "flex-1 overflow-auto p-4" : "overflow-hidden"}>
-      {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef}/> : chartHtml ? <ChartFrame html={chartHtml}/> : <EmptyState title="没有可视化" text="该结果仅包含结构化数据，请切换到数据视图。"/>}
+      {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef}/> : <EmptyState title="旧版 HTML 图表已禁用" text="为防止数据集内脚本执行，请切换到数据视图查看结构化结果。"/>}
     </div>
   </div>;
 }
@@ -408,9 +462,19 @@ function ResultDataView({ result }: { result: ResultRecord }) {
 }
 
 function SimpleTable({ rows, labels = {} }: { rows: ResultRecord[]; labels?: Record<string, string> }) {
+  const [scrollTop, setScrollTop] = useState(0);
   if (!rows.length) return <EmptyState title="暂无结构化记录" text="当前结果没有可显示的数据行。"/>;
   const columns = [...new Set(rows.flatMap(row => Object.keys(row)))].slice(0, 12);
-  return <div className="overflow-auto max-h-[560px] border border-slate-200 rounded-xl"><table className="min-w-full text-xs"><thead className="sticky top-0 bg-slate-100 z-10"><tr>{columns.map(c => <th key={c} className="text-left px-3 py-2 font-semibold text-slate-600 whitespace-nowrap">{labels[c] || c}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{rows.map((row, i) => <tr key={i} className="hover:bg-blue-50/40">{columns.map(c => <td key={c} className="px-3 py-2 text-slate-600 max-w-72 truncate" title={formatCell(row[c])}>{formatCell(row[c])}</td>)}</tr>)}</tbody></table></div>;
+  const rowHeight = 37;
+  const virtual = rows.length > 80;
+  const start = virtual ? Math.max(0, Math.floor(scrollTop / rowHeight) - 8) : 0;
+  const end = virtual ? Math.min(rows.length, start + Math.ceil(560 / rowHeight) + 16) : rows.length;
+  const visibleRows = rows.slice(start, end);
+  return <div onScroll={event => setScrollTop(event.currentTarget.scrollTop)} className="overflow-auto max-h-[560px] border border-slate-200 rounded-xl"><table className="min-w-full text-xs"><thead className="sticky top-0 bg-slate-100 z-10"><tr>{columns.map(c => <th key={c} className="text-left px-3 py-2 font-semibold text-slate-600 whitespace-nowrap">{labels[c] || c}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">
+    {virtual && start > 0 && <tr aria-hidden="true"><td colSpan={columns.length} style={{ height: start * rowHeight, padding: 0 }}/></tr>}
+    {visibleRows.map((row, offset) => <tr key={start + offset} style={{ height: rowHeight }} className="hover:bg-blue-50/40">{columns.map(c => <td key={c} className="px-3 py-2 text-slate-600 max-w-72 truncate" title={formatCell(row[c])}>{formatCell(row[c])}</td>)}</tr>)}
+    {virtual && end < rows.length && <tr aria-hidden="true"><td colSpan={columns.length} style={{ height: (rows.length - end) * rowHeight, padding: 0 }}/></tr>}
+  </tbody></table></div>;
 }
 
 function formatCell(value: unknown): string {

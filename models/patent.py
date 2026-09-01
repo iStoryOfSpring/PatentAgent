@@ -1,6 +1,6 @@
 """Versioned canonical patent-domain models.
 
-The flat fields remain available for the sixteen analysis tools.  New source
+The flat fields remain available for the analysis tools.  New source
 adapters additionally populate localized content, event history and field
 provenance so that a convenient display value is never mistaken for the only
 value supplied by an authority.
@@ -15,6 +15,8 @@ class Party(BaseModel):
     name: str
     normalized_name: str = ""
     country: str = ""
+    role: Literal["applicant", "assignee", "current_rights_holder", "inventor", "unknown"] = "unknown"
+    source_role: str = ""
 
 
 class Classification(BaseModel):
@@ -128,6 +130,8 @@ class FullPatent(BaseModel):
     source_file: str = ""
     imported_at: str = ""
     applicant_parties: list[Party] = Field(default_factory=list)
+    assignee_parties: list[Party] = Field(default_factory=list)
+    current_rights_holder_parties: list[Party] = Field(default_factory=list)
     inventor_parties: list[Party] = Field(default_factory=list)
     classifications: list[Classification] = Field(default_factory=list)
     citation_records: list[Citation] = Field(default_factory=list)

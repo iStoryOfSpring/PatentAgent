@@ -19,7 +19,7 @@ def _store():
 def test_tools_api_exposes_single_source_algorithm_registry(monkeypatch):
     monkeypatch.setattr(server.app.state.container, "store", _store())
     payload = server.list_tools()
-    assert len(payload["tools"]) == len(tool_registry.get_all_names()) == 16
+    assert len(payload["tools"]) == len(tool_registry.get_all_names()) == 24
     for item in payload["tools"]:
         assert item["algorithm"]["algorithm_id"]
         assert item["algorithm"]["version"]

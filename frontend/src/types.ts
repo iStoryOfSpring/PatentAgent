@@ -17,19 +17,76 @@ export interface HealthResponse {
 
 export interface DatasetVersion {
   dataset_id: string;
-  version_id: string;
+  version_id?: string;
+  id?: string;
   content_hash: string;
-  schema_version: string;
+  schema_version: string | number;
+  adapter?: string;
+  storage_path?: string;
+  import_id?: string;
+  import_report?: ImportReport;
   sources: string[];
   record_count: number;
   field_coverage: Record<string, number>;
   created_at?: string;
 }
 
+export interface DatasetRecord {
+  id: string;
+  name: string;
+  source_root: string;
+  status: "ready" | "archived";
+  latest_version: DatasetVersion;
+  version_count: number;
+}
+
+export interface DatasetImportStatus {
+  id: string;
+  status: "queued" | "parsing" | "completed" | "failed" | "interrupted";
+  dataset_version_id?: string;
+  error_category?: string;
+  error?: string;
+  metrics?: {
+    progress?: number;
+    stage?: string;
+    dataset_id?: string;
+    dataset_version_id?: string;
+    record_count?: number;
+    deduplicated?: boolean;
+    warnings?: string[];
+    file_detections?: ImportReport["file_detections"];
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CapabilityDefinition {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  tool_names: string[];
+  prompts: string[];
+  availability: "available" | "partial" | "unavailable";
+  available_tool_count: number;
+  tool_count: number;
+  tools: { name: string; available: boolean; reason?: string }[];
+}
+
+export interface ReportSummary {
+  id: string;
+  session_id: string;
+  turn_id?: string | null;
+  title: string;
+  format: "html";
+  created_at: string;
+  download_url?: string;
+}
+
 export type TaskState =
-  | "created" | "planning" | "planned" | "waiting_approval" | "running"
+  | "created" | "queued" | "planning" | "planned" | "waiting_approval" | "running"
   | "validating" | "synthesizing" | "completed" | "partial" | "failed"
-  | "cancelled" | "interrupted" | "awaiting_clarification";
+  | "cancelling" | "cancelled" | "interrupted" | "awaiting_clarification";
 
 export interface ErrorInfo {
   category: "data_insufficient" | "input_validation" | "algorithm_failure"
@@ -106,9 +163,13 @@ export interface SourceCapabilities {
 export interface ImportReport {
   source_formats: string[];
   files_seen: number;
+  records_expected: number;
+  records_detected: number;
+  records_succeeded: number;
   records_parsed: number;
   records_imported: number;
   records_failed: number;
+  records_skipped: number;
   duplicates_merged: number;
   field_conflicts: number;
   field_coverage: Record<string, number>;
@@ -120,8 +181,10 @@ export interface ImportReport {
     method: "manifest" | "user_selected" | "content_signature" | "unknown";
     matched: boolean;
   }[];
-  issues: { file: string; record_id: string; code: string; message: string }[];
+  issues: { file: string; record_id: string; location: string; code: string; message: string; sample_hash: string }[];
   warnings: string[];
+  parse_rate: number;
+  quarantine_path: string;
 }
 
 export interface SearchCapabilityStatus {
@@ -255,6 +318,7 @@ export interface SessionSummary {
   id: string;
   name: string;
   dataset_fingerprint: string;
+  dataset_version_id: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -298,6 +362,7 @@ export interface SSEIntent {
   goal: string;
   analysis_type: string;
   turn_id?: string;
+  dataset_version_id?: string;
 }
 
 export interface SSEPlan {
@@ -314,6 +379,8 @@ export interface SSEPlan {
   request_id?: string;
   usage?: Record<string, number>;
   finish_reason?: string;
+  turn_id?: string;
+  dataset_version_id?: string;
 }
 
 export interface SSEStep {
@@ -352,6 +419,8 @@ export interface SSEClarification {
 export interface SSEText {
   type: "text";
   content: string;
+  turn_id?: string;
+  dataset_version_id?: string;
 }
 
 export interface SSEStrategy {
@@ -426,4 +495,5 @@ export interface Message {
   followupSuggestions?: FollowupSuggestion[];
   clarification?: { turnId: string; missingFields: string[]; allowDefaults: boolean };
   canResynthesize?: boolean;
+  plan?: { steps: Record<string, unknown>[]; costWeight?: number };
 }

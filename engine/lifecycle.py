@@ -1,4 +1,4 @@
-"""技术增长趋势分析 — 累计申请量 + 年增长率
+"""技术公开增长趋势分析 — 累计公开量 + 年同比增长率
 
 v1.4 重构: 原来的 Logistic S 曲线拟合在 5 年数据上无统计意义
 （3 参数模型，2 自由度，任意数据都能"拟合"）。
@@ -11,7 +11,7 @@ from models.analysis_results import SCurveResult
 
 
 def fit_logistic_curve(yearly_df: 'pd.DataFrame') -> SCurveResult:
-    """计算累计申请量和年增长率。
+    """计算累计公开量和年同比增长率。
 
     不再使用 Logistic 拟合——数据量不足时无统计意义。
     返回原始累计值作为 fitted（向后兼容，图表只展示实际数据）。

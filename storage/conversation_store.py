@@ -24,6 +24,22 @@ def _json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str)
 
 
+def _scalar_evidence_values(value: Any, path: str = "") -> list[tuple[str, str]]:
+    """Flatten JSON leaves to the same escaped paths accepted by evidence://."""
+    if isinstance(value, dict):
+        output = []
+        for key, item in value.items():
+            segment = str(key).replace("~", "~0").replace("/", "~1")
+            output.extend(_scalar_evidence_values(item, f"{path}/{segment}"))
+        return output
+    if isinstance(value, list):
+        output = []
+        for index, item in enumerate(value):
+            output.extend(_scalar_evidence_values(item, f"{path}/{index}"))
+        return output
+    return [(path or "/", _json(value))]
+
+
 def execution_cache_key(
     dataset_fingerprint: str,
     tool_name: str,
@@ -42,7 +58,7 @@ def execution_cache_key(
 class ConversationStore:
     """Small aiosqlite repository with explicit, versioned schema."""
 
-    SCHEMA_VERSION = 4
+    SCHEMA_VERSION = 7
 
     def __init__(self, db_path: str | Path):
         self.db_path = Path(db_path)
@@ -58,6 +74,7 @@ class ConversationStore:
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
                     dataset_fingerprint TEXT NOT NULL DEFAULT '',
+                    dataset_version_id TEXT NOT NULL DEFAULT '',
                     status TEXT NOT NULL DEFAULT 'idle',
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
@@ -125,6 +142,7 @@ class ConversationStore:
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
                     source_root TEXT NOT NULL DEFAULT '',
+                    status TEXT NOT NULL DEFAULT 'ready',
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 );
@@ -132,11 +150,15 @@ class ConversationStore:
                     id TEXT PRIMARY KEY,
                     dataset_id TEXT NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
                     content_hash TEXT NOT NULL,
+                    fingerprint_scheme TEXT NOT NULL DEFAULT 'legacy-identity-v1',
                     schema_version INTEGER NOT NULL DEFAULT 1,
                     adapter TEXT NOT NULL DEFAULT '',
                     record_count INTEGER NOT NULL DEFAULT 0,
                     field_coverage_json TEXT NOT NULL DEFAULT '{}',
                     sources_json TEXT NOT NULL DEFAULT '[]',
+                    storage_path TEXT NOT NULL DEFAULT '',
+                    import_id TEXT NOT NULL DEFAULT '',
+                    import_report_json TEXT NOT NULL DEFAULT '{}',
                     created_at TEXT NOT NULL,
                     UNIQUE(dataset_id, content_hash)
                 );
@@ -174,11 +196,106 @@ class ConversationStore:
                     payload_json TEXT NOT NULL DEFAULT '{}',
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS record_hashes (
+                    dataset_version_id TEXT NOT NULL REFERENCES dataset_versions(id) ON DELETE CASCADE,
+                    patent_number TEXT NOT NULL,
+                    record_content_hash TEXT NOT NULL,
+                    PRIMARY KEY(dataset_version_id,patent_number)
+                );
+                CREATE TABLE IF NOT EXISTS entities (
+                    id TEXT PRIMARY KEY,
+                    canonical_name TEXT NOT NULL,
+                    entity_type TEXT NOT NULL,
+                    jurisdiction TEXT NOT NULL DEFAULT '',
+                    parent_entity_id TEXT REFERENCES entities(id) ON DELETE SET NULL,
+                    valid_from TEXT, valid_to TEXT,
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS entity_aliases (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    entity_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+                    alias TEXT NOT NULL, language TEXT NOT NULL DEFAULT 'und',
+                    source TEXT NOT NULL DEFAULT '', confidence REAL,
+                    resolution_method TEXT NOT NULL DEFAULT '',
+                    review_status TEXT NOT NULL DEFAULT 'unreviewed',
+                    UNIQUE(entity_id,alias,source)
+                );
+                CREATE TABLE IF NOT EXISTS patent_party_roles (
+                    dataset_version_id TEXT NOT NULL REFERENCES dataset_versions(id) ON DELETE CASCADE,
+                    patent_number TEXT NOT NULL,
+                    entity_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+                    role TEXT NOT NULL, source TEXT NOT NULL DEFAULT '',
+                    observed_at TEXT NOT NULL DEFAULT '',
+                    PRIMARY KEY(dataset_version_id,patent_number,entity_id,role,source)
+                );
+                CREATE TABLE IF NOT EXISTS analysis_scopes (
+                    scope_hash TEXT PRIMARY KEY,
+                    dataset_version_id TEXT NOT NULL REFERENCES dataset_versions(id) ON DELETE CASCADE,
+                    canonical_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS evidence_values (
+                    execution_id TEXT NOT NULL REFERENCES tool_executions(id) ON DELETE CASCADE,
+                    json_path TEXT NOT NULL,
+                    scalar_json TEXT NOT NULL,
+                    PRIMARY KEY(execution_id,json_path)
+                );
+                CREATE TABLE IF NOT EXISTS taxonomies (
+                    id TEXT NOT NULL, version TEXT NOT NULL,
+                    name TEXT NOT NULL, scope TEXT NOT NULL DEFAULT '',
+                    creator TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL,
+                    PRIMARY KEY(id,version)
+                );
+                CREATE TABLE IF NOT EXISTS taxonomy_labels (
+                    taxonomy_id TEXT NOT NULL, taxonomy_version TEXT NOT NULL,
+                    label_id TEXT NOT NULL, label_type TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    PRIMARY KEY(taxonomy_id,taxonomy_version,label_id),
+                    FOREIGN KEY(taxonomy_id,taxonomy_version) REFERENCES taxonomies(id,version) ON DELETE CASCADE
+                );
+                CREATE TABLE IF NOT EXISTS record_annotations (
+                    dataset_version_id TEXT NOT NULL REFERENCES dataset_versions(id) ON DELETE CASCADE,
+                    patent_number TEXT NOT NULL,
+                    taxonomy_id TEXT NOT NULL, taxonomy_version TEXT NOT NULL,
+                    label_id TEXT NOT NULL, source TEXT NOT NULL,
+                    reviewer TEXT NOT NULL DEFAULT '', review_status TEXT NOT NULL DEFAULT 'unreviewed',
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(dataset_version_id,patent_number,taxonomy_id,taxonomy_version,label_id,source)
+                );
+                CREATE TABLE IF NOT EXISTS search_strategies (
+                    id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS search_strategy_versions (
+                    strategy_id TEXT NOT NULL REFERENCES search_strategies(id) ON DELETE CASCADE,
+                    version INTEGER NOT NULL, strategy_hash TEXT NOT NULL,
+                    query_json TEXT NOT NULL, created_at TEXT NOT NULL,
+                    PRIMARY KEY(strategy_id,version), UNIQUE(strategy_hash)
+                );
+                CREATE TABLE IF NOT EXISTS monitor_runs (
+                    id TEXT PRIMARY KEY,
+                    strategy_id TEXT NOT NULL, strategy_version INTEGER NOT NULL,
+                    dataset_version_id TEXT NOT NULL DEFAULT '', status TEXT NOT NULL,
+                    metrics_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS monitor_events (
+                    id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES monitor_runs(id) ON DELETE CASCADE,
+                    event_type TEXT NOT NULL, patent_number TEXT NOT NULL DEFAULT '',
+                    payload_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS external_evidence (
+                    evidence_id TEXT PRIMARY KEY, evidence_type TEXT NOT NULL,
+                    title TEXT NOT NULL, source_name TEXT NOT NULL,
+                    source_uri TEXT NOT NULL, published_at TEXT,
+                    observed_at TEXT NOT NULL, entities_json TEXT NOT NULL DEFAULT '[]',
+                    text_excerpt TEXT NOT NULL, content_hash TEXT NOT NULL,
+                    license_note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
+                );
                 CREATE INDEX IF NOT EXISTS idx_turns_session ON turns(session_id, created_at);
                 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, id);
                 CREATE INDEX IF NOT EXISTS idx_exec_session ON tool_executions(session_id, created_at);
                 CREATE INDEX IF NOT EXISTS idx_exec_cache ON tool_executions(cache_key);
                 CREATE INDEX IF NOT EXISTS idx_task_events_turn ON task_events(turn_id,id);
+                CREATE INDEX IF NOT EXISTS idx_external_evidence_type_time ON external_evidence(evidence_type,published_at);
                 """
             )
             # Idempotent migration for databases created before provider-aware
@@ -211,6 +328,31 @@ class ConversationStore:
             }.items():
                 if column not in turn_columns:
                     await db.execute(f"ALTER TABLE turns ADD COLUMN {column} {ddl}")
+            session_columns = {
+                row[1] for row in await db.execute_fetchall("PRAGMA table_info(sessions)")
+            }
+            if "dataset_version_id" not in session_columns:
+                await db.execute(
+                    "ALTER TABLE sessions ADD COLUMN dataset_version_id TEXT NOT NULL DEFAULT ''"
+                )
+            dataset_columns = {
+                row[1] for row in await db.execute_fetchall("PRAGMA table_info(datasets)")
+            }
+            if "status" not in dataset_columns:
+                await db.execute(
+                    "ALTER TABLE datasets ADD COLUMN status TEXT NOT NULL DEFAULT 'ready'"
+                )
+            version_columns = {
+                row[1] for row in await db.execute_fetchall("PRAGMA table_info(dataset_versions)")
+            }
+            for column, ddl in {
+                "storage_path": "TEXT NOT NULL DEFAULT ''",
+                "import_id": "TEXT NOT NULL DEFAULT ''",
+                "import_report_json": "TEXT NOT NULL DEFAULT '{}'",
+                "fingerprint_scheme": "TEXT NOT NULL DEFAULT 'legacy-identity-v1'",
+            }.items():
+                if column not in version_columns:
+                    await db.execute(f"ALTER TABLE dataset_versions ADD COLUMN {column} {ddl}")
             execution_columns = {
                 row[1] for row in await db.execute_fetchall("PRAGMA table_info(tool_executions)")
             }
@@ -230,12 +372,25 @@ class ConversationStore:
                 await db.execute(
                     "ALTER TABLE tool_executions ADD COLUMN metrics_json TEXT NOT NULL DEFAULT '{}'"
                 )
+            await db.executescript(
+                """
+                CREATE INDEX IF NOT EXISTS idx_sessions_dataset_version
+                ON sessions(dataset_version_id);
+                CREATE INDEX IF NOT EXISTS idx_dataset_versions_dataset
+                ON dataset_versions(dataset_id,created_at);
+                CREATE INDEX IF NOT EXISTS idx_imports_status
+                ON imports(status,updated_at);
+                CREATE INDEX IF NOT EXISTS idx_reports_session
+                ON reports(session_id,created_at);
+                """
+            )
             await db.execute(f"PRAGMA user_version={self.SCHEMA_VERSION}")
+            await db.execute("PRAGMA optimize")
             await db.commit()
 
     async def create_session(
         self, name: str = "新会话", dataset_fingerprint: str = "",
-        session_id: str | None = None,
+        session_id: str | None = None, dataset_version_id: str = "",
     ) -> dict[str, Any]:
         session_id = session_id or f"session_{uuid4().hex}"
         now = _now()
@@ -243,24 +398,41 @@ class ConversationStore:
             await db.execute("PRAGMA foreign_keys=ON")
             await db.execute(
                 "INSERT OR IGNORE INTO sessions "
-                "(id,name,dataset_fingerprint,status,created_at,updated_at) "
-                "VALUES (?,?,?,?,?,?)",
+                "(id,name,dataset_fingerprint,dataset_version_id,status,created_at,updated_at) "
+                "VALUES (?,?,?,?,?,?,?)",
                 (session_id, name.strip() or "新会话", dataset_fingerprint,
-                 "idle", now, now),
+                 dataset_version_id, "idle", now, now),
             )
             await db.commit()
         return await self.get_session(session_id)
 
     async def ensure_session(
         self, session_id: str, dataset_fingerprint: str,
-        name: str = "新会话",
+        name: str = "新会话", dataset_version_id: str = "",
     ) -> dict[str, Any]:
         session = await self.get_session(session_id, required=False)
         if not session:
-            return await self.create_session(name, dataset_fingerprint, session_id)
-        if session["dataset_fingerprint"] != dataset_fingerprint:
+            return await self.create_session(
+                name, dataset_fingerprint, session_id, dataset_version_id,
+            )
+        # Existing sessions keep their explicit binding. Legacy rows are filled
+        # once, without invalidating evidence merely because the session was read.
+        if not session.get("dataset_version_id") and dataset_version_id:
             async with aiosqlite.connect(self.db_path) as db:
-                await db.execute("PRAGMA foreign_keys=ON")
+                await db.execute(
+                    "UPDATE sessions SET dataset_fingerprint=?,dataset_version_id=?,updated_at=? "
+                    "WHERE id=?",
+                    (dataset_fingerprint, dataset_version_id, _now(), session_id),
+                )
+                await db.commit()
+            session = await self.get_session(session_id)
+        elif (
+            not session.get("dataset_version_id") and not dataset_version_id and
+            session.get("dataset_fingerprint") != dataset_fingerprint
+        ):
+            # Backward-compatible behavior for embedded callers that do not
+            # know version IDs. HTTP session reads no longer call this method.
+            async with aiosqlite.connect(self.db_path) as db:
                 await db.execute(
                     "UPDATE evidence_snapshots SET stale=1 WHERE execution_id IN "
                     "(SELECT id FROM tool_executions WHERE session_id=?)",
@@ -274,6 +446,28 @@ class ConversationStore:
             session = await self.get_session(session_id)
             session["dataset_changed"] = True
         return session
+
+    async def bind_session_dataset(
+        self, session_id: str, dataset_version_id: str, dataset_fingerprint: str,
+    ) -> tuple[dict[str, Any], int]:
+        session = await self.get_session(session_id)
+        if session.get("dataset_version_id") == dataset_version_id:
+            return session, 0
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("PRAGMA foreign_keys=ON")
+            cursor = await db.execute(
+                "UPDATE evidence_snapshots SET stale=1 WHERE stale=0 AND execution_id IN "
+                "(SELECT id FROM tool_executions WHERE session_id=?)",
+                (session_id,),
+            )
+            await db.execute(
+                "UPDATE sessions SET dataset_fingerprint=?,dataset_version_id=?,updated_at=? "
+                "WHERE id=?",
+                (dataset_fingerprint, dataset_version_id, _now(), session_id),
+            )
+            await db.commit()
+            stale_count = max(cursor.rowcount, 0)
+        return await self.get_session(session_id), stale_count
 
     async def list_sessions(self) -> list[dict[str, Any]]:
         async with aiosqlite.connect(self.db_path) as db:
@@ -334,7 +528,7 @@ class ConversationStore:
                 "dataset_version_id,trace_id,created_at,updated_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (turn_id, session_id, origin, user_message, response_mode,
-                 "created", provider, model, provider_profile_id,
+                 "queued", provider, model, provider_profile_id,
                  provider_name, provider_protocol, dataset_version_id, trace_id,
                  now, now),
             )
@@ -452,14 +646,42 @@ class ConversationStore:
                 "(execution_id,result_json,coverage_json,stale,created_at) VALUES (?,?,?,?,?)",
                 (execution_id, _json(clean_result), _json(coverage or {}), 0, _now()),
             )
+            await db.execute(
+                "DELETE FROM evidence_values WHERE execution_id=?", (execution_id,),
+            )
+            await db.executemany(
+                "INSERT INTO evidence_values(execution_id,json_path,scalar_json) VALUES (?,?,?)",
+                [
+                    (execution_id, path, scalar)
+                    for path, scalar in _scalar_evidence_values(clean_result)
+                ],
+            )
+            dataset_version_id = str((provenance or {}).get("dataset_version_id", ""))
+            scope = parameters.get("scope") if isinstance(parameters, dict) else None
+            if dataset_version_id and isinstance(scope, dict):
+                exists = await db.execute_fetchall(
+                    "SELECT 1 FROM dataset_versions WHERE id=?", (dataset_version_id,),
+                )
+                if exists:
+                    canonical_scope = json.dumps(
+                        scope, ensure_ascii=False, sort_keys=True,
+                        separators=(",", ":"), default=str,
+                    )
+                    scope_hash = hashlib.sha256(
+                        f"{dataset_version_id}\0{canonical_scope}".encode()
+                    ).hexdigest()
+                    await db.execute(
+                        "INSERT OR IGNORE INTO analysis_scopes VALUES (?,?,?,?)",
+                        (scope_hash, dataset_version_id, canonical_scope, _now()),
+                    )
             await db.commit()
         return cache_key
 
     async def mark_inflight_interrupted(self) -> int:
         """Make process crashes explicit without replaying an LLM request."""
         inflight = (
-            "created", "planning", "planned", "running", "executing",
-            "validating", "synthesizing",
+            "created", "queued", "planning", "planned", "running", "executing",
+            "validating", "synthesizing", "cancelling",
         )
         async with aiosqlite.connect(self.db_path) as db:
             placeholders = ",".join("?" for _ in inflight)
@@ -479,9 +701,9 @@ class ConversationStore:
     async def request_cancel(self, turn_id: str) -> dict[str, Any]:
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(
-                "UPDATE turns SET cancel_requested=1,updated_at=?,"
+                "UPDATE turns SET cancel_requested=1,status='cancelling',updated_at=?,"
                 "state_version=state_version+1 WHERE id=? AND status NOT IN "
-                "('completed','failed','cancelled')",
+                "('completed','partial','failed','cancelled','interrupted')",
                 (_now(), turn_id),
             )
             await db.commit()
@@ -519,32 +741,108 @@ class ConversationStore:
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             rows = await db.execute_fetchall(
-                "SELECT v.*,d.name,d.source_root FROM dataset_versions v "
+                "SELECT v.*,d.name,d.source_root,d.status AS dataset_status FROM dataset_versions v "
                 "JOIN datasets d ON d.id=v.dataset_id ORDER BY v.created_at DESC"
             )
         return [self._decode_row(row) for row in rows]
+
+    async def get_dataset_version(self, version_id: str) -> dict[str, Any] | None:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute(
+                "SELECT v.*,d.name,d.source_root,d.status AS dataset_status "
+                "FROM dataset_versions v JOIN datasets d ON d.id=v.dataset_id WHERE v.id=?",
+                (version_id,),
+            )
+            row = await cursor.fetchone()
+        return self._decode_row(row) if row else None
 
     async def upsert_dataset_snapshot(self, snapshot: dict[str, Any]) -> None:
         now = _now()
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA foreign_keys=ON")
             await db.execute(
-                "INSERT INTO datasets(id,name,source_root,created_at,updated_at) "
-                "VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
-                "name=excluded.name,source_root=excluded.source_root,updated_at=excluded.updated_at",
+                "INSERT INTO datasets(id,name,source_root,status,created_at,updated_at) "
+                "VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
+                "name=excluded.name,source_root=excluded.source_root,status=excluded.status,"
+                "updated_at=excluded.updated_at",
                 (snapshot["dataset_id"], snapshot.get("name") or snapshot["dataset_id"],
-                 (snapshot.get("sources") or [""])[0], now, now),
+                 snapshot.get("source_root") or (snapshot.get("sources") or [""])[0],
+                 snapshot.get("status", "ready"), now, now),
             )
             await db.execute(
                 "INSERT OR IGNORE INTO dataset_versions "
-                "(id,dataset_id,content_hash,schema_version,adapter,record_count,"
-                "field_coverage_json,sources_json,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+                "(id,dataset_id,content_hash,fingerprint_scheme,schema_version,adapter,record_count,"
+                "field_coverage_json,sources_json,storage_path,import_id,import_report_json,created_at) "
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (snapshot["version_id"], snapshot["dataset_id"], snapshot["content_hash"],
+                 snapshot.get("fingerprint_scheme", "legacy-identity-v1"),
                  snapshot.get("schema_version", 1), snapshot.get("adapter", ""),
                  snapshot.get("record_count", 0), _json(snapshot.get("field_coverage", {})),
-                 _json(snapshot.get("sources", [])), now),
+                 _json(snapshot.get("sources", [])), snapshot.get("storage_path", ""),
+                 snapshot.get("import_id", ""), _json(snapshot.get("import_report", {})), now),
             )
             await db.commit()
+
+    async def update_dataset(self, dataset_id: str, **values: Any) -> dict[str, Any]:
+        allowed = {"name", "status"}
+        clean = {key: value for key, value in values.items() if key in allowed}
+        if not clean:
+            raise ValueError("没有可更新的数据集字段")
+        if "status" in clean and clean["status"] not in {"ready", "archived"}:
+            raise ValueError("status 必须是 ready 或 archived")
+        if "name" in clean and not str(clean["name"]).strip():
+            raise ValueError("数据集名称不能为空")
+        clean["updated_at"] = _now()
+        assignments = ",".join(f"{key}=?" for key in clean)
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                f"UPDATE datasets SET {assignments} WHERE id=?",
+                (*clean.values(), dataset_id),
+            )
+            await db.commit()
+            if cursor.rowcount == 0:
+                raise KeyError(dataset_id)
+            db.row_factory = aiosqlite.Row
+            result = await db.execute("SELECT * FROM datasets WHERE id=?", (dataset_id,))
+            row = await result.fetchone()
+        return dict(row)
+
+    async def create_import(
+        self, import_id: str, source_path: str, metrics: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        now = _now()
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                "INSERT INTO imports(id,status,source_path,metrics_json,created_at,updated_at) "
+                "VALUES(?,?,?,?,?,?)",
+                (import_id, "queued", source_path, _json(metrics or {}), now, now),
+            )
+            await db.commit()
+        return await self.get_import(import_id)
+
+    async def update_import(self, import_id: str, **values: Any) -> dict[str, Any]:
+        allowed = {"status", "dataset_version_id", "error_category", "error", "metrics_json"}
+        clean = {key: value for key, value in values.items() if key in allowed}
+        if "metrics_json" in clean and not isinstance(clean["metrics_json"], str):
+            clean["metrics_json"] = _json(clean["metrics_json"])
+        clean["updated_at"] = _now()
+        assignments = ",".join(f"{key}=?" for key in clean)
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                f"UPDATE imports SET {assignments} WHERE id=?", (*clean.values(), import_id),
+            )
+            await db.commit()
+            if cursor.rowcount == 0:
+                raise KeyError(import_id)
+        return await self.get_import(import_id)
+
+    async def get_import(self, import_id: str) -> dict[str, Any] | None:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute("SELECT * FROM imports WHERE id=?", (import_id,))
+            row = await cursor.fetchone()
+        return self._decode_row(row) if row else None
 
     async def record_approval(
         self, turn_id: str, decision: str, payload: dict[str, Any] | None = None,
@@ -573,6 +871,22 @@ class ConversationStore:
             )
             await db.commit()
         return report_id
+
+    async def list_reports(self) -> list[dict[str, Any]]:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            rows = await db.execute_fetchall(
+                "SELECT id,session_id,turn_id,title,format,created_at FROM reports "
+                "ORDER BY created_at DESC"
+            )
+        return [dict(row) for row in rows]
+
+    async def get_report(self, report_id: str) -> dict[str, Any] | None:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute("SELECT * FROM reports WHERE id=?", (report_id,))
+            row = await cursor.fetchone()
+        return dict(row) if row else None
 
     async def get_session_detail(self, session_id: str) -> dict[str, Any]:
         session = await self.get_session(session_id)
@@ -636,6 +950,49 @@ class ConversationStore:
             )
             row = await cursor.fetchone()
         return self._decode_row(row) if row else None
+
+    async def add_external_evidence(self, record) -> dict[str, Any]:
+        """Persist immutable, source-attributed non-patent evidence."""
+        from patent_agent.domain import ExternalEvidenceRecord
+
+        item = ExternalEvidenceRecord.model_validate(record)
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            existing = await db.execute_fetchall(
+                "SELECT * FROM external_evidence WHERE evidence_id=?",
+                (item.evidence_id,),
+            )
+            if existing:
+                current = self._decode_row(existing[0])
+                if current.get("content_hash") != item.content_hash:
+                    raise ValueError("同一 evidence_id 已绑定不同 content_hash")
+                return current
+            created_at = _now()
+            await db.execute(
+                "INSERT INTO external_evidence VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    item.evidence_id, item.evidence_type, item.title,
+                    item.source_name, item.source_uri, item.published_at,
+                    item.observed_at, _json(item.entities), item.text_excerpt,
+                    item.content_hash, item.license_note, created_at,
+                ),
+            )
+            await db.commit()
+        return {**item.model_dump(mode="json"), "created_at": created_at}
+
+    async def list_external_evidence(
+        self, evidence_type: str | None = None, limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        clause = "WHERE evidence_type=?" if evidence_type else ""
+        params = (evidence_type, limit) if evidence_type else (limit,)
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            rows = await db.execute_fetchall(
+                f"SELECT * FROM external_evidence {clause} "
+                "ORDER BY observed_at DESC,evidence_id LIMIT ?",
+                params,
+            )
+        return [self._decode_row(row) for row in rows]
 
     async def get_turn(self, turn_id: str) -> dict[str, Any] | None:
         async with aiosqlite.connect(self.db_path) as db:

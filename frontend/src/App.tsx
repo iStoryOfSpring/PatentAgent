@@ -1,28 +1,42 @@
 import { useState, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Database, Settings, Download, Send, Bot,
-  FolderSearch, Loader2, AlertTriangle,
-  Plus, MessageSquare, Pencil, Trash2, ExternalLink, SlidersHorizontal, Power, X,
+  Database, Download, Send,
+  Loader2,
+  Plus, MessageSquare, Pencil, Trash2,
 } from "lucide-react";
 import { MessageBubble } from "./components/MessageBubble";
 import { LLMAdvancedSettings } from "./components/LLMAdvancedSettings";
-import { QuickToolsPanel, TOOL_META } from "./features/tools/QuickToolsPanel";
+import { TOOL_META } from "./features/tools/QuickToolsPanel";
 import {
-  fetchHealth, loadData,
-  runTool, streamChat, exportReport, fetchTools,
+  fetchHealth, runTool, streamChat,
   createSession, fetchSessions, fetchSession, renameSession, deleteSession,
   resynthesizeTurn, fetchProviderProfiles, disconnectLLM,
+  fetchCapabilities,
+  fetchTask, streamTaskEvents,
 } from "./api";
 import type { Message, ToolStep, SessionSummary, ProviderProfile } from "./types";
-import type { SourceFormat } from "./api";
 import { normalizeAssistantContent } from "./finalAnswer";
 import { useMessageState } from "./features/agent/useMessageState";
-import { datasetKeys, useDataSummaryQuery } from "./features/datasets/queries";
+import { datasetKeys, useDataSummaryQuery, useDatasetsQuery } from "./features/datasets/queries";
 import { providerKeys, useHealthQuery, useProviderProfilesQuery } from "./features/providers/queries";
 import { sessionKeys, useSessionsQuery } from "./features/sessions/queries";
 import { messagesFromSession } from "./features/sessions/restoreMessages";
 import { toolKeys, useSearchStatusQuery, useToolsQuery } from "./features/tools/queries";
+import { AppShell, type WorkbenchRoute } from "./features/workbench/AppShell";
+import { CapabilityCards } from "./features/capabilities/CapabilityCards";
+import { CapabilitiesPage } from "./features/capabilities/CapabilitiesPage";
+import { DatasetsPage } from "./features/datasets/DatasetsPage";
+import { ReportsPage } from "./features/reports/ReportsPage";
+import { SettingsPage } from "./features/settings/SettingsPage";
+
+function routeFromPath(pathname: string): WorkbenchRoute {
+  if (pathname.startsWith("/datasets")) return "datasets";
+  if (pathname.startsWith("/capabilities")) return "capabilities";
+  if (pathname.startsWith("/reports")) return "reports";
+  if (pathname.startsWith("/settings")) return "settings";
+  return "chat";
+}
 
 export default function App() {
   const queryClient = useQueryClient();
@@ -32,27 +46,31 @@ export default function App() {
   const profilesQuery = useProviderProfilesQuery(healthQuery.isSuccess);
   const summaryQuery = useDataSummaryQuery((healthQuery.data?.patents_loaded || 0) > 0);
   const sessionsQuery = useSessionsQuery();
+  const datasetsQuery = useDatasetsQuery();
+  const capabilitiesQuery = useQuery({
+    queryKey: ["capabilities"], queryFn: fetchCapabilities,
+    enabled: healthQuery.isSuccess,
+  });
 
   const dataSummary = summaryQuery.data || null;
   const availableTools = toolsQuery.data?.tools || [];
   const providerProfiles = profilesQuery.data?.profiles || [];
   const sessions = sessionsQuery.data?.sessions || [];
+  const datasets = datasetsQuery.data?.datasets || [];
+  const capabilities = capabilitiesQuery.data?.capabilities || [];
   const backendOnline = healthQuery.isError ? false : healthQuery.data ? true : null;
   const llmConfigured = Boolean(healthQuery.data?.agent_configured);
   const connectedProfileId = healthQuery.data?.connected_profile?.id || "";
   const connectedSnapshot = healthQuery.data?.connected_profile || null;
 
   // ── State ──
-  const [dirInput, setDirInput] = useState("./my_patents");
-  const [sourceFormat, setSourceFormat] = useState<SourceFormat>("auto");
-  const [isDataLoading, setIsDataLoading] = useState(false);
   const [quickToolLoading, setQuickToolLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState("");
+  const [route, setRoute] = useState<WorkbenchRoute>(() => routeFromPath(window.location.pathname));
 
   // LLM
   const [showAdvancedLLM, setShowAdvancedLLM] = useState(false);
-  const [showMobileTools, setShowMobileTools] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Chat
@@ -60,7 +78,7 @@ export default function App() {
     {
       id: "welcome",
       role: "assistant",
-      content: "PatentAgent 已就绪。请加载专利数据，然后输入分析需求，或点击右侧快捷工具一键分析。",
+      content: "PatentAgent 已就绪。请绑定专利数据集，然后输入分析需求，或从能力卡选择一个问题。",
     },
   ]);
   const [inputText, setInputText] = useState("");
@@ -70,8 +88,21 @@ export default function App() {
   const [responseMode, setResponseMode] = useState<"detailed" | "concise">("detailed");
   const abortRef = useRef<AbortController | null>(null);
   const activeAgentMessageIdRef = useRef<string | null>(null);
+  const activeTurnIdRef = useRef<string | null>(null);
   const sessionInitializationStartedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onPopState = () => setRoute(routeFromPath(window.location.pathname));
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const navigate = (next: WorkbenchRoute) => {
+    const path = next === "chat" ? `/chat/${activeSessionId || "new"}` : `/${next}`;
+    window.history.pushState({}, "", path);
+    setRoute(next);
+  };
 
   useEffect(() => {
     if (summaryQuery.isError) setError("数据摘要加载失败: " + (summaryQuery.error as Error).message);
@@ -83,7 +114,9 @@ export default function App() {
     const initializeSessions = async () => {
       try {
         const listed = (await fetchSessions()).sessions;
-        let selected = localStorage.getItem("patentagent_session_id") || "";
+        const pathSession = window.location.pathname.startsWith("/chat/")
+          ? decodeURIComponent(window.location.pathname.slice("/chat/".length)) : "";
+        let selected = (pathSession !== "new" ? pathSession : "") || localStorage.getItem("patentagent_session_id") || "";
         let available = listed;
         if (!available.some(item => item.id === selected)) {
           if (available.length) selected = available[0].id;
@@ -95,6 +128,9 @@ export default function App() {
         }
         queryClient.setQueryData(sessionKeys.all, { sessions: available });
         setActiveSessionId(selected);
+        if (routeFromPath(window.location.pathname) === "chat") {
+          window.history.replaceState({}, "", `/chat/${selected}`);
+        }
         localStorage.setItem("patentagent_session_id", selected);
         const detail = await fetchSession(selected);
         const restored = messagesFromSession(detail);
@@ -132,16 +168,23 @@ export default function App() {
     const detail = await fetchSession(sessionId);
     setActiveSessionId(sessionId);
     localStorage.setItem("patentagent_session_id", sessionId);
+    if (route === "chat") window.history.replaceState({}, "", `/chat/${sessionId}`);
     const restored = messagesFromSession(detail);
     setPendingClarificationTurnId([...restored].reverse().find(message => message.clarification)?.clarification?.turnId);
     setMessages(restored.length ? restored : [{
       id: "welcome-" + sessionId, role: "assistant",
-      content: "这是一个新会话。你可以提出分析需求，或先运行右侧快捷工具。",
+      content: "这是一个新会话。你可以提出分析需求，或从上方能力卡选择一个问题。",
     }]);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: datasetKeys.summary }),
+      queryClient.invalidateQueries({ queryKey: toolKeys.all }),
+      queryClient.invalidateQueries({ queryKey: ["capabilities"] }),
+    ]);
   };
 
   const handleNewSession = async () => {
-    const created = await createSession(`新会话 ${sessions.length + 1}`);
+    const currentVersion = healthQuery.data?.dataset_snapshot?.version_id;
+    const created = await createSession(`新会话 ${sessions.length + 1}`, currentVersion);
     await refreshSessionList();
     await handleSwitchSession(created.id);
   };
@@ -165,22 +208,6 @@ export default function App() {
     }
   };
 
-  // ── Data loading ──
-  const handleLoadData = async () => {
-    setIsDataLoading(true);
-    setError(null);
-    try {
-      const data = await loadData(dirInput, sourceFormat);
-      queryClient.setQueryData(datasetKeys.summary, data);
-      const tools = await fetchTools();
-      queryClient.setQueryData(toolKeys.all, tools);
-      await queryClient.invalidateQueries({ queryKey: providerKeys.health });
-    } catch (e) {
-      setError("加载失败: " + (e as Error).message);
-    }
-    setIsDataLoading(false);
-  };
-
   // ── LLM config ──
   const selectedProfile = providerProfiles.find(profile => profile.selected)
     || providerProfiles.find(profile => profile.id === connectedProfileId);
@@ -202,7 +229,7 @@ export default function App() {
   // ── Quick tool ──
   const handleQuickTool = async (toolName: string, params: Record<string, unknown> = {}) => {
     if (!dataSummary) {
-      setError("请先加载专利数据。点击左侧 [加载数据] 按钮。");
+      setError("请先在“数据集”页面上传或绑定专利数据。");
       return;
     }
     if (!activeSessionId) {
@@ -252,7 +279,7 @@ export default function App() {
     if (!text) return;
 
     if (!dataSummary) {
-      setError("请先加载专利数据。点击左侧 [加载数据] 按钮。");
+      setError("请先在“数据集”页面上传或绑定专利数据。");
       return;
     }
     if (!llmConfigured) {
@@ -299,15 +326,21 @@ export default function App() {
       activeSessionId,
       responseMode,
       (event) => {
+        if ("turn_id" in event && event.turn_id) activeTurnIdRef.current = event.turn_id;
         switch (event.type) {
           case "intent":
             updateAgent(m => ({
               ...m,
+              turnId: event.turn_id || m.turnId,
               intent: event.goal || event.analysis_type,
             }));
             break;
           case "plan":
-            // Could show plan steps, but we keep it simple
+            updateAgent(m => ({
+              ...m,
+              plan: { steps: event.steps || [], costWeight: event.cost_weight },
+              streamStatus: event.requires_confirmation ? "等待确认执行计划…" : "已制定分析计划，准备调用工具…",
+            }));
             break;
           case "synthesis":
             updateAgent(m => ({
@@ -332,8 +365,9 @@ export default function App() {
             }));
             break;
           case "step": {
+            const stableStepId = event.execution_id || event.tool;
             const s: ToolStep = {
-              id: event.tool + "-" + Date.now(),
+              id: stableStepId,
               tool: event.tool,
               status: event.status,
               duration_ms: event.duration_ms,
@@ -348,11 +382,16 @@ export default function App() {
               execution_id: event.execution_id,
               origin: event.origin,
             };
-            updateAgent(m => ({
-              ...m,
-              turnId: event.turn_id || m.turnId,
-              steps: [...(m.steps || []), s],
-            }));
+            updateAgent(m => {
+              const steps = [...(m.steps || [])];
+              const index = steps.findIndex(item =>
+                (event.execution_id && item.execution_id === event.execution_id) ||
+                (!event.execution_id && item.tool === event.tool && item.status === "running")
+              );
+              if (index >= 0) steps[index] = { ...steps[index], ...s };
+              else steps.push(s);
+              return { ...m, turnId: event.turn_id || m.turnId, steps };
+            });
             break;
           }
           case "text":
@@ -399,6 +438,7 @@ export default function App() {
             });
             setIsStreaming(false);
             activeAgentMessageIdRef.current = null;
+            activeTurnIdRef.current = null;
             refreshSessionList().catch(() => undefined);
             if (event.final_status !== "awaiting_clarification") {
               setPendingClarificationTurnId(undefined);
@@ -417,6 +457,20 @@ export default function App() {
         }));
         setIsStreaming(false);
         activeAgentMessageIdRef.current = null;
+        const recoverTurnId = activeTurnIdRef.current;
+        if (recoverTurnId) {
+          void fetchTask(recoverTurnId).then(task => {
+            if (["completed", "partial", "failed", "cancelled", "interrupted"].includes(task.status)) {
+              return fetchSession(activeSessionId).then(detail => setMessages(messagesFromSession(detail)));
+            }
+            streamTaskEvents(recoverTurnId, stored => {
+              const payload = stored.payload;
+              if ("type" in payload && payload.type === "done") {
+                void fetchSession(activeSessionId).then(detail => setMessages(messagesFromSession(detail)));
+              }
+            });
+          }).catch(() => undefined);
+        }
       },
       effectiveReplyToTurnId,
     );
@@ -436,6 +490,7 @@ export default function App() {
       } : message));
     }
     activeAgentMessageIdRef.current = null;
+    activeTurnIdRef.current = null;
     setIsStreaming(false);
   };
 
@@ -459,327 +514,65 @@ export default function App() {
     }
   };
 
-  // ── Report export ──
-  const handleExport = async () => {
-    const msgs = messages
-      .filter(m => m.role !== "system")
-      .map(m => ({ role: m.role, content: m.content }));
-    try {
-      const html = await exportReport(msgs, "PatentAgent Report");
-      const blob = new Blob([html], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `patent_report_${new Date().toISOString().slice(0, 10)}.html`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      setError("导出失败: " + (e as Error).message);
+  const activeSession = sessions.find(session => session.id === activeSessionId);
+  const activeVersionId = activeSession?.dataset_version_id || healthQuery.data?.dataset_snapshot?.version_id || "";
+  const activeDataset = datasets.find(dataset => {
+    const version = dataset.latest_version.id || dataset.latest_version.version_id;
+    return version === activeVersionId;
+  });
+  const hasUserConversation = messages.some(message => message.role === "user");
+
+  const refreshDatasetState = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: datasetKeys.all }),
+      queryClient.invalidateQueries({ queryKey: datasetKeys.summary }),
+      queryClient.invalidateQueries({ queryKey: sessionKeys.all }),
+      queryClient.invalidateQueries({ queryKey: toolKeys.all }),
+      queryClient.invalidateQueries({ queryKey: ["capabilities"] }),
+      queryClient.invalidateQueries({ queryKey: providerKeys.health }),
+    ]);
+    if (activeSessionId) {
+      const detail = await fetchSession(activeSessionId);
+      queryClient.setQueryData(sessionKeys.detail(activeSessionId), detail);
     }
   };
 
-  // ── Render ──
+  const choosePrompt = (prompt: string) => {
+    setInputText(prompt);
+    if (route !== "chat") navigate("chat");
+  };
+
+  const sessionContext = route === "chat" ? (
+    <div className="flex h-full flex-col">
+      <div className="border-b border-slate-100 p-4">
+        <div className="mb-3 flex items-center justify-between"><h2 className="flex items-center gap-2 text-sm font-bold text-slate-800"><MessageSquare className="h-4 w-4 text-blue-500" />会话</h2><button onClick={handleNewSession} disabled={isStreaming} className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:text-blue-600"><Plus className="h-4 w-4" /></button></div>
+        <div className="space-y-1">{sessions.map(session => <div key={session.id} className={`group flex items-center gap-1 rounded-xl border px-2 py-2.5 ${session.id === activeSessionId ? "border-blue-200 bg-blue-50" : "border-transparent hover:bg-slate-50"}`}><button onClick={() => handleSwitchSession(session.id)} disabled={isStreaming} className="min-w-0 flex-1 text-left"><div className="truncate text-xs font-medium text-slate-700">{session.name}</div><div className="mt-0.5 text-[10px] text-slate-400">{session.turn_count || 0} 轮 · {session.dataset_version_id ? "已绑定数据" : "未绑定"}</div></button><button onClick={() => handleRenameSession(session)} className="p-1 text-slate-400 opacity-0 group-hover:opacity-100"><Pencil className="h-3 w-3" /></button><button onClick={() => handleDeleteSession(session)} className="p-1 text-slate-400 opacity-0 hover:text-rose-600 group-hover:opacity-100"><Trash2 className="h-3 w-3" /></button></div>)}</div>
+      </div>
+      <div className="p-4"><div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="flex items-center gap-2 text-xs font-semibold text-slate-700"><Database className="h-4 w-4 text-blue-500" />当前数据</div><div className="mt-2 truncate text-sm font-semibold text-slate-800">{activeDataset?.name || "默认数据集"}</div><div className="mt-1 text-[11px] text-slate-500">{dataSummary ? `${dataSummary.total_patents.toLocaleString()} 件 · ${dataSummary.year_range[0]}–${dataSummary.year_range[1]}` : "尚未加载数据"}</div><button onClick={() => navigate("datasets")} className="mt-3 w-full rounded-lg border border-slate-200 bg-white py-2 text-xs text-blue-700">管理与切换数据集</button></div></div>
+    </div>
+  ) : undefined;
+
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-50 text-slate-900 font-sans overflow-hidden">
-      {/* Top bar */}
-      <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-2 text-blue-700 font-bold text-lg">
-          <div className="bg-blue-600 text-white p-1.5 rounded-lg">
-            <Bot className="w-5 h-5" />
-          </div>
-          PatentAgent
-          <span className="text-slate-400 font-normal text-xs ml-2 border-l border-slate-300 pl-2">
-            {dataSummary ? `${dataSummary.total_patents.toLocaleString()} 件` :
-             backendOnline === false ? "后端未连接" :
-             backendOnline === null ? "检测中..." : "数据未加载"}
-          </span>
-          {llmConfigured && <span className="text-emerald-500 text-xs ml-1">· LLM 工具调用已就绪</span>}
-        </div>
-        <div className="flex gap-3 items-center">
-          {error && (
-            <div className="flex items-center gap-1 text-rose-600 text-xs bg-rose-50 px-3 py-1 rounded-full">
-              <AlertTriangle className="w-3 h-3" />
-              {error}
-              <button onClick={() => setError(null)} className="ml-1 font-bold">&times;</button>
-            </div>
-          )}
-          <button onClick={() => setShowMobileTools(true)}
-            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-md border border-indigo-200">
-            <FolderSearch className="w-4 h-4" /> <span className="hidden sm:inline">MiniLM Beta / 工具</span>
-          </button>
-          <button onClick={() => setShowAdvancedLLM(true)} disabled={isStreaming}
-            className="xl:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md border border-slate-200 disabled:opacity-50">
-            <SlidersHorizontal className="w-4 h-4" /> <span className="hidden sm:inline">LLM 设置</span>
-          </button>
-          <button onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md border border-slate-200">
-            <Download className="w-4 h-4" /> 导出报告
-          </button>
-        </div>
-      </header>
-
-      {/* Main layout */}
-      <main className="flex-1 flex overflow-hidden">
-        {/* Left sidebar */}
-        <aside className="hidden xl:flex w-[300px] bg-white border-r border-slate-200 flex-col overflow-y-auto shrink-0">
-          {/* Conversation panel */}
-          <div className="p-4 border-b border-slate-100">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-blue-500" /> 会话
-              </h2>
-              <button onClick={handleNewSession} disabled={isStreaming}
-                className="p-1.5 rounded-md border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50"
-                title="新建会话">
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-1 max-h-44 overflow-y-auto">
-              {sessions.map(session => (
-                <div key={session.id}
-                  className={`group flex items-center gap-1 rounded-lg border px-2 py-2 ${session.id === activeSessionId ? "border-blue-200 bg-blue-50" : "border-transparent hover:bg-slate-50"}`}>
-                  <button onClick={() => handleSwitchSession(session.id)}
-                    className="flex-1 text-left min-w-0" disabled={isStreaming}>
-                    <div className="text-xs font-medium text-slate-700 truncate">{session.name}</div>
-                    <div className="text-[10px] text-slate-400">{session.turn_count || 0} 轮</div>
-                  </button>
-                  <button onClick={() => handleRenameSession(session)}
-                    className="p-1 text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100" title="重命名">
-                    <Pencil className="w-3 h-3" />
-                  </button>
-                  <button onClick={() => handleDeleteSession(session)}
-                    className="p-1 text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100" title="删除">
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Data panel */}
-          <div className="p-5 border-b border-slate-100">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Database className="w-4 h-4 text-blue-500" /> 数据管理
-            </h2>
-            <div className="mb-3">
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">专利数据目录</label>
-              <div className="relative">
-                <FolderSearch className="w-4 h-4 absolute left-2.5 top-2.5 text-slate-400" />
-                <input
-                  type="text" value={dirInput}
-                  onChange={e => setDirInput(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                />
-              </div>
-            </div>
-            <div className="mb-3">
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">文件格式</label>
-              <select
-                value={sourceFormat}
-                onChange={event => setSourceFormat(event.target.value as SourceFormat)}
-                className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              >
-                <option value="auto">自动识别（推荐）</option>
-                <option value="wos_dii">WoS / Derwent tagged text</option>
-                <option value="google_patents_jsonl">Google Patents JSONL</option>
-                <option value="uspto_grant_xml">USPTO grant XML</option>
-                <option value="uspto_file_wrapper_json">USPTO File Wrapper JSON</option>
-              </select>
-              <p className="mt-1 text-[10px] text-slate-400">标准格式无需选择；只有自动识别失败时才手动指定。</p>
-            </div>
-            <button
-              onClick={handleLoadData}
-              disabled={isDataLoading}
-              className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
-            >
-              {isDataLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "加载数据"}
-            </button>
-
-            {dataSummary && (
-              <div className="mt-5 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                <div className="text-xs font-semibold text-slate-500 mb-3 uppercase">数据概况</div>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div>
-                    <div className="text-2xl font-bold text-slate-800">
-                      {(dataSummary.total_patents / 1000).toFixed(1)}k
-                    </div>
-                    <div className="text-[11px] text-slate-500">专利总量</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-slate-800 mt-1">
-                      {dataSummary.year_range[0]}-{dataSummary.year_range[1]}
-                    </div>
-                    <div className="text-[11px] text-slate-500">年份区间</div>
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <div className="text-[11px] text-slate-500 mb-1.5">IPC 分类</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {dataSummary.ipc_sections.map(ipc => (
-                      <span key={ipc} className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded text-[10px] font-mono font-medium">{ipc}</span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[11px] text-slate-500 mb-1.5">主要申请人</div>
-                  <div className="space-y-1">
-                    {dataSummary.top_applicants.map(app => (
-                      <div key={app.name} className="flex justify-between items-center text-xs">
-                        <span className="text-slate-700 truncate pr-2" title={app.name}>{app.name}</span>
-                        <span className="text-slate-400 font-mono">{app.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {dataSummary.import_report?.file_detections?.length ? (
-                  <div className="mt-3 border-t border-slate-200 pt-3">
-                    <div className="text-[11px] text-slate-500 mb-1.5">格式识别</div>
-                    <div className="space-y-1">
-                      {dataSummary.import_report.file_detections.map(item => (
-                        <div key={item.file} className="text-[10px] text-slate-500">
-                          <span className="font-medium text-slate-700">{item.file}</span>
-                          <span> · {item.source_format} · {
-                            item.method === "manifest" ? "清单声明" :
-                            item.method === "user_selected" ? "手动指定" :
-                            item.method === "content_signature" ? "内容签名匹配" : "未识别"
-                          }</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </div>
-
-          {/* LLM settings */}
-          <div className="p-5">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Settings className="w-4 h-4 text-slate-500" /> LLM 设置
-            </h2>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <div className="flex items-start gap-2">
-                <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${llmConfigured ? "bg-emerald-500" : selectedProfile?.probe_status === "failed" ? "bg-rose-500" : selectedProfile?.needs_reconnect ? "bg-amber-500" : "bg-slate-300"}`} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-slate-800 truncate">{connectedSnapshot?.name || selectedProfile?.name || "尚未配置供应商"}</span>
-                    {(connectedSnapshot?.protocol || selectedProfile?.protocol) && <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-500">{(connectedSnapshot?.protocol || selectedProfile?.protocol)?.replace("_chat", "").replace("_messages", "")}</span>}
-                  </div>
-                  <div className="text-[11px] text-slate-500 truncate mt-0.5">{connectedSnapshot?.model || selectedProfile?.model || "请打开高级设置新增配置"}</div>
-                  <div className={`text-[10px] mt-1 ${llmConfigured ? "text-emerald-600" : selectedProfile?.probe_status === "failed" ? "text-rose-600" : selectedProfile?.credential_loaded ? "text-amber-600" : "text-slate-400"}`}>
-                    {llmConfigured ? "已连接，工具调用能力已验证" : selectedProfile?.needs_reconnect ? "配置已修改，需要重新连接" : selectedProfile?.probe_status === "failed" ? `探测失败${selectedProfile.probe_error_category ? ` · ${selectedProfile.probe_error_category}` : ""}` : selectedProfile?.credential_loaded || selectedProfile?.auth_mode === "none" ? "尚未连接" : "待输入凭证"}
-                  </div>
-                </div>
-                {selectedProfile?.website_url && <a href={selectedProfile.website_url} target="_blank" rel="noopener noreferrer" className="p-1 text-slate-400 hover:text-blue-600" title="访问供应商官网"><ExternalLink className="w-3.5 h-3.5" /></a>}
-              </div>
-              {selectedProfile?.notes && <p className="mt-2 text-[10px] leading-4 text-slate-500 line-clamp-2">{selectedProfile.notes}</p>}
-              <div className="grid grid-cols-2 gap-2 mt-3">
-                <button onClick={() => setShowAdvancedLLM(true)} disabled={isStreaming} className="py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 flex items-center justify-center gap-1 disabled:opacity-50"><SlidersHorizontal className="w-3.5 h-3.5" />{providerProfiles.length ? "切换 / 设置" : "添加供应商"}</button>
-                {llmConfigured ? <button onClick={handleDisconnectLLM} disabled={isStreaming || isConnecting} className="py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-600 flex items-center justify-center gap-1 disabled:opacity-50">{isConnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Power className="w-3.5 h-3.5" />}断开</button> : <button onClick={() => setShowAdvancedLLM(true)} disabled={isStreaming} className="py-1.5 rounded-lg bg-blue-600 text-white text-xs disabled:opacity-50">连接</button>}
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Center chat */}
-        <section className="flex-1 min-w-0 flex flex-col bg-slate-50">
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-4">
-            <div className="max-w-[1120px] mx-auto space-y-4 pb-8">
-              {messages.map(msg => (
-                <MessageBubble key={msg.id} message={msg}
-                  onRetry={step => handleQuickTool(step.tool, step.parameters || {})}
-                  onFollowup={(text, replyToTurnId) => handleSendMessage(text, replyToTurnId)}
-                  onResynthesize={handleResynthesize} />
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-
-          {/* Input */}
-          <div className="shrink-0 border-t border-slate-200 bg-white/95 backdrop-blur-md pt-3 pb-4 px-4 md:px-8">
-            <div className="max-w-[800px] mx-auto relative">
-              <div className="flex items-end gap-2 bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-200 p-2 pl-4 focus-within:border-blue-300">
-                <textarea
-                  value={inputText}
-                  onChange={e => setInputText(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder={
-                    backendOnline === false ? "后端未启动，请运行 uvicorn server:app --port 8000" :
-                    !llmConfigured ? "请先打开 LLM 设置并连接供应商" :
-                    !dataSummary ? "请先在左侧加载数据" :
-                    "描述你的分析需求，例如：分析近三年技术趋势"
-                  }
-                  className="w-full max-h-32 min-h-[44px] py-3 text-sm text-slate-700 bg-transparent resize-none focus:outline-none"
-                  disabled={isStreaming || backendOnline === false}
-                  rows={1}
-                />
-                {isStreaming ? (
-                  <button onClick={handleStopStreaming}
-                    className="mb-1 p-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white transition-colors shadow-sm">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  </button>
-                ) : (
-                  <button onClick={() => handleSendMessage()}
-                    disabled={!inputText.trim() || isStreaming || backendOnline === false || !activeSessionId}
-                    className="mb-1 p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 shadow-sm shadow-blue-200">
-                    <Send className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="text-center mt-3 text-[11px] text-slate-400">
-              <a href="https://github.com/iStoryOfSpring/PatentAgent" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-white hover:text-slate-600 transition-colors">
-                <ExternalLink className="w-3 h-3" /> Source
-              </a>
-              <button onClick={() => setResponseMode(responseMode === "detailed" ? "concise" : "detailed")}
-                className="mr-3 px-2 py-1 rounded bg-white border border-slate-200 text-slate-600">
-                回复：{responseMode === "detailed" ? "详细" : "简洁"}
-              </button>
-              {lastUserQuery && !isStreaming && (
-                <button onClick={() => handleSendMessage(lastUserQuery)}
-                  className="mr-3 px-2 py-1 rounded bg-white border border-slate-200 text-slate-600">
-                  重试上次提问
-                </button>
-              )}
-              {llmConfigured ? "Agent 将完整读取工具证据并综合结论" : "配置 LLM 后可启用 Agent 对话"}
-            </div>
-          </div>
-        </section>
-
-        <QuickToolsPanel
-          tools={availableTools}
-          isStreaming={isStreaming}
-          loadingTool={quickToolLoading}
-          searchStatus={searchStatusQuery.data}
-          onRun={handleQuickTool}
-        />
-      </main>
-      {showMobileTools && (
-        <div className="lg:hidden fixed inset-0 z-40 flex justify-end bg-slate-900/40" role="dialog" aria-modal="true" aria-label="快捷工具">
-          <div className="relative h-full w-full max-w-sm bg-white shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setShowMobileTools(false)}
-              className="absolute right-3 top-3 z-50 rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:text-slate-800"
-              aria-label="关闭快捷工具"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <QuickToolsPanel
-              className="flex h-full w-full flex-col overflow-y-auto bg-white"
-              tools={availableTools}
-              isStreaming={isStreaming}
-              loadingTool={quickToolLoading}
-              searchStatus={searchStatusQuery.data}
-              onRun={handleQuickTool}
-            />
+    <AppShell route={route} onNavigate={navigate} backendOnline={backendOnline}
+      datasetLabel={activeDataset?.name || (dataSummary ? `${dataSummary.total_patents.toLocaleString()} 件专利` : "")}
+      llmLabel={connectedSnapshot?.name || selectedProfile?.name || ""} taskRunning={isStreaming}
+      error={error} onDismissError={() => setError(null)} context={sessionContext}>
+      {route === "chat" && <section className="flex h-full min-w-0 flex-col bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div className="mx-auto max-w-[1120px] space-y-4 pb-8">
+            {!hasUserConversation && capabilities.length > 0 && <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/70 p-5 shadow-sm"><div className="mb-4"><div className="text-xs font-semibold uppercase tracking-widest text-blue-600">PatentAgent 总调度</div><h1 className="mt-1 text-xl font-bold text-slate-900">从一个问题开始，系统会自动选择最小必要工具集</h1><p className="mt-1 text-sm text-slate-500">所有结论都保留数据版本、参数、方法与质量警告。</p></div><CapabilityCards capabilities={capabilities} onPrompt={choosePrompt} compact /></div>}
+            {messages.map(msg => <MessageBubble key={msg.id} message={msg} onRetry={step => handleQuickTool(step.tool, step.parameters || {})} onFollowup={(text, replyToTurnId) => handleSendMessage(text, replyToTurnId)} onResynthesize={handleResynthesize} />)}
+            <div ref={messagesEndRef} />
           </div>
         </div>
-      )}
+        <div className="shrink-0 border-t border-slate-200 bg-white/95 px-4 pb-4 pt-3 backdrop-blur-md md:px-8">
+          <div className="mx-auto max-w-[860px]"><div className="mb-2 flex items-center justify-between text-[10px] text-slate-400"><span className="truncate">数据：{activeDataset?.name || "默认数据集"} · 版本 {activeVersionId ? activeVersionId.slice(-8) : "未绑定"}</span><button onClick={() => navigate("capabilities")} className="text-blue-600">查看九类能力与全部工具</button></div><div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-2 pl-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] focus-within:border-blue-300"><textarea value={inputText} onChange={event => setInputText(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); handleSendMessage(); } }} placeholder={backendOnline === false ? "后端未启动" : !llmConfigured ? "请先在设置中连接 LLM" : !dataSummary ? "请先上传或绑定数据集" : "输入专利分析问题，Enter 发送，Shift+Enter 换行"} className="max-h-32 min-h-[44px] w-full resize-none bg-transparent py-3 text-sm text-slate-700 focus:outline-none" disabled={isStreaming || backendOnline === false} rows={1} />{isStreaming ? <button onClick={handleStopStreaming} className="mb-1 rounded-xl bg-rose-500 p-2.5 text-white"><Loader2 className="h-4 w-4 animate-spin" /></button> : <button onClick={() => handleSendMessage()} disabled={!inputText.trim() || !activeSessionId} className="mb-1 rounded-xl bg-blue-600 p-2.5 text-white disabled:opacity-40"><Send className="h-4 w-4" /></button>}</div><div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-slate-400"><button onClick={() => setResponseMode(responseMode === "detailed" ? "concise" : "detailed")} className="rounded border border-slate-200 px-2 py-1">回复：{responseMode === "detailed" ? "详细" : "简洁"}</button>{lastUserQuery && !isStreaming && <button onClick={() => handleSendMessage(lastUserQuery)} className="rounded border border-slate-200 px-2 py-1">重试上次提问</button>}<button onClick={() => navigate("reports")} className="flex items-center gap-1 rounded border border-slate-200 px-2 py-1"><Download className="h-3 w-3" />报告</button></div></div>
+        </div>
+      </section>}
+      {route === "datasets" && <DatasetsPage datasets={datasets} activeSessionId={activeSessionId} activeVersionId={activeVersionId} onChanged={refreshDatasetState} onError={setError} />}
+      {route === "capabilities" && <CapabilitiesPage capabilities={capabilities} tools={availableTools} searchStatus={searchStatusQuery.data} loadingTool={quickToolLoading} isStreaming={isStreaming} onPrompt={choosePrompt} onRun={handleQuickTool} />}
+      {route === "reports" && <ReportsPage activeSessionId={activeSessionId} onError={setError} />}
+      {route === "settings" && <SettingsPage profile={selectedProfile} connected={llmConfigured} onOpen={() => setShowAdvancedLLM(true)} onDisconnect={handleDisconnectLLM} />}
       <LLMAdvancedSettings
         open={showAdvancedLLM}
         profiles={providerProfiles}
@@ -790,6 +583,6 @@ export default function App() {
           void refreshProviderProfiles();
         }}
       />
-    </div>
+    </AppShell>
   );
 }

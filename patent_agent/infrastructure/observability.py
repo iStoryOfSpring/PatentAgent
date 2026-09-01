@@ -56,24 +56,36 @@ def configure_json_logging(level: int = logging.INFO) -> None:
 
 
 class RequestGuardMiddleware:
-    def __init__(self, app, max_request_bytes: int):
+    def __init__(
+        self, app, max_request_bytes: int,
+        streaming_path_limits: dict[str, int] | None = None,
+    ):
         self.app = app
         self.max_request_bytes = max_request_bytes
+        self.streaming_path_limits = streaming_path_limits or {}
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http":
             await self.app(scope, receive, send)
             return
         headers = {key.lower(): value for key, value in scope.get("headers", [])}
+        path = scope.get("path", "")
+        streaming_limit = self.streaming_path_limits.get(path)
         raw_length = headers.get(b"content-length")
         if raw_length:
             try:
-                too_large = int(raw_length) > self.max_request_bytes
+                too_large = int(raw_length) > (streaming_limit or self.max_request_bytes)
             except ValueError:
                 too_large = True
             if too_large:
                 await self._reject(scope, receive, send)
                 return
+
+        # Upload handlers consume UploadFile streams and enforce per-file and
+        # aggregate byte limits. Do not buffer those bodies in middleware.
+        if streaming_limit is not None:
+            await self.app(scope, receive, send)
+            return
 
         buffered: list[dict] = []
         body_size = 0

@@ -37,7 +37,13 @@ class TaskService:
 
     async def cancel(self, turn_id: str) -> dict:
         try:
-            return await self.repository.request_cancel(turn_id)
+            task = await self.repository.request_cancel(turn_id)
+            if task.get("cancel_requested"):
+                await self.repository.append_task_event(turn_id, {
+                    "type": "task_status", "status": "cancelling",
+                    "turn_id": turn_id,
+                })
+            return task
         except KeyError as exc:
             raise TaskNotFoundError(turn_id) from exc
 

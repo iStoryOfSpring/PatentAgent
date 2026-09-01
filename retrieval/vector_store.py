@@ -1,6 +1,6 @@
 """ChromaDB 向量存储管理
 
-metadata 字段: patent_number, is_deleted=False, year, ipc_section, title, abstract
+metadata 字段: patent_number, is_deleted=False, year, ipc_codes, applicants, title, abstract
 search() 默认 where={"is_deleted": False} 保证 Top-K 语义不被软删除截断
 """
 
@@ -16,6 +16,59 @@ from models.patent import FullPatent, PatentSummary
 from retrieval.embedding import build_embedding_text, create_embedding_provider
 
 logger = logging.getLogger(__name__)
+
+
+def _string_list(value) -> list[str]:
+    """Normalize model/list metadata without numpy truth-value ambiguity."""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(";") if item.strip()]
+    if hasattr(value, "tolist"):
+        value = value.tolist()
+    if isinstance(value, (list, tuple, set)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value).strip()] if str(value).strip() else []
+
+
+def _metadata_matches(metadata: dict, filters: dict | None) -> bool:
+    """Evaluate the small metadata-filter subset shared by both backends."""
+    if not filters:
+        return True
+    for field, condition in filters.items():
+        value = metadata.get(field)
+        if not isinstance(condition, dict):
+            if value != condition:
+                return False
+            continue
+        for operator, expected in condition.items():
+            if operator == "$in":
+                if value not in expected:
+                    return False
+            elif operator == "$gte":
+                if value is None or value < expected:
+                    return False
+            elif operator == "$lte":
+                if value is None or value > expected:
+                    return False
+            elif operator == "$eq":
+                if value != expected:
+                    return False
+            else:
+                raise ValueError(f"Unsupported vector metadata operator: {operator}")
+    return True
+
+
+def _chroma_where(filters: dict | None) -> dict:
+    """Translate the shared flat filter contract into valid Chroma syntax."""
+    clauses: list[dict] = [{"is_deleted": {"$eq": False}}]
+    for field, condition in (filters or {}).items():
+        if isinstance(condition, dict):
+            clauses.extend({field: {operator: expected}}
+                           for operator, expected in condition.items())
+        else:
+            clauses.append({field: {"$eq": condition}})
+    return clauses[0] if len(clauses) == 1 else {"$and": clauses}
 
 # ChromaDB 是可选的
 try:
@@ -109,18 +162,21 @@ class PatentVectorStore:
         vectors = self._embedder.embed(texts)
 
         # 添加
+        from scipy.sparse import issparse
         self._collection.add(
             ids=ids,
-            embeddings=vectors.tolist(),
+            embeddings=(vectors.toarray().tolist() if issparse(vectors) else vectors.tolist()),
             metadatas=metadatas,
             documents=texts,
         )
         return len(patents)
 
     def _build_metadata(self, patent: FullPatent) -> dict:
+        ipc_codes = _string_list(getattr(patent, "ipc_codes", []))
+        applicants = _string_list(getattr(patent, "applicants", []))
         ipc_section = ""
-        if patent.ipc_codes:
-            first = patent.ipc_codes[0]
+        if ipc_codes:
+            first = ipc_codes[0]
             ipc_section = first[0] if first and first[0].isalpha() else ""
         year = 0
         if patent.publication_date and len(patent.publication_date) >= 4:
@@ -133,6 +189,8 @@ class PatentVectorStore:
             "is_deleted": False,
             "year": year,
             "ipc_section": ipc_section,
+            "ipc_codes": ";".join(ipc_codes),
+            "applicants": ";".join(applicants),
             "title": patent.title[:200],
             "abstract": patent.abstract[:200],
         }
@@ -150,15 +208,14 @@ class PatentVectorStore:
         Returns:
             PatentSummary 列表（轻量，不含 claims/description/citations）
         """
-        # 默认过滤软删除
-        where = {"is_deleted": False}
-        if filters:
-            where.update(filters)
+        where = _chroma_where(filters)
 
         query_vec = self._embedder.embed([query])[0]
+        from scipy.sparse import issparse
+        query_values = query_vec.toarray().ravel().tolist() if issparse(query_vec) else query_vec.tolist()
 
         results = self._collection.query(
-            query_embeddings=[query_vec.tolist()],
+            query_embeddings=[query_values],
             n_results=top_k,
             where=where,
             include=["metadatas", "documents", "distances"],
@@ -203,14 +260,15 @@ class PatentVectorStore:
             # cosine distance → similarity score (0-1)
             score = max(0.0, 1.0 - dist) if dist else 1.0
 
+            ipc_codes = _string_list(meta.get("ipc_codes", ""))
             ipc_sec = meta.get("ipc_section", "")
             summaries.append(PatentSummary(
                 patent_number=pid,
                 title=meta.get("title", "")[:200],
                 abstract=meta.get("abstract", "")[:500],
-                applicants=[],  # metadata 不存全量申请人
+                applicants=_string_list(meta.get("applicants", ""))[:5],
                 year=meta.get("year"),
-                ipc_sections=[ipc_sec] if ipc_sec else [],
+                ipc_sections=ipc_codes or ([ipc_sec] if ipc_sec else []),
                 relevance_score=round(score, 4),
             ))
         return summaries
@@ -272,9 +330,11 @@ class InMemoryVectorStore:
         return len(self._ids)
 
     def _build_metadata(self, patent: FullPatent) -> dict:
+        ipc_codes = _string_list(getattr(patent, "ipc_codes", []))
+        applicants = _string_list(getattr(patent, "applicants", []))
         ipc_section = ""
-        if patent.ipc_codes:
-            first = patent.ipc_codes[0]
+        if ipc_codes:
+            first = ipc_codes[0]
             ipc_section = first[0] if first and first[0].isalpha() else ""
         year = 0
         if patent.publication_date and len(patent.publication_date) >= 4:
@@ -287,6 +347,8 @@ class InMemoryVectorStore:
             "is_deleted": False,
             "year": year,
             "ipc_section": ipc_section,
+            "ipc_codes": ";".join(ipc_codes),
+            "applicants": ";".join(applicants),
             "title": patent.title[:200],
             "abstract": patent.abstract[:200],
         }
@@ -296,16 +358,22 @@ class InMemoryVectorStore:
             return []
         q_vec = self._embedder.embed([query])[0]
         # cosine similarity
-        norms_d = np.linalg.norm(self._vectors, axis=1)
-        norm_q = np.linalg.norm(q_vec)
-        denom = norms_d * norm_q
-        denom[denom == 0] = 1.0
-        scores = np.dot(self._vectors, q_vec) / denom
+        from scipy.sparse import issparse
+        if issparse(self._vectors):
+            # TF-IDF rows are already L2 normalized.
+            product = self._vectors @ q_vec.T
+            scores = product.toarray().ravel()
+        else:
+            norms_d = np.linalg.norm(self._vectors, axis=1)
+            norm_q = np.linalg.norm(q_vec)
+            denom = norms_d * norm_q
+            denom[denom == 0] = 1.0
+            scores = np.dot(self._vectors, q_vec) / denom
 
-        # 过滤 is_deleted
+        # Apply structured scope before sorting/truncating Top-K.
         valid_idx = [
             i for i, m in enumerate(self._metadatas)
-            if not m.get("is_deleted", False)
+            if not m.get("is_deleted", False) and _metadata_matches(m, filters)
         ]
         valid_scores = [(i, scores[i]) for i in valid_idx]
         valid_scores.sort(key=lambda item: (-float(item[1]), self._ids[item[0]]))
@@ -313,14 +381,15 @@ class InMemoryVectorStore:
         summaries = []
         for idx, score in valid_scores[:top_k]:
             meta = self._metadatas[idx]
+            ipc_codes = _string_list(meta.get("ipc_codes", ""))
             ipc_sec = meta.get("ipc_section", "")
             summaries.append(PatentSummary(
                 patent_number=self._ids[idx],
                 title=meta.get("title", "")[:200],
                 abstract=meta.get("abstract", "")[:500],
-                applicants=[],
+                applicants=_string_list(meta.get("applicants", ""))[:5],
                 year=meta.get("year"),
-                ipc_sections=[ipc_sec] if ipc_sec else [],
+                ipc_sections=ipc_codes or ([ipc_sec] if ipc_sec else []),
                 relevance_score=round(float(score), 4),
             ))
         return summaries
@@ -330,9 +399,13 @@ class InMemoryVectorStore:
             return []
         idx = self._ids.index(patent_id)
         q_vec = self._vectors[idx]
-        scores = np.dot(self._vectors, q_vec) / (
-            np.linalg.norm(self._vectors, axis=1) * np.linalg.norm(q_vec) + 1e-8
-        )
+        from scipy.sparse import issparse
+        if issparse(self._vectors):
+            scores = (self._vectors @ q_vec.T).toarray().ravel()
+        else:
+            scores = np.dot(self._vectors, q_vec) / (
+                np.linalg.norm(self._vectors, axis=1) * np.linalg.norm(q_vec) + 1e-8
+            )
         scored = [(i, float(scores[i])) for i in range(len(self._ids))
                   if i != idx and not self._metadatas[i].get("is_deleted", False)]
         scored.sort(key=lambda item: (-float(item[1]), self._ids[item[0]]))
@@ -340,14 +413,15 @@ class InMemoryVectorStore:
         summaries = []
         for i, score in scored[:top_k]:
             meta = self._metadatas[i]
+            ipc_codes = _string_list(meta.get("ipc_codes", ""))
             ipc_sec = meta.get("ipc_section", "")
             summaries.append(PatentSummary(
                 patent_number=self._ids[i],
                 title=meta.get("title", "")[:200],
                 abstract=meta.get("abstract", "")[:500],
-                applicants=[],
+                applicants=_string_list(meta.get("applicants", ""))[:5],
                 year=meta.get("year"),
-                ipc_sections=[ipc_sec] if ipc_sec else [],
+                ipc_sections=ipc_codes or ([ipc_sec] if ipc_sec else []),
                 relevance_score=round(score, 4),
             ))
         return summaries
@@ -369,7 +443,12 @@ class InMemoryVectorStore:
         if self._vectors is None:
             self._vectors = new_vecs
         else:
-            self._vectors = np.vstack([self._vectors, new_vecs])
+            from scipy.sparse import issparse, vstack
+            self._vectors = (
+                vstack([self._vectors, new_vecs], format="csr")
+                if issparse(self._vectors) or issparse(new_vecs)
+                else np.vstack([self._vectors, new_vecs])
+            )
         return len(patents)
 
     def count(self) -> int:
@@ -381,26 +460,38 @@ class InMemoryVectorStore:
             return 0
         root = Path(directory)
         root.mkdir(parents=True, exist_ok=True)
-        vectors_tmp = root / "vectors.tmp.npy"
+        from scipy.sparse import issparse, save_npz
+        vectors_tmp = root / "vectors.tmp.npz"
         records_tmp = root / "records.tmp.json"
-        np.save(vectors_tmp, self._vectors, allow_pickle=False)
+        if issparse(self._vectors):
+            save_npz(vectors_tmp, self._vectors, compressed=True)
+            vectors_target = root / "vectors.npz"
+        else:
+            vectors_tmp = root / "vectors.tmp.npy"
+            np.save(vectors_tmp, self._vectors, allow_pickle=False)
+            vectors_target = root / "vectors.npy"
         records_tmp.write_text(json.dumps({
             "ids": self._ids,
             "metadatas": self._metadatas,
             "documents": self._documents,
         }, ensure_ascii=False), encoding="utf-8")
-        vectors_tmp.replace(root / "vectors.npy")
+        vectors_tmp.replace(vectors_target)
         records_tmp.replace(root / "records.json")
-        return int((root / "vectors.npy").stat().st_size + (root / "records.json").stat().st_size)
+        return int(vectors_target.stat().st_size + (root / "records.json").stat().st_size)
 
     def load_index(self, directory: str | Path) -> bool:
         root = Path(directory)
         vectors_path = root / "vectors.npy"
+        sparse_vectors_path = root / "vectors.npz"
         records_path = root / "records.json"
-        if not vectors_path.is_file() or not records_path.is_file():
+        if not (vectors_path.is_file() or sparse_vectors_path.is_file()) or not records_path.is_file():
             return False
         payload = json.loads(records_path.read_text(encoding="utf-8"))
-        vectors = np.load(vectors_path, allow_pickle=False)
+        if sparse_vectors_path.is_file():
+            from scipy.sparse import load_npz
+            vectors = load_npz(sparse_vectors_path).tocsr()
+        else:
+            vectors = np.load(vectors_path, allow_pickle=False)
         ids = [str(item) for item in payload.get("ids", [])]
         metadatas = list(payload.get("metadatas", []))
         documents = [str(item) for item in payload.get("documents", [])]

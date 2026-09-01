@@ -11,7 +11,7 @@ from engine.adapters.base import PatentAdapter
 from engine.adapters.common import iso_date, normalized_document_number, split_publication_number, stable_unique
 from models.patent import (
     Citation, Classification, DataSource, FieldProvenance, LocalizedText,
-    PatentRecord, RecordProvenance,
+    Party, PatentRecord, RecordProvenance,
 )
 
 
@@ -39,13 +39,24 @@ class GooglePatentsExportAdapter(PatentAdapter):
             return False
 
     def parse_file(self, filepath: str) -> list[PatentRecord]:
+        self._reset_parse_diagnostics()
         records: list[PatentRecord] = []
         with open(filepath, "r", encoding="utf-8-sig") as handle:
             for line_number, line in enumerate(handle, 1):
                 if not line.strip():
                     continue
-                payload = json.loads(line)
-                records.append(self._parse_row(payload, filepath, line_number))
+                self.parse_diagnostics["expected"] += 1
+                self.parse_diagnostics["detected"] += 1
+                try:
+                    payload = json.loads(line)
+                    records.append(self._parse_row(payload, filepath, line_number))
+                    self.parse_diagnostics["succeeded"] += 1
+                except Exception as exc:
+                    self._record_parse_issue(
+                        filepath=filepath, record_id=f"line:{line_number}",
+                        location=f"line:{line_number}", code="record_parse_failed",
+                        message=f"{type(exc).__name__}: {exc}", sample=line,
+                    )
         return records
 
     def _parse_row(self, row: dict[str, Any], filepath: str, line_number: int) -> PatentRecord:
@@ -100,6 +111,12 @@ class GooglePatentsExportAdapter(PatentAdapter):
                 ("family_id", row.get("family_id")),
             ) if present
         ]
+        applicant_names = _names(row.get("applicant"))
+        assignee_names = _names(row.get("assignee"))
+        current_holder_names = _names(
+            row.get("current_assignee") or row.get("current_owner")
+        )
+        inventor_names = _names(row.get("inventor"))
         return PatentRecord(
             patent_number=publication,
             normalized_patent_number=normalized_document_number(publication),
@@ -108,8 +125,8 @@ class GooglePatentsExportAdapter(PatentAdapter):
             publication_numbers=[publication] if publication else [],
             title=title, abstract=abstract, language=language,
             localized_titles=titles, localized_abstracts=abstracts,
-            applicants=_names(row.get("assignee") or row.get("applicant")),
-            inventors=_names(row.get("inventor")),
+            applicants=applicant_names,
+            inventors=inventor_names,
             ipc_codes=ipc_codes, cpc_codes=cpc_codes,
             classifications=[*classifications, *cpc_records],
             publication_date=iso_date(row.get("publication_date")),
@@ -138,6 +155,22 @@ class GooglePatentsExportAdapter(PatentAdapter):
             kind_code=str(row.get("kind_code") or kind_from_number),
             data_as_of=iso_date(row.get("data_as_of")),
             citation_records=citation_records, provenance=provenance,
+            applicant_parties=[
+                Party(name=name, role="applicant", source_role="applicant")
+                for name in applicant_names
+            ],
+            assignee_parties=[
+                Party(name=name, role="assignee", source_role="assignee")
+                for name in assignee_names
+            ],
+            current_rights_holder_parties=[
+                Party(name=name, role="current_rights_holder", source_role="current_assignee")
+                for name in current_holder_names
+            ],
+            inventor_parties=[
+                Party(name=name, role="inventor", source_role="inventor")
+                for name in inventor_names
+            ],
             field_provenance=field_provenance,
             source_file=os.path.basename(filepath),
         )

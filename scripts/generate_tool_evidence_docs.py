@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the human-readable 16-tool evidence matrix from the JSON registry."""
+"""Generate the human-readable tool evidence matrix from the JSON registry."""
 
 from pathlib import Path
 import json
@@ -19,8 +19,9 @@ def cell(value) -> str:
 
 
 registry = json.loads(SOURCE.read_text(encoding="utf-8"))
+tool_count = len(registry["tools"])
 lines = [
-    "# 16 工具算法证据矩阵",
+    f"# {tool_count} 工具算法证据矩阵",
     "",
     f"> 由 `knowledge/tool_evidence.json` 自动生成；登记版本 `{registry['registry_version']}`。请勿手工维护本表。",
     "",

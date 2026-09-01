@@ -17,11 +17,13 @@ class ValuationTool(Tool):
             "description": "返回Top N高价值专利。默认 20。",
             "minimum": 1,
             "maximum": 100,
+            "default": 20,
         },
         "citation_mode": {
             "type": "string",
             "enum": ["auto", "screening", "replication"],
             "description": "auto 自动按数据门禁选择；screening 不把 SS 纳入评分；replication 请求论文适配复现。",
+            "default": "auto",
         },
     }
     required_fields = ("patent_number", "publication_date", "ipc")
@@ -39,8 +41,20 @@ class ValuationTool(Tool):
         df = storage.get_columns(['patent_number', 'publication_numbers', 'title', 'abstract',
                                    'publication_date', 'date', 'ipc', 'cited_refs',
                                    'backward_citations',
-                                   'family_members', 'forward_citations'])
-        patents = [_row_to_pseudo_patent(row) for _, row in df.iterrows()]
+                                   'family_members', 'forward_citations', 'source_file'])
+        patents = []
+        for _, row in df.iterrows():
+            patent = _row_to_pseudo_patent(row)
+            patent.source_format = storage.adapter_name or "unknown"
+            patent.source_availability = {
+                "publication_date": _has_value(row.get("publication_date", row.get("date"))),
+                "ipc": _has_value(row.get("ipc")),
+                "backward_citations": _has_value(
+                    row.get("backward_citations", row.get("cited_refs"))
+                ),
+                "family_members": _has_value(row.get("family_members")),
+            }
+            patents.append(patent)
 
         # 全量语料直接使用完整内部引证图，不对全体用随机子图评分。
         audit_full = storage.audit()
@@ -85,6 +99,9 @@ class ValuationTool(Tool):
                 "requested_citation_mode": citation_mode,
                 "replication_gates": replication_gates,
                 "paper_exact": False,
+                "ranking_scope": "within_source_and_available_dimension_group",
+                "citation_normalization": "publication_year_by_ipc_subclass",
+                "missing_values_treated_as_zero": False,
                 "sensitivity_analysis": _ranking_sensitivity(
                     patents, scoring_weights, graph if use_ss else None, ranked, top_n,
                 ),
@@ -97,36 +114,16 @@ class ValuationTool(Tool):
         if requested_replication and not use_ss:
             failed = [name for name, passed in replication_gates.items() if not passed]
             result.warnings.append("论文适配复现请求已降级，未通过门禁: " + ", ".join(failed))
-        # 构建 HTML 展示
-        rows_html = [
-            '<div style="background:#1a1a2e;color:#e0e0e0;padding:20px;border-radius:8px;overflow-x:auto">',
-            f'<h3 style="color:#FFD700">数据集内相对工程筛查 Top {min(top_n, len(ranked))}</h3>',
-            f'<p style="color:#aaa;font-size:12px">模式: {applied_mode}；分值仅用于当前数据集内排序，不代表交易价格或财务价值。</p>',
-            '<table style="width:100%;border-collapse:collapse;font-size:11px">',
-            '<tr style="background:#333">'
-            '<th>#</th><th>专利号</th><th>分值</th>'
-            '<th>SS</th><th>RO</th><th>BC</th>'
-            '<th>同族</th><th>IPC</th><th>年</th></tr>',
-        ]
-        for item in ranked[:top_n]:
-            ss = item.get("shared_specialization", 0)
-            ro = item.get("reachability_out_degree", 0)
-            bc = item.get("bibliographical_coupling", 0)
-            rows_html.append(
-                '<tr>'
-                f'<td style="padding:4px;border:1px solid #555">{item["rank"]}</td>'
-                f'<td style="padding:4px;border:1px solid #555;font-size:10px">{item["patent_number"]}</td>'
-                f'<td style="padding:4px;border:1px solid #555;color:#FFD700;font-weight:bold">{item["score"]:.1f}</td>'
-                f'<td style="padding:4px;border:1px solid #555;color:#4f4">{ss:.2f}</td>'
-                f'<td style="padding:4px;border:1px solid #555">{ro:.2f}</td>'
-                f'<td style="padding:4px;border:1px solid #555">{bc:.2f}</td>'
-                f'<td style="padding:4px;border:1px solid #555">{item["family_size"]}</td>'
-                f'<td style="padding:4px;border:1px solid #555">{item["ipc_breadth"]}</td>'
-                f'<td style="padding:4px;border:1px solid #555">{item["patent_age"]}</td>'
-                '</tr>'
+        low_confidence = sum(item["confidence_level"] == "low" for item in ranked)
+        incomparable = sum(not item["comparable_within_group"] for item in ranked)
+        if low_confidence:
+            result.warnings.append(
+                f"{low_confidence} 件记录可用评分权重低于 60%，请结合分数区间而非点估计解读。"
             )
-        rows_html.append('</table></div>')
-        result.chart_html = '\n'.join(rows_html)
+        if incomparable:
+            result.warnings.append(
+                f"{incomparable} 件记录没有同来源、同维度的可比对象，不应与其他组直接混排。"
+            )
         return result
 
 
@@ -161,5 +158,37 @@ def _ranking_sensitivity(patents, weights, graph, baseline, top_n: int) -> dict:
             (item["top_n_overlap"] for item in scenarios), default=1.0,
         ),
         "scenarios": scenarios,
+        "missingness": {
+            "records_with_missing_dimensions": sum(
+                bool(item.get("missing_dimensions")) for item in baseline
+            ),
+            "minimum_available_weight_ratio": min(
+                (item.get("available_weight_ratio", 0.0) for item in baseline),
+                default=0.0,
+            ),
+            "maximum_score_interval_width": max(
+                (
+                    item.get("score_interval", [0.0, 100.0])[1]
+                    - item.get("score_interval", [0.0, 100.0])[0]
+                    for item in baseline
+                ),
+                default=0.0,
+            ),
+        },
         "interpretation": "衡量权重扰动下的排名稳定性，不是现实商业价值校准。",
     }
+
+
+def _has_value(value) -> bool:
+    """Treat blank/absent source cells as missing, never as a measured zero."""
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (list, tuple, set, dict)):
+        return bool(value)
+    try:
+        import pandas as pd
+        return not bool(pd.isna(value))
+    except (TypeError, ValueError):
+        return True

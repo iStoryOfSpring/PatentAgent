@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 class TaskState(str, Enum):
     CREATED = "created"
+    QUEUED = "queued"
     PLANNING = "planning"
     PLANNED = "planned"
     WAITING_APPROVAL = "waiting_approval"
@@ -17,6 +18,7 @@ class TaskState(str, Enum):
     COMPLETED = "completed"
     PARTIAL = "partial"
     FAILED = "failed"
+    CANCELLING = "cancelling"
     CANCELLED = "cancelled"
     INTERRUPTED = "interrupted"
 

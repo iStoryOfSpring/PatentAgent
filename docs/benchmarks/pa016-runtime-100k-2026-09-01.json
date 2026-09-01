@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "machine": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "logical_cpu_count": 10,
+    "python_version": "3.13.14",
+    "node_version": "v25.9.0"
+  },
+  "record_count": 100000,
+  "benchmarks": [
+    {
+      "name": "lexical_search",
+      "elapsed_seconds": 8.3329,
+      "peak_rss_mb": 591.27,
+      "peak_rss_delta_mb": 315.1,
+      "result_type": "patent_search"
+    },
+    {
+      "name": "clustering",
+      "elapsed_seconds": 5.748,
+      "peak_rss_mb": 591.27,
+      "peak_rss_delta_mb": 0,
+      "result_type": "clustering"
+    },
+    {
+      "name": "technology_effect_matrix",
+      "elapsed_seconds": 5.296,
+      "peak_rss_mb": 594.34,
+      "peak_rss_delta_mb": 3.07,
+      "result_type": "tech_effect_matrix"
+    },
+    {
+      "name": "four_tool_concurrency",
+      "elapsed_seconds": 23.1547,
+      "peak_rss_mb": 682.19,
+      "peak_rss_delta_mb": 87.85,
+      "result_type": "list"
+    }
+  ],
+  "total_elapsed_seconds": 43.1106,
+  "final_peak_rss_mb": 682.19,
+  "comparison": {
+    "before_sparse_tfidf_lexical_peak_rss_mb": 1101.03,
+    "before_sparse_tfidf_final_peak_rss_mb": 1196.72,
+    "lexical_peak_rss_reduction_pct": 46.3,
+    "final_peak_rss_reduction_pct": 43.0
+  },
+  "limitations": [
+    "Synthetic stress data measures engineering capacity, not retrieval quality.",
+    "Peak RSS is process cumulative high-water memory and later benchmark deltas can be zero.",
+    "Results are machine-specific and should be compared only with a similarly configured run.",
+    "Clustering uses deterministic multi-start random-point initialization to avoid platform-specific k-means++ numerical warnings."
+  ]
+}

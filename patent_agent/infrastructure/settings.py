@@ -15,8 +15,12 @@ class AppSettings:
     session_db: Path
     cors_origins: tuple[str, ...]
     max_request_bytes: int = 2 * 1024 * 1024
+    max_upload_file_bytes: int = 256 * 1024 * 1024
+    max_upload_total_bytes: int = 512 * 1024 * 1024
+    dataset_cache_size: int = 1
     max_agent_concurrency: int = 1
     max_tool_concurrency: int = 4
+    max_tool_queue_wait_seconds: float = 30.0
 
     @classmethod
     def from_env(cls, project_root: str | Path) -> "AppSettings":
@@ -38,6 +42,16 @@ class AppSettings:
             session_db=session_db,
             cors_origins=origins,
             max_request_bytes=int(os.getenv("PATENTAGENT_MAX_REQUEST_BYTES", str(2 * 1024 * 1024))),
+            max_upload_file_bytes=int(os.getenv(
+                "PATENTAGENT_MAX_UPLOAD_FILE_BYTES", str(256 * 1024 * 1024),
+            )),
+            max_upload_total_bytes=int(os.getenv(
+                "PATENTAGENT_MAX_UPLOAD_TOTAL_BYTES", str(512 * 1024 * 1024),
+            )),
+            dataset_cache_size=max(1, int(os.getenv("PATENTAGENT_DATASET_CACHE_SIZE", "1"))),
             max_agent_concurrency=max(1, int(os.getenv("PATENTAGENT_MAX_AGENT_CONCURRENCY", "1"))),
             max_tool_concurrency=max(1, int(os.getenv("PATENTAGENT_MAX_TOOL_CONCURRENCY", "4"))),
+            max_tool_queue_wait_seconds=max(
+                0.1, float(os.getenv("PATENTAGENT_MAX_TOOL_QUEUE_WAIT_SECONDS", "30")),
+            ),
         )

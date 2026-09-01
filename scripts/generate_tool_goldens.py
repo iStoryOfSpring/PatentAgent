@@ -1,4 +1,4 @@
-"""Explicitly regenerate the 16-tool golden fingerprints.
+"""Explicitly regenerate the core-tool golden fingerprints.
 
 Run only for a reviewed algorithm/contract change:
     uv run python scripts/generate_tool_goldens.py

@@ -13,7 +13,7 @@ from engine.adapters.base import PatentAdapter
 from engine.adapters.common import iso_date, normalized_document_number, stable_unique
 from models.patent import (
     Claim, Classification, DataSource, FieldProvenance, LegalEvent,
-    LocalizedText, PatentRecord, RecordProvenance,
+    LocalizedText, Party, PatentRecord, RecordProvenance,
 )
 
 
@@ -60,6 +60,7 @@ class USPTOGrantXmlAdapter(PatentAdapter):
             return False
 
     def parse_file(self, filepath: str) -> list[PatentRecord]:
+        self._reset_parse_diagnostics()
         with open(filepath, "rb") as handle:
             raw = handle.read()
         chunks = re.split(br"(?=<\?xml\s)", raw)
@@ -70,15 +71,42 @@ class USPTOGrantXmlAdapter(PatentAdapter):
             cleaned = re.sub(br"<!DOCTYPE[^>]*(?:\[[\s\S]*?\]\s*)?>", b"", chunk, count=1)
             try:
                 root = ET.fromstring(cleaned)
-            except ET.ParseError:
-                if len(chunks) == 1:
-                    raise
+            except ET.ParseError as exc:
+                self.parse_diagnostics["expected"] += 1
+                self.parse_diagnostics["detected"] += 1
+                self._record_parse_issue(
+                    filepath=filepath, record_id=f"document:{index}",
+                    location=f"document:{index}", code="xml_record_truncated_or_invalid",
+                    message=f"{type(exc).__name__}: {exc}", sample=chunk,
+                )
                 continue
             grant_nodes = [node for node in root.iter() if _local(node.tag) == "us-patent-grant"]
             if _local(root.tag) == "us-patent-grant":
                 grant_nodes = [root]
-            for grant in grant_nodes:
-                records.append(self._parse_grant(grant, filepath, index, chunk))
+            if not grant_nodes:
+                self.parse_diagnostics["expected"] += 1
+                self.parse_diagnostics["detected"] += 1
+                self._record_parse_issue(
+                    filepath=filepath, record_id=f"document:{index}",
+                    location=f"document:{index}", code="xml_no_grant_record",
+                    message="XML 文档中未发现 us-patent-grant 记录", sample=chunk,
+                    outcome="skipped",
+                )
+                continue
+            self.parse_diagnostics["expected"] += len(grant_nodes)
+            self.parse_diagnostics["detected"] += len(grant_nodes)
+            for grant_position, grant in enumerate(grant_nodes, 1):
+                try:
+                    records.append(self._parse_grant(grant, filepath, index, chunk))
+                    self.parse_diagnostics["succeeded"] += 1
+                except Exception as exc:
+                    self._record_parse_issue(
+                        filepath=filepath,
+                        record_id=f"document:{index}:grant:{grant_position}",
+                        location=f"document:{index}:grant:{grant_position}",
+                        code="record_parse_failed",
+                        message=f"{type(exc).__name__}: {exc}", sample=chunk,
+                    )
         return records
 
     def _parse_grant(self, root: ET.Element, filepath: str, index: int, raw: bytes) -> PatentRecord:
@@ -140,6 +168,9 @@ class USPTOGrantXmlAdapter(PatentAdapter):
             ), source_record_id=source_id, source_file=os.path.basename(filepath),
             raw_record_hash=hashlib.sha256(raw).hexdigest(),
         )
+        applicant_names = stable_unique(applicants)
+        assignee_names = stable_unique(assignees)
+        inventor_names = stable_unique(inventors)
         return PatentRecord(
             patent_number=publication,
             normalized_patent_number=normalized_document_number(publication),
@@ -148,7 +179,7 @@ class USPTOGrantXmlAdapter(PatentAdapter):
             title=title, abstract=abstract, language=language,
             localized_titles=[LocalizedText(language=language, text=title)] if title else [],
             localized_abstracts=[LocalizedText(language=language, text=abstract)] if abstract else [],
-            applicants=stable_unique([*assignees, *applicants]), inventors=stable_unique(inventors),
+            applicants=applicant_names, inventors=inventor_names,
             ipc_codes=stable_unique(ipc_codes), cpc_codes=stable_unique(cpc_codes),
             classifications=classifications,
             publication_date=iso_date(publication_date), filing_date=iso_date(filing_date),
@@ -156,6 +187,9 @@ class USPTOGrantXmlAdapter(PatentAdapter):
             backward_citations=stable_unique(backward),
             non_patent_references=stable_unique(non_patent), jurisdiction=country or "US",
             kind_code=kind, source_file=os.path.basename(filepath), provenance=provenance,
+            applicant_parties=[Party(name=name, role="applicant", source_role="applicant") for name in applicant_names],
+            assignee_parties=[Party(name=name, role="assignee", source_role="assignee") for name in assignee_names],
+            inventor_parties=[Party(name=name, role="inventor", source_role="inventor") for name in inventor_names],
             field_provenance=[
                 FieldProvenance(field_name=field, source=self.name, source_record_id=source_id,
                                 source_path=f"document:{index}")
@@ -184,10 +218,25 @@ class USPTOFileWrapperJsonAdapter(PatentAdapter):
             return False
 
     def parse_file(self, filepath: str) -> list[PatentRecord]:
+        self._reset_parse_diagnostics()
         with open(filepath, "r", encoding="utf-8-sig") as handle:
             payload = json.load(handle)
         rows = _unwrap_rows(payload)
-        return [self._parse_row(row, filepath, index) for index, row in enumerate(rows, 1)]
+        self.parse_diagnostics["expected"] = len(rows)
+        self.parse_diagnostics["detected"] = len(rows)
+        records = []
+        for index, row in enumerate(rows, 1):
+            try:
+                records.append(self._parse_row(row, filepath, index))
+                self.parse_diagnostics["succeeded"] += 1
+            except Exception as exc:
+                self._record_parse_issue(
+                    filepath=filepath, record_id=f"record:{index}",
+                    location=f"record:{index}", code="record_parse_failed",
+                    message=f"{type(exc).__name__}: {exc}",
+                    sample=json.dumps(row, ensure_ascii=False, sort_keys=True),
+                )
+        return records
 
     def _parse_row(self, row: dict[str, Any], filepath: str, index: int) -> PatentRecord:
         metadata = _dict_at(row, "applicationMetaData", "applicationMetadata", "metadata")
@@ -227,12 +276,25 @@ class USPTOFileWrapperJsonAdapter(PatentAdapter):
                 license_note="Official USPTO export; retain acquisition date and endpoint version.",
             ), source_record_id=source_id, source_file=os.path.basename(filepath), raw_record_hash=raw_hash,
         )
+        current_holder_values = _list_at(
+            metadata, "currentRightsHolderBag", "currentAssigneeBag", "owners",
+        )
+        current_holders = stable_unique(
+            _value(item, "name", "assigneeNameText", "ownerName")
+            if isinstance(item, dict) else item
+            for item in current_holder_values
+        )
         return PatentRecord(
             patent_number=publication, normalized_patent_number=publication,
             application_number=application_normalized, source_record_id=source_id,
             publication_numbers=[publication] if publication else [], title=title, abstract="",
             localized_titles=[LocalizedText(language="en", text=title)] if title else [], language="en",
             applicants=applicants,
+            applicant_parties=[Party(name=name, role="applicant", source_role="applicantBag") for name in applicants],
+            current_rights_holder_parties=[
+                Party(name=name, role="current_rights_holder", source_role="currentRightsHolderBag")
+                for name in current_holders
+            ],
             filing_date=iso_date(_value(metadata, "filingDate", "applicationFilingDate")),
             grant_date=iso_date(_value(metadata, "grantDate", "patentGrantDate")),
             legal_status=status, legal_status_as_of=status_date, legal_events=events,

@@ -46,8 +46,10 @@ class SourceCapabilities(BaseModel):
 class ImportIssue(BaseModel):
     file: str = ""
     record_id: str = ""
+    location: str = ""
     code: str
     message: str
+    sample_hash: str = ""
 
 
 class FileDetection(BaseModel):
@@ -58,12 +60,16 @@ class FileDetection(BaseModel):
 
 
 class ImportReport(BaseModel):
-    schema_version: int = 1
+    schema_version: int = 2
     source_formats: list[str] = Field(default_factory=list)
     files_seen: int = 0
+    records_expected: int = 0
+    records_detected: int = 0
+    records_succeeded: int = 0
     records_parsed: int = 0
     records_imported: int = 0
     records_failed: int = 0
+    records_skipped: int = 0
     duplicates_merged: int = 0
     field_conflicts: int = 0
     field_coverage: dict[str, float] = Field(default_factory=dict)
@@ -72,3 +78,5 @@ class ImportReport(BaseModel):
     file_detections: list[FileDetection] = Field(default_factory=list)
     issues: list[ImportIssue] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    parse_rate: float = 0.0
+    quarantine_path: str = ""

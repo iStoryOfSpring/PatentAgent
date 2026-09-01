@@ -198,13 +198,11 @@ def filter_english_nouns(words: list[str]) -> list[str]:
     if not words:
         return []
 
-    # 尝试 NLTK
+    # Use an already installed NLTK model only. Runtime analysis must never
+    # perform an implicit network download or silently change the environment.
     try:
         import nltk
-        try:
-            nltk.data.find('taggers/averaged_perceptron_tagger_eng')
-        except LookupError:
-            nltk.download('averaged_perceptron_tagger_eng', quiet=True)
+        nltk.data.find('taggers/averaged_perceptron_tagger_eng')
         tagged = nltk.pos_tag(words)
         # 只保留名词：NN, NNS, NNP, NNPS
         return [w for w, tag in tagged if tag.startswith('NN') and w not in STOP_WORDS]
@@ -231,11 +229,81 @@ def filter_english_nouns(words: list[str]) -> list[str]:
     return result
 
 
+def document_terms(text: str, stopwords: Optional[set[str]] = None,
+                   pos_filter: bool = True, min_len: int = 2) -> list[str]:
+    """Normalize one document while retaining both Chinese and English terms."""
+    words = filter_stopwords(tokenize_text(str(text).lower(), min_len=min_len), stopwords)
+    if not pos_filter:
+        return words
+    english = [word for word in words if re.fullmatch(r"[a-zA-Z][a-zA-Z-]*", word)]
+    allowed_english = set(filter_english_nouns(english))
+    return [
+        word for word in words
+        if not re.fullmatch(r"[a-zA-Z][a-zA-Z-]*", word) or word in allowed_english
+    ]
+
+
+def extract_keyword_statistics(
+    texts: list[str], stopwords: Optional[set[str]] = None,
+    top_n: int = 100, pos_filter: bool = True,
+    min_phrase_support: int | None = None, min_stickiness: float = 0.5,
+) -> list[dict]:
+    """Return document-aware unigram and phrase statistics."""
+    from collections import Counter
+
+    documents = [document_terms(text, stopwords, pos_filter) for text in texts if text]
+    if not documents:
+        return []
+    term_frequency: Counter = Counter()
+    document_frequency: Counter = Counter()
+    bigram_frequency: Counter = Counter()
+    bigram_document_frequency: Counter = Counter()
+    for words in documents:
+        term_frequency.update(words)
+        document_frequency.update(set(words))
+        bigrams = list(zip(words, words[1:]))
+        bigram_frequency.update(bigrams)
+        bigram_document_frequency.update(set(bigrams))
+
+    minimum = min_phrase_support or max(2, int(len(documents) * 0.002))
+    stats = [
+        {
+            "word": word,
+            "document_frequency": int(df),
+            "term_frequency": int(term_frequency[word]),
+            "document_ratio": round(df / len(documents), 6),
+            "term_type": "unigram",
+        }
+        for word, df in document_frequency.items()
+    ]
+    for (first, second), frequency in bigram_frequency.items():
+        df = bigram_document_frequency[(first, second)]
+        if df < minimum:
+            continue
+        stickiness = (frequency * frequency) / max(
+            term_frequency[first] * term_frequency[second], 1,
+        )
+        if stickiness < min_stickiness:
+            continue
+        stats.append({
+            "word": f"{first}_{second}",
+            "document_frequency": int(df),
+            "term_frequency": int(frequency),
+            "document_ratio": round(df / len(documents), 6),
+            "term_type": "phrase",
+            "stickiness": round(stickiness, 6),
+        })
+    stats.sort(key=lambda item: (
+        -item["document_frequency"], -item["term_frequency"], item["word"],
+    ))
+    return stats[:top_n]
+
+
 def extract_keywords(texts: list[str],
                      stopwords: Optional[set[str]] = None,
                      top_n: int = 100,
                      pos_filter: bool = True) -> list[tuple[str, int]]:
-    """完整关键词提取流水线：分词 → 停用词 → 词性过滤 → 词频统计。
+    """兼容入口：返回按文档频率排序的关键词。
 
     Args:
         texts: 文本列表
@@ -246,20 +314,12 @@ def extract_keywords(texts: list[str],
     Returns:
         [(word, count), ...]
     """
-    from collections import Counter
-    if not texts:
-        return []
-
-    all_words = []
-    for text in texts:
-        words = tokenize_text(text)
-        words = filter_stopwords(words, stopwords)
-        if pos_filter and detect_language(text) == 'en':
-            words = filter_english_nouns(words)
-        all_words.extend(words)
-
-    counter = Counter(all_words)
-    return counter.most_common(top_n)
+    return [
+        (item["word"], item["document_frequency"])
+        for item in extract_keyword_statistics(
+            texts, stopwords=stopwords, top_n=top_n, pos_filter=pos_filter,
+        )
+    ]
 
 
 def prepare_patent_df(df: pd.DataFrame) -> pd.DataFrame:

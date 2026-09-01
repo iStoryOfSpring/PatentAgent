@@ -6,14 +6,14 @@ import hashlib
 from engine.adapters.base import PatentAdapter
 from engine.adapters.common import normalized_document_number, split_publication_number
 from engine.parser import PatentMiner
-from models.patent import DataSource, FullPatent, RecordProvenance
+from models.patent import DataSource, FullPatent, Party, RecordProvenance
 
 
 class WoSAdapter(PatentAdapter):
     name = "wos"
     display_name = "Web of Science Derwent"
     # 3.0: PN 多公开号、CP 专利引证、CR 非专利文献与日期别名修正。
-    version = "4.1"
+    version = "4.2"
 
     def detect(self, filepath: str) -> bool:
         if not filepath.lower().endswith('.txt'):
@@ -32,6 +32,7 @@ class WoSAdapter(PatentAdapter):
         miner = PatentMiner(input_dir=os.path.dirname(filepath))
         # Use existing parse_txt which returns DataFrame
         df = miner.parse_txt(filepath)
+        self.parse_diagnostics = miner.last_parse_diagnostics
         if df.empty:
             return []
         # Convert DataFrame rows to FullPatent
@@ -40,6 +41,8 @@ class WoSAdapter(PatentAdapter):
             patent_number = str(row.get('patent_number', ''))
             jurisdiction, _, kind_code = split_publication_number(patent_number)
             source_record_id = str(row.get('source_record_id', ''))
+            applicant_names = _split(row.get('applicants', ''))
+            inventor_names = _split(row.get('inventors', ''))
             fp = FullPatent(
                 patent_number=patent_number,
                 normalized_patent_number=normalized_document_number(patent_number),
@@ -47,8 +50,8 @@ class WoSAdapter(PatentAdapter):
                 publication_numbers=_split(row.get('publication_numbers', '')),
                 title=str(row.get('title', '')),
                 abstract=str(row.get('abstract', '')),
-                applicants=_split(row.get('applicants', '')),
-                inventors=_split(row.get('inventors', '')),
+                applicants=applicant_names,
+                inventors=inventor_names,
                 ipc_codes=_split(row.get('ipc', '')),
                 cpc_codes=[],
                 publication_date=str(row.get('publication_date', '')),
@@ -66,6 +69,14 @@ class WoSAdapter(PatentAdapter):
                 kind_code=kind_code,
                 source_file=os.path.basename(filepath),
                 imported_at='',
+                applicant_parties=[
+                    Party(name=name, role="applicant", source_role="AE")
+                    for name in applicant_names
+                ],
+                inventor_parties=[
+                    Party(name=name, role="inventor", source_role="AU")
+                    for name in inventor_names
+                ],
                 provenance=RecordProvenance(
                     source=DataSource(
                         adapter=self.name, source_name=self.display_name,

@@ -301,9 +301,9 @@ def test_intent_filters_are_attached_to_every_chain_step():
     )
     assert params["year_start"] == 2020
     assert params["applicant_filter"] == "ACME"
-    assert params["__filters"] == {
+    assert params["scope"] == {
         "year_start": 2020, "year_end": 2022,
-        "applicant_filter": "ACME", "ipc_filter": ["H01M"],
+        "applicant_names": ["ACME"], "ipc_prefixes": ["H01M"],
         "text_query": "solid battery",
     }
 

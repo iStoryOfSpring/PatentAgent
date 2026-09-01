@@ -30,6 +30,14 @@ const cases: Record<string, Record<string, unknown>> = {
   clustering: { patents_per_cluster: { 0: 3 }, cluster_titles: { 0: "Battery" }, cluster_keywords: { 0: ["cell"] }, silhouette_score: .4 },
   value_indicators: { score_label: "价值筛查分", data: [{ patent_number: "P1", score: 80 }] },
   competitor_evolution: { data: { evolution: [{ applicant: "A", years: [2023, 2024], ipc_entropy: [1, 1.2], dominant_ipc_share: [.6, .5], ipc_profile_cosine_shift: [0, .2], top_ipc: [["H01M"], ["H01M"]], total_patents: 8 }] } },
+  entity_portfolio: { summary: "实体组合", data: [{ canonical_name: "A", record_count: 8 }] },
+  concentration: { summary: "集中度", data: [{ hhi: .4, cr3: .8 }] },
+  citation_network: { summary: "引证网络", data: [{ patent_number: "P1", pagerank: .5 }] },
+  family_geography: { summary: "地域口径", data: [{ dimension: "priority_origin", values: [{ office_or_jurisdiction: "CN", count: 2 }] }] },
+  search_strategy_audit: { summary: "检索审计", data: [{ version: 1, returned_count: 3 }] },
+  legal_status: { summary: "法律状态", data: [{ status: "active", count: 2 }] },
+  patent_monitor: { summary: "持续监测", data: [{ event_type: "new_publication", patent_number: "P1" }] },
+  claim_elements: { data: [{ patent_number: "P1", kind_code: "A1", legal_status: "pending", claims: [{ claim_number: 1, is_independent: true, language: "en", elements: [{ element_number: 1, text: "a battery" }], product_feature_mapping_draft: [{ feature: "battery", matched_element_numbers: [1], match_method: "literal_substring" }] }] }] },
 };
 
 describe("VisualizationPanel registry", () => {
@@ -48,11 +56,18 @@ describe("VisualizationPanel registry", () => {
     });
   }
 
-  it("keeps chart_html as a fallback for unknown result types", () => {
+  it("does not execute chart_html for unknown result types", () => {
     const { container } = render(
       <VisualizationPanel toolName="legacy" result={{ result_type: "unknown" }} chartHtml="<div>legacy</div>" />,
     );
-    expect(container.querySelector("iframe")).not.toBeNull();
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(screen.getByText("旧版 HTML 图表已禁用")).toBeTruthy();
+  });
+
+  it("marks claim analysis as a human-review draft", () => {
+    render(<VisualizationPanel toolName="analyze_claim_elements" result={{ result_type: "claim_elements", ...cases.claim_elements }} />);
+    expect(screen.getByText("人工复核草稿")).toBeTruthy();
+    expect(screen.getByRole("checkbox")).toBeTruthy();
+    expect(screen.getByText(/不构成侵权/)).toBeTruthy();
   });
 });
-

@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Tools-16-orange" alt="Tools">
+  <img src="https://img.shields.io/badge/Tools-24-orange" alt="Tools">
   <img src="https://img.shields.io/badge/Version-3.1-lightgrey" alt="Version">
 </p>
 
@@ -73,12 +73,14 @@ python mcp_server.py
 - **结果可追溯** — 图表、结构化摘要、方法、字段覆盖率、警告、参数和耗时统一返回
 - **原生可视化** — React/ECharts 优先读取结构化结果，支持原始尺寸、适应窗格、全屏、PNG/JSON 导出与数据表切换
 - **多供应商 LLM** — 多个命名配置、OpenAI/Anthropic/DeepSeek 三类协议、OpenRouter/Ollama/vLLM 与自定义兼容服务
-- **极速加载** — 8 线程并行解析 + Pickle 缓存，首次 10s，缓存命中 0.3s
+- **有界加载** — 受限线程并行解析 + 内容哈希校验的 Parquet 缓存；实际耗时随文件数量、记录体积和磁盘而变
 - **报告导出** — HTML 报告（含完整中文排版），CSV 数据导出
 - **MCP 协议支持** — 标准 MCP (Model Context Protocol) stdio/HTTP 服务器，Claude Code / VS Code / Cursor 可直接调用全部工具
-- **算法证据登记表** — 16 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
+- **算法证据登记表** — 24 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
 - **统一文件导入** — WoS、Google Patents JSONL、USPTO grant XML/PFW JSON 统一进入 PatentRecord v3，并返回字段覆盖、冲突与来源能力报告
 - **多语言检索 Beta** — 单次显式启用本地 MiniLM 与词法 RRF；失败会明确回退，不替代默认 TF-IDF 基线
+- **统一分析工作台** — 会话、数据集、九类能力、报告和设置采用独立页面，保持一个总调度 Agent
+- **网页数据集库** — 多文件安全上传、异步导入、内容去重、版本审计和会话显式绑定
 
 ## 数据源能力
 
@@ -101,19 +103,27 @@ full-text XML 和 Patent File Wrapper JSON。EPO OPS 与 CNIPA 仅处于格式�
 | `get_dataset_summary` | 数据集概况（总量/时间/IPC/Top申请人） |
 | `analyze_patent_trend` | 专利公开趋势（月度/年度，支持IPC/申请人筛选） |
 | `analyze_lifecycle` | 公开量累计与同比增长（不自动判定生命周期） |
-| `analyze_ipc_distribution` | IPC 分类热力图（年份 × A-H 部级） |
-| `generate_wordcloud` | 关键词词云 + 词频柱状图（含词性过滤） |
+| `analyze_ipc_distribution` | IPC 分类热力图（标注次数/去重专利/同族归一化三种口径） |
+| `generate_wordcloud` | 关键词文档频率 + 词频诊断（含词性过滤） |
 | `analyze_burst_terms` | 近期增长词（最小支持、平滑；非 Kleinberg Burst） |
 | `analyze_yearly_keywords` | 逐年关键词对比（年份 × 技术词热力图） |
 | `analyze_country_distribution` | 首个公开局分布（不等同同族市场覆盖） |
 | `analyze_co_network` | 申请人合作网络（交互式可拖拽） |
-| `analyze_tech_roadmap` | 年度技术主题时间轴（引证充分时显示内部路径） |
+| `analyze_tech_roadmap` | 默认年度技术主题时间轴；同族、优先权与引证覆盖门禁通过后附待复核路线 |
 | `analyze_tech_matrix` | Derwent 摘要代理功效矩阵 + 低共现复核候选 |
 | `analyze_clustering` | TF-IDF 空间 K-means + silhouette 选 k + CC0.5 标题 |
 | `analyze_patent_valuation` | 当前数据集内相对工程评分；含权重敏感性与缺失影响（不是财务估值） |
 | `analyze_competitor_evolution` | IPC profile cosine shift / entropy / dominant share |
 | `search_patents` | 默认 TF-IDF；可单次启用多语言 MiniLM+RRF Beta（都不是查全检索） |
 | `read_patent_details` | 当前数据源记录读取（Derwent 摘要不是完整说明书） |
+| `analyze_entity_portfolio` | 分角色规范实体排名、别名、年度趋势与 IPC 构成 |
+| `analyze_concentration` | CR3/5/10、HHI、Gini、Shannon entropy 与 bootstrap 稳定性 |
+| `analyze_citation_network` | 内部/外部边分离的引证、共引与文献耦合描述 |
+| `analyze_family_geography` | 优先权地、首次公开局、同族覆盖局等分口径地域统计 |
+| `audit_search_strategy` | 检索策略版本、返回集差异、已知专利回查与滚雪球候选 |
+| `analyze_legal_status` | 权威来源与 as-of 门禁下的状态/事件分离统计 |
+| `monitor_patent_changes` | 内容指纹化检索基线与去重数据变化监测 |
+| `analyze_claim_elements` | 权利要求依赖树、可逆要素拆分与产品映射人工复核草稿 |
 
 ## MCP 使用指南
 
@@ -164,6 +174,9 @@ HTTP 默认只允许本机。若确需绑定非回环地址，必须同时设置
 | `MCP_HTTP_HOST` | `127.0.0.1` | HTTP 模式监听地址 |
 | `MCP_AUTH_TOKEN` | 空 | 非回环监听必填；HTTP 客户端使用 Bearer Token |
 | `MCP_MAX_ITEMS_IN_RESULT` | `50` | 分析结果中列表字段的最大条目数 |
+| `PATENTAGENT_MAX_UPLOAD_FILE_BYTES` | `268435456` | 网页上传的单文件大小上限 |
+| `PATENTAGENT_MAX_UPLOAD_TOTAL_BYTES` | `536870912` | 单次网页上传总量上限 |
+| `PATENTAGENT_DATASET_CACHE_SIZE` | `1` | 运行时同时缓存的数据集版本数 |
 
 ### 配置 Claude Code
 
@@ -227,20 +240,27 @@ MCP 服务器暴露的工具接口（数量以运行时注册表为准）：
 | `analyze_yearly_keywords` | `text_source` | 逐年关键词对比 |
 | `analyze_country_distribution` | 无 | 首个公开局分布（不是同族市场覆盖） |
 | `analyze_co_network` | 无 | 申请人合作网络 |
-| `analyze_tech_roadmap` | `top_n_per_year` | 技术路线图 |
+| `analyze_tech_roadmap` | `top_n_per_year` | 年度主题时间线；同族/优先权/引证门禁通过时附待复核路线 |
 | `analyze_tech_matrix` | `top_n` | Derwent 摘要代理功效矩阵 + 低共现复核候选 |
 | `analyze_clustering` | `n_clusters` | 专利文本聚类 |
 | `analyze_patent_valuation` | `top_n`, `citation_mode` | 价值筛查（不是财务估值） |
 | `analyze_competitor_evolution` | `top_n_applicants` | IPC 画像工程指标（不是 PatentMiner DICT） |
 | `search_patents` | `query`, `top_k`, `year_start`, `year_end` | TF-IDF 词项检索 |
 | `read_patent_details` | `patent_numbers`（最多 5 个） | 当前数据源字段读取 |
+| `analyze_entity_portfolio` | `entity_type`, `metric`, `top_n` | 可追溯实体组合与 reviewed 母公司映射 |
+| `analyze_concentration` | `dimension`, `count_mode` | CRn、HHI、Gini 与 entropy |
+| `analyze_citation_network` | `top_n` | 内外部边、自引、共引与耦合分析 |
+| `analyze_family_geography` | `top_n` | 分口径同族与地域布局 |
+| `audit_search_strategy` | `strategies`, `known_patent_numbers` | 检索版本和返回集审计 |
+| `analyze_legal_status` | `top_n` | 权威来源时点法律状态与事件分析 |
+| `monitor_patent_changes` | `strategy_id`, `strategy_version`, `query` | 内容版本化变化监测 |
+| `analyze_claim_elements` | `patent_numbers`, `product_features` | 权利要求要素与产品词面映射复核草稿 |
+
+除数据集总览外，分析工具还统一接受 `scope`，用于年份、IPC、主体、司法辖区、专利号、文本和同族去重范围。
 
 ### 分析结果格式
 
-MCP 工具调用返回两种内容类型：
-
-- **`text`** — 结构化 JSON 数据，包含分析结果的主要数据（如趋势数据点、词频列表、矩阵数值等）
-- **`resource`**（可选）— 嵌入式 HTML 图表（text/html MIME），客户端渲染为交互式 pyecharts 图表
+MCP 工具调用返回结构化 JSON `text` 数据，包含结果、口径、字段覆盖、算法身份、数据版本、警告和禁止结论。工具不再返回或传输可执行 HTML；React 客户端使用受信任的本地渲染器生成图表。
 
 ### 验证 MCP 服务器
 
@@ -271,7 +291,7 @@ Engine 层 (纯计算)
          ↕
 数据访问层 (Parquet 缓存 + 列投影)
          ↕
-知识库层 (16 工具算法证据登记表 + 决策模板)
+知识库层 (24 工具算法证据登记表 + 决策模板)
 ```
 
 ## 项目结构
@@ -305,7 +325,7 @@ PatentAgent/
 ├── storage/conversation_store.py # 会话、轮次与结构化证据（不保存 API Key/图表 HTML）
 ├── storage/provider_store.py     # 非敏感供应商配置与幂等 SQLite 迁移
 │   └── prompts.py
-├── tools/                 # Tool 层（16 个运行时注册工具）
+├── tools/                 # Tool 层（24 个运行时注册工具）
 ├── engine/                # 分析引擎层 (13个纯计算模块)
 ├── patent_mcp/            # MCP 服务器
 ├── mcp_server.py          # MCP stdio 入口
@@ -329,7 +349,7 @@ uv run python -m pytest -q
 cd frontend && npm test -- --run && npm run build
 ```
 
-`tests/fixtures/wos_golden/` 是固定的五年以上合成 WoS 数据集；16 个工具均校验统一的
+`tests/fixtures/wos_golden/` 是固定的五年以上合成 WoS 数据集；核心工具均校验统一的
 `ToolExecutionEnvelope`、数据版本、字段覆盖、算法参数和执行指标。更新金样必须显式运行
 `python scripts/generate_golden_wos_fixture.py` 并审查差异。GitHub Actions 在 Python
 3.10/3.11/3.12/3.13/3.14、Node 20、MCP、迁移、锁文件和金样回归全部通过后才满足合并门禁；`V*`
@@ -385,10 +405,11 @@ Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，�
 
 - [V3.1 更新日志](CHANGELOG.md) — 当前版本的重要新增、变更、安全修复与兼容说明
 - [项目与论文审计](docs/project-audit.md) — 数据质量、论文适用条件、优势/弱点和法律边界
-- [16 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
+- [24 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
 - DII 基准数据状态 — 检索式、授权核验和导入审计方法（随专利数据目录提供，不包含在源码仓库中）
 - [软件说明书](软件说明书.txt) — 架构设计、功能详解、技术栈、版本历史
 - [操作指南](操作指南.txt) — 从零开始的手把手教程，含环境配置、工具使用、常见问题
+- [导师演示流程](docs/mentor-demo-guide.md) — 从上传数据到生成可追溯 HTML 报告的完整演示脚本
 
 ## 作者
 

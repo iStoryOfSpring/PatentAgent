@@ -4,7 +4,6 @@
 """
 
 import logging
-from typing import Optional
 
 from models.patent import PatentSummary
 from storage.datastore import PatentDataStore
@@ -17,9 +16,9 @@ class PatentSearcher:
     """语义搜索 + 结构化过滤 + 关键词匹配的混合检索。
 
     检索流程:
-      1. 语义搜索 (top_k * 3, is_deleted=False) → 候选集
-      2. 结构化过滤（年份、IPC、申请人） → 缩小候选集
-      3. 关键词 BM25 加权融合 → 最终排序
+      1. 在 PatentDataStore 上解析年份、IPC、申请人结构化范围
+      2. 将符合范围的专利号集合传给检索后端
+      3. 仅在该集合内计算相关性并排序
       4. 返回 top_k PatentSummary
     """
 
@@ -61,47 +60,31 @@ class PatentSearcher:
         Returns:
             PatentSummary 列表（轻量模型，不含 claims/description/citations）
         """
-        # 构建 ChromaDB where 条件
-        filters = {}
-        if year_range:
+        filters: dict = {}
+        has_structured_scope = bool(year_range or ipc_filter or applicant_filter)
+        if has_structured_scope and self._patent_store is not None:
+            scoped = self._patent_store.query(
+                year_start=year_range[0] if year_range else None,
+                year_end=year_range[1] if year_range else None,
+                ipc_filter=ipc_filter,
+                applicant_filter=applicant_filter,
+            )
+            if scoped.empty or "patent_number" not in scoped.columns:
+                return []
+            allowed = sorted({
+                str(value) for value in scoped["patent_number"].dropna()
+                if str(value).strip()
+            })
+            if not allowed:
+                return []
+            filters["patent_number"] = {"$in": allowed}
+        elif year_range:
+            # A standalone vector store can still apply the scalar year range.
             filters["year"] = {"$gte": year_range[0], "$lte": year_range[1]}
 
-        # 语义搜索（取 top_k * 3 候选，供后续过滤）
-        candidates = self.vector_store.search(
-            query, top_k=min(top_k * 3, 100), filters=filters,
+        return self.vector_store.search(
+            query, top_k=top_k, filters=filters or None,
         )
-
-        # IPC 后置过滤（ChromaDB 不支持复杂数组过滤）
-        if ipc_filter and self._patent_store:
-            candidates = self._filter_by_ipc(candidates, ipc_filter)
-
-        # 申请人关键词匹配
-        if applicant_filter:
-            candidates = [
-                c for c in candidates
-                if applicant_filter.lower() in ' '.join(c.applicants).lower()
-            ]
-
-        # 返回 top_k
-        return candidates[:top_k]
-
-    def _filter_by_ipc(self, candidates: list[PatentSummary],
-                       ipc_filter: list[str]) -> list[PatentSummary]:
-        """用 SQLite/DataFrame 做 IPC 精确过滤"""
-        if not self._patent_store:
-            return candidates
-        df = self._patent_store.get_columns(['patent_number', 'ipc'])
-
-        def _match(val):
-            if not val or not isinstance(val, str):
-                return False
-            codes = [c.strip()[:4] for c in val.split(';')]
-            return any(c in ipc_filter for c in codes)
-
-        mask = df.get('ipc', '').apply(_match)
-        matched_pns = set(df.loc[mask, 'patent_number'].tolist())
-
-        return [c for c in candidates if c.patent_number in matched_pns]
 
     def search_similar_patents(self, patent_id: str,
                                top_k: int = 10) -> list[PatentSummary]:

@@ -1,8 +1,10 @@
 """轻量级专利数据存储 (v2.2: 多数据源适配)"""
 
 from dataclasses import dataclass, field
+from datetime import date, datetime
 import hashlib
 import json
+import math
 import os
 import re
 from typing import Any, Optional
@@ -22,6 +24,64 @@ _FIELD_MAP = {
     "legal_events": "legal_events_json",
     "multilingual_text": "localized_titles_json",
 }
+
+_FINGERPRINT_SCHEME = "patent-content-v2"
+_UNORDERED_MULTI_VALUE_FIELDS = {
+    "applicants", "inventors", "ipc", "cpc_codes", "publication_numbers",
+    "priority_numbers", "forward_citations", "backward_citations", "cited_refs",
+    "non_patent_references", "family_members", "family_details",
+    "applicant_entity_ids", "applicant_canonical_names",
+    "inventor_entity_ids", "inventor_canonical_names",
+}
+_VOLATILE_FINGERPRINT_FIELDS = {
+    "imported_at",
+}
+
+
+def _is_null(value: Any) -> bool:
+    if value is None:
+        return True
+    try:
+        result = pd.isna(value)
+    except (TypeError, ValueError):
+        return False
+    return bool(result) if isinstance(result, (bool, type(pd.NA))) else False
+
+
+def _canonical_fingerprint_value(value: Any, *, unordered: bool = False) -> Any:
+    """Return a deterministic JSON-compatible value for dataset identity."""
+    if _is_null(value):
+        return None
+    if hasattr(value, "item") and not isinstance(value, (str, bytes, dict)):
+        try:
+            value = value.item()
+        except (TypeError, ValueError):
+            pass
+    if isinstance(value, (datetime, date, pd.Timestamp)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {
+            str(key): _canonical_fingerprint_value(item)
+            for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))
+        }
+    if hasattr(value, "tolist") and not isinstance(value, (str, bytes)):
+        value = value.tolist()
+    if isinstance(value, (list, tuple, set)):
+        items = [_canonical_fingerprint_value(item) for item in value]
+        if unordered or isinstance(value, set):
+            items.sort(key=lambda item: json.dumps(
+                item, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+            ))
+        return items
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return None if math.isnan(value) else str(value)
+        return value
+    if isinstance(value, (bool, int, str)):
+        if isinstance(value, str) and unordered and ";" in value:
+            return sorted({item.strip() for item in value.split(";") if item.strip()})
+        return value
+    return str(value)
 
 
 @dataclass
@@ -45,6 +105,9 @@ class PatentDataStore:
         self._source_dir = source_dir
         self._load_diagnostics: dict[str, Any] = {}
         self._import_report: dict[str, Any] = {}
+        self._dataset_id_override: str = ""
+        self._version_id_override: str = ""
+        self._scope_record_count_before_family_dedup: int | None = None
         self._cached_summary = None
         if not self._df.empty:
             self._ensure_columns()
@@ -237,7 +300,10 @@ class PatentDataStore:
         }
 
     def _collaboration_audit(self) -> dict[str, Any]:
-        applicants = self._df.get('applicants', pd.Series('', index=self._df.index))
+        applicants = self._df.get(
+            'applicant_canonical_names',
+            self._df.get('applicants', pd.Series('', index=self._df.index)),
+        )
         multi = int(applicants.map(lambda value: len(self._split_values(value)) >= 2).sum())
         return {
             "multi_applicant_patents": multi,
@@ -271,6 +337,31 @@ class PatentDataStore:
             import pandas as pd
             dates = pd.to_datetime(self._df['date'], errors='coerce')
             self._df['month'] = dates.dt.month.fillna(1).astype(int)
+        self._ensure_entity_columns()
+
+    def _ensure_entity_columns(self) -> None:
+        """Add reversible deterministic entity columns without replacing raw names."""
+        from engine.entity_resolution import resolve_semicolon_names
+
+        for raw_column, prefix, entity_type in (
+            ("applicants", "applicant", "organization"),
+            ("inventors", "inventor", "person"),
+        ):
+            if raw_column not in self._df.columns:
+                continue
+            id_column = f"{prefix}_entity_ids"
+            name_column = f"{prefix}_canonical_names"
+            if id_column in self._df.columns and name_column in self._df.columns:
+                continue
+            resolved = self._df[raw_column].map(
+                lambda value: resolve_semicolon_names(value, entity_type),
+            )
+            self._df[id_column] = resolved.map(
+                lambda items: ";".join(item.entity_id for item in items),
+            )
+            self._df[name_column] = resolved.map(
+                lambda items: ";".join(item.canonical_name for item in items),
+            )
 
     def load_from_miner(self, miner) -> "PatentDataStore":
         """从 PatentMiner 批量加载"""
@@ -318,8 +409,17 @@ class PatentDataStore:
             mask &= df.get('ipc', pd.Series(dtype=str)).apply(_match_ipc)
 
         if applicant_filter:
-            mask &= df.get('applicants', pd.Series(dtype=str)).str.contains(
-                applicant_filter, case=False, na=False)
+            raw_match = df.get(
+                'applicants', pd.Series('', index=df.index),
+            ).fillna('').astype(str).str.contains(
+                applicant_filter, case=False, na=False, regex=False,
+            )
+            canonical_match = df.get(
+                'applicant_canonical_names', pd.Series('', index=df.index),
+            ).fillna('').astype(str).str.contains(
+                applicant_filter, case=False, na=False, regex=False,
+            )
+            mask &= raw_match | canonical_match
 
         if text_query:
             tokens = [
@@ -348,6 +448,132 @@ class PatentDataStore:
         scoped._source_dir = self._source_dir
         scoped._load_diagnostics = self._load_diagnostics
         scoped._import_report = self._import_report
+        scoped._dataset_id_override = self._dataset_id_override
+        scoped._version_id_override = self._version_id_override
+        scoped._scope_record_count_before_family_dedup = len(scoped._df)
+        return scoped
+
+    def filtered_by_scope(self, scope) -> "PatentDataStore":
+        """Create an isolated view from the shared AnalysisScope contract."""
+        from patent_agent.domain import AnalysisScope
+
+        scope = scope if isinstance(scope, AnalysisScope) else AnalysisScope.model_validate(scope)
+        df = self._df
+        mask = pd.Series(True, index=df.index)
+        if scope.year_start is not None:
+            mask &= pd.to_numeric(df.get("year"), errors="coerce") >= scope.year_start
+        if scope.year_end is not None:
+            mask &= pd.to_numeric(df.get("year"), errors="coerce") <= scope.year_end
+
+        if scope.ipc_prefixes:
+            prefixes = tuple(item.upper() for item in scope.ipc_prefixes)
+            ipc = df.get("ipc", pd.Series("", index=df.index)).fillna("").astype(str)
+            mask &= ipc.map(lambda value: any(
+                code.strip().upper().startswith(prefixes)
+                for code in value.split(";") if code.strip()
+            ))
+
+        def _literal_any(column: str, needles: list[str]) -> pd.Series:
+            values = df.get(column, pd.Series("", index=df.index)).fillna("").astype(str)
+            selected = pd.Series(False, index=df.index)
+            for needle in needles:
+                selected |= values.str.contains(needle, case=False, regex=False, na=False)
+            return selected
+
+        if scope.applicant_names:
+            mask &= (
+                _literal_any("applicants", scope.applicant_names)
+                | _literal_any("applicant_canonical_names", scope.applicant_names)
+            )
+        if scope.inventor_names:
+            mask &= (
+                _literal_any("inventors", scope.inventor_names)
+                | _literal_any("inventor_canonical_names", scope.inventor_names)
+            )
+
+        for requested, column, label in (
+            (scope.applicant_entity_ids, "applicant_entity_ids", "申请人实体"),
+            (scope.inventor_entity_ids, "inventor_entity_ids", "发明人实体"),
+        ):
+            if requested:
+                if column not in df.columns:
+                    raise ValueError(f"当前数据集尚未建立{label}映射，不能使用 {column} 过滤")
+                mask &= _literal_any(column, requested)
+
+        if scope.jurisdictions:
+            column = "jurisdiction" if "jurisdiction" in df.columns else "country"
+            allowed = {item.upper() for item in scope.jurisdictions}
+            values = df.get(column, pd.Series("", index=df.index)).fillna("").astype(str).str.upper()
+            mask &= values.isin(allowed)
+        if scope.patent_numbers:
+            allowed_numbers = set(scope.patent_numbers)
+            numbers = df.get("patent_number", pd.Series("", index=df.index)).fillna("").astype(str)
+            mask &= numbers.isin(allowed_numbers)
+        if scope.text_query:
+            tokens = [
+                token.lower() for token in str(scope.text_query).split()
+                if len(token.strip()) >= 2
+            ]
+            if tokens:
+                haystack = (
+                    df.get("title", pd.Series("", index=df.index)).fillna("").astype(str)
+                    + " "
+                    + df.get("abstract", pd.Series("", index=df.index)).fillna("").astype(str)
+                ).str.lower()
+                text_mask = pd.Series(False, index=df.index)
+                for token in tokens:
+                    text_mask |= haystack.str.contains(token, regex=False, na=False)
+                mask &= text_mask
+
+        selected = df.loc[mask].copy()
+        scope_count = len(selected)
+        if scope.family_deduplication != "none" and not selected.empty:
+            family_ids = selected.get(
+                "family_id", pd.Series("", index=selected.index),
+            ).fillna("").astype(str).str.strip()
+            if scope.family_deduplication == "inpadoc":
+                coverage = float(family_ids.ne("").mean())
+                if coverage < .8:
+                    raise ValueError(
+                        "scope.family_deduplication=inpadoc 需要至少 80% 记录具有来源同族 ID"
+                    )
+            patent_numbers = selected.get(
+                "patent_number", pd.Series("", index=selected.index),
+            ).fillna("").astype(str)
+            if scope.family_deduplication == "simple":
+                priority = selected.get(
+                    "priority_numbers", pd.Series("", index=selected.index),
+                ).fillna("").astype(str).map(
+                    lambda value: ";".join(sorted({
+                        item.strip().upper() for item in value.split(";") if item.strip()
+                    }))
+                )
+                keys = family_ids.where(family_ids.ne(""), priority)
+            else:
+                keys = family_ids
+            keys = keys.where(keys.ne(""), "record:" + patent_numbers)
+            order = pd.DataFrame({
+                "key": keys,
+                "priority": selected.get(
+                    "priority_date", pd.Series("", index=selected.index),
+                ).fillna("").astype(str),
+                "publication": selected.get(
+                    "publication_date", pd.Series("", index=selected.index),
+                ).fillna("").astype(str),
+                "patent_number": patent_numbers,
+            }, index=selected.index).sort_values(
+                ["key", "priority", "publication", "patent_number"],
+                kind="stable",
+            )
+            selected = selected.loc[order.loc[~order["key"].duplicated()].index]
+        scoped = PatentDataStore(selected)
+        scoped._adapter_name = self._adapter_name
+        scoped._source_dir = self._source_dir
+        scoped._load_diagnostics = self._load_diagnostics
+        scoped._import_report = self._import_report
+        scoped._dataset_id_override = self._dataset_id_override
+        scoped._version_id_override = self._version_id_override
+        scoped._scope_record_count_before_family_dedup = scope_count
         return scoped
 
     def get_columns(self, columns: list[str]) -> pd.DataFrame:
@@ -364,21 +590,38 @@ class PatentDataStore:
         return self._df  # View, not copy. Callers that need a copy should do it themselves.
 
     def dataset_fingerprint(self) -> str:
-        """Stable content identity used to invalidate conversational evidence."""
+        """Stable analysis-content identity used to invalidate cached evidence."""
         if self._df.empty:
             return "empty"
-        identity_column = (
-            "source_record_id" if "source_record_id" in self._df.columns
-            else "patent_number"
+        columns = sorted(
+            str(column) for column in self._df.columns
+            if not str(column).startswith("_")
+            and str(column) not in _VOLATILE_FINGERPRINT_FIELDS
         )
-        values = self._df.get(
-            identity_column, pd.Series("", index=self._df.index)
-        ).fillna("").astype(str).sort_values()
         digest = hashlib.sha256()
+        digest.update(_FINGERPRINT_SCHEME.encode("ascii"))
+        digest.update(b"\0")
         digest.update((self.adapter_name or "unknown").encode("utf-8"))
+        digest.update(b"\0")
         digest.update(str(len(self._df)).encode("ascii"))
-        for value in values:
-            digest.update(value.encode("utf-8", errors="ignore"))
+        digest.update(b"\0")
+        digest.update(json.dumps(columns, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+        record_hashes: list[bytes] = []
+        frame = self._df.loc[:, columns]
+        for values in frame.itertuples(index=False, name=None):
+            record = {
+                column: _canonical_fingerprint_value(
+                    value, unordered=column in _UNORDERED_MULTI_VALUE_FIELDS,
+                )
+                for column, value in zip(columns, values)
+            }
+            canonical = json.dumps(
+                record, ensure_ascii=False, sort_keys=True,
+                separators=(",", ":"), allow_nan=False,
+            ).encode("utf-8")
+            record_hashes.append(hashlib.sha256(canonical).digest())
+        for record_hash in sorted(record_hashes):
+            digest.update(record_hash)
             digest.update(b"\0")
         return digest.hexdigest()
 
@@ -392,9 +635,10 @@ class PatentDataStore:
         ).hexdigest()[:24]
         audit = self.audit()
         return DatasetSnapshot(
-            dataset_id=f"dataset_{dataset_key}",
-            version_id=f"version_{content_hash[:24]}",
+            dataset_id=self._dataset_id_override or f"dataset_{dataset_key}",
+            version_id=self._version_id_override or f"version_{content_hash[:24]}",
             content_hash=content_hash,
+            fingerprint_scheme=_FINGERPRINT_SCHEME,
             adapter=self.adapter_name or "unknown",
             sources=[self._source_dir] if self._source_dir else [],
             record_count=len(self._df),
@@ -425,7 +669,9 @@ class PatentDataStore:
                 if s and s.isalpha():
                     ipc_sections.add(s)
 
-        applicants = df.get('applicants', pd.Series(dtype=str)).dropna()
+        applicants = df.get(
+            'applicant_canonical_names', df.get('applicants', pd.Series(dtype=str)),
+        ).dropna()
         app_counts = {}
         for apps in applicants:
             for a in apps.split(';'):

@@ -54,9 +54,8 @@ def _extract_proxy_sections(abstract: str) -> tuple[str, str]:
 
 
 def _section_terms(text: str) -> set[str]:
-    from engine.preprocessing import tokenize_text, filter_stopwords, filter_english_nouns
-    words = filter_stopwords(tokenize_text(text, min_len=3))
-    return set(filter_english_nouns(words))
+    from engine.preprocessing import document_terms
+    return set(document_terms(text, min_len=3))
 
 
 def _proxy_documents(patents: list) -> list[tuple[set[str], set[str]]]:
@@ -69,6 +68,20 @@ def _proxy_documents(patents: list) -> list[tuple[set[str], set[str]]]:
         if tech_terms and effect_terms:
             docs.append((tech_terms, effect_terms))
     return docs
+
+
+def _proxy_document_records(patents: list) -> list[tuple[str, set[str], set[str]]]:
+    records = []
+    for patent in patents:
+        technology, effect = _extract_proxy_sections(
+            getattr(patent, "abstract", "") or "",
+        )
+        tech_terms, effect_terms = _section_terms(technology), _section_terms(effect)
+        if tech_terms and effect_terms:
+            records.append((
+                str(getattr(patent, "patent_number", "")), tech_terms, effect_terms,
+            ))
+    return records
 
 
 def build_co_occurrence_keyword_matrix(
@@ -184,9 +197,10 @@ def find_gap_recommendations(
         [{"function": "microalgae", "effect": "valve", "patent_count": 0}, ...]
         按专利数升序排列（最空白的排最前）
     """
-    docs = _proxy_documents(patents)
-    if not docs:
+    records = _proxy_document_records(patents)
+    if not records:
         return []
+    docs = [(tech_terms, effect_terms) for _, tech_terms, effect_terms in records]
     tech_counter, effect_counter = Counter(), Counter()
     for tech_terms, effect_terms in docs:
         tech_counter.update(tech_terms)
@@ -211,20 +225,44 @@ def find_gap_recommendations(
                 if ew in effect_terms:
                     matrix[fi][ej] += 1
 
-    # 收集所有组合（不只是空白点），按专利数升序排列
+    # Rank statistically under-represented combinations rather than arbitrary
+    # lexical ordering among thousands of zero cells.
     gaps = []
+    population = len(docs)
     for fi in range(len(functions)):
         for ej in range(len(effects)):
+            observed = int(matrix[fi][ej])
+            tech_support = int(tech_counter[functions[fi]])
+            effect_support = int(effect_counter[effects[ej]])
+            expected = tech_support * effect_support / max(population, 1)
+            residual = (observed - expected) / np.sqrt(expected) if expected > 0 else 0.0
+            supporting = [
+                patent_number for patent_number, tech_terms, effect_terms in records
+                if functions[fi] in tech_terms and effects[ej] in effect_terms
+            ][:5]
             gaps.append({
                 "function": functions[fi],
                 "effect": effects[ej],
-                "patent_count": int(matrix[fi][ej]),
+                "patent_count": observed,
+                "technology_support": tech_support,
+                "effect_support": effect_support,
+                "expected_count": round(expected, 4),
+                "lift": round(observed / expected, 4) if expected > 0 else None,
+                "pearson_residual": round(float(residual), 4),
+                "representative_patent_numbers": supporting,
+                "adjacent_search_strategy": {
+                    "query_terms_all": [functions[fi], effects[ej]],
+                    "expand_with_synonyms": True,
+                    "expand_with_ipc_cpc": True,
+                    "citation_and_family_snowball": True,
+                },
                 "requires_patent_review": True,
                 "interpretation": "低共现复核候选，不等同于蓝海",
             })
 
     gaps.sort(key=lambda item: (
-        item["patent_count"], item["function"], item["effect"],
+        item["pearson_residual"], -item["expected_count"],
+        item["function"], item["effect"],
     ))
     return gaps[:top_gaps]
 
@@ -281,6 +319,15 @@ def build_tech_effect_matrix_results(patents: list,
         result_metadata={
             "eligible_documents": len(docs), "population_size": len(patents),
             "minimum_document_support": min_support,
+            "taxonomy_id": "derwent-section-proxy",
+            "taxonomy_version": "1.0",
+            "taxonomy_creator": "PatentAgent deterministic rules",
+            "taxonomy_scope": "NOVELTY as technology; USE/ADVANTAGE as use-effect proxy",
+            "taxonomy_mode": "derwent_section_proxy_v1",
+            "tag_source": "rule",
+            "coding_review_status": "single_coder_unreviewed",
+            "inter_coder_agreement": None,
+            "gap_selection": "negative_pearson_residual_with_marginal_support",
         },
         warnings=["零或低共现仅是人工复核候选，不能直接解释为蓝海机会。"],
     )

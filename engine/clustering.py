@@ -7,9 +7,17 @@ Engine 层 — 纯计算:
   - 簇中心关键词提取（纯统计）
 """
 
-import numpy as np
 from collections import Counter
+import os
+
+import numpy as np
 from models.analysis_results import ClusteringResult
+
+
+# Some macOS environments do not expose physical-core metadata to joblib.
+# Bound it to the known logical count so model selection stays deterministic
+# and does not emit a warning for every clustering execution.
+os.environ.setdefault("LOKY_MAX_CPU_COUNT", str(min(4, os.cpu_count() or 1)))
 
 
 def _canonicalize_labels(labels: 'np.ndarray') -> 'np.ndarray':
@@ -66,7 +74,9 @@ def kmeans_cluster(vectors: 'np.ndarray',
         return np.zeros(vectors.shape[0], dtype=int), np.zeros((0, vectors.shape[1]))
     from sklearn.cluster import KMeans
     k = min(n_clusters, vectors.shape[0])
-    model = KMeans(n_clusters=k, random_state=42, n_init=10)
+    model = KMeans(
+        n_clusters=k, random_state=42, n_init=10, init="random",
+    )
     raw_labels = model.fit_predict(vectors)
     labels = _canonicalize_labels(raw_labels)
     ordered_centroids = np.asarray([
@@ -140,8 +150,10 @@ def compute_cluster_centroid_keywords(
     return result
 
 
-def run_clustering_pipeline(texts: list[str],
-                            n_clusters: int | None = None) -> ClusteringResult:
+def run_clustering_pipeline(
+    texts: list[str], n_clusters: int | None = None,
+    vectorization_mode: str = "char_ngram_tfidf",
+) -> ClusteringResult:
     """TF-IDF 空间聚类；PCA/SVD 仅用于二维展示。
 
     Returns:
@@ -154,12 +166,34 @@ def run_clustering_pipeline(texts: list[str],
             cluster_keywords={}, patents_per_cluster={},
         )
 
-    # TF-IDF
+    # Multilingual clustering space. Character n-grams are the robust default
+    # for Chinese/mixed corpora; segmented terms remain an explicit option.
     from sklearn.feature_extraction.text import TfidfVectorizer
-    vec = TfidfVectorizer(max_features=500, stop_words='english')
-    sparse_vectors = vec.fit_transform(texts)
-    vectors = sparse_vectors.toarray()
-    vocab = vec.get_feature_names_out().tolist()
+    if vectorization_mode == "char_ngram_tfidf":
+        cluster_vec = TfidfVectorizer(
+            analyzer="char", ngram_range=(2, 5), min_df=1, max_features=2000,
+            sublinear_tf=True,
+        )
+    elif vectorization_mode == "segmented_word_tfidf":
+        from engine.preprocessing import document_terms
+        cluster_vec = TfidfVectorizer(
+            analyzer=lambda text: document_terms(text, pos_filter=False),
+            lowercase=False, max_features=1500, sublinear_tf=True,
+        )
+    else:
+        raise ValueError(f"Unsupported clustering vectorization_mode: {vectorization_mode}")
+    sparse_vectors = cluster_vec.fit_transform(texts)
+
+    # Interpretability space is always term-based, so Chinese cluster labels
+    # are readable rather than raw character fragments.
+    from engine.preprocessing import document_terms
+    label_vec = TfidfVectorizer(
+        analyzer=lambda text: document_terms(text, pos_filter=False),
+        lowercase=False, max_features=1000, sublinear_tf=True,
+    )
+    label_sparse = label_vec.fit_transform(texts)
+    vectors = label_sparse.toarray()
+    vocab = label_vec.get_feature_names_out().tolist()
 
     # PCA 降维
     from sklearn.decomposition import TruncatedSVD
@@ -182,7 +216,9 @@ def run_clustering_pipeline(texts: list[str],
         k = min(n_clusters, vectors.shape[0])
         selection_diagnostics = {"selection": "user_specified"}
     if k >= 2:
-        model = KMeans(n_clusters=k, random_state=42, n_init=10)
+        model = KMeans(
+            n_clusters=k, random_state=42, n_init=10, init="random",
+        )
         labels = _canonicalize_labels(model.fit_predict(sparse_vectors))
         for c in range(k):
             mask = labels == c
@@ -212,7 +248,26 @@ def run_clustering_pipeline(texts: list[str],
                 cluster_vecs, vocab, int(cid), all_vectors=vectors,
             )
 
-    return ClusteringResult(
+    resample_ari = None
+    if k >= 2 and len(texts) >= 20:
+        from sklearn.metrics import adjusted_rand_score
+        rng = np.random.default_rng(42)
+        predicted = []
+        subset_size = max(k * 2, int(len(texts) * .8))
+        for seed in (42, 52, 62):
+            subset = np.sort(rng.choice(len(texts), subset_size, replace=False))
+            candidate = KMeans(
+                n_clusters=k, random_state=seed, n_init=10, init="random",
+            )
+            candidate.fit(sparse_vectors[subset])
+            predicted.append(candidate.predict(sparse_vectors))
+        stability = [
+            adjusted_rand_score(labels, candidate_labels)
+            for candidate_labels in predicted
+        ]
+        resample_ari = round(float(np.mean(stability)), 4)
+
+    result = ClusteringResult(
         result_type="clustering",
         labels=labels.tolist(),
         centroids=centroids_2d,
@@ -224,8 +279,17 @@ def run_clustering_pipeline(texts: list[str],
             "sample_size": len(texts), "sampled": False,
             "selected_k": int(k), "display_reduction": "TruncatedSVD-2D",
             "k_selection": selection_diagnostics,
+            "subsample_stability_ari": resample_ari,
+            "subsample_fraction": .8 if resample_ari is not None else None,
+            "vectorization_mode": vectorization_mode,
+            "label_vectorization": "segmented_document_terms_tfidf",
         },
     )
+    if resample_ari is not None and resample_ari < .6:
+        result.warnings.append(
+            f"80% 子样本重聚类 ARI 仅 {resample_ari:.2f}，簇结构稳定性偏低。"
+        )
+    return result
 
 
 def _silhouette(vectors, labels) -> float | None:
@@ -254,7 +318,7 @@ def _select_cluster_count(vectors) -> tuple[int, dict]:
         silhouettes = []
         for seed in (42, 52, 62):
             labels = KMeans(
-                n_clusters=k, random_state=seed, n_init=5,
+                n_clusters=k, random_state=seed, n_init=5, init="random",
             ).fit_predict(vectors)
             label_runs.append(labels)
             if len(set(int(value) for value in labels)) >= 2:

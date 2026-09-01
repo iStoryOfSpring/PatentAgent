@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import tempfile
 from typing import Iterable
 
 from engine.adapters.base import PatentAdapter
@@ -85,10 +86,36 @@ class PatentDatasetImporter:
                 if manifest is not None:
                     self._apply_manifest_metadata(records, manifest)
                 parsed.extend(records)
+                diagnostics = getattr(adapter, "parse_diagnostics", None) or {
+                    "expected": len(records), "detected": len(records),
+                    "succeeded": len(records), "failed": 0, "skipped": 0,
+                    "issues": [],
+                }
+                expected = int(diagnostics.get("expected", diagnostics.get("detected", len(records))))
+                detected = int(diagnostics.get("detected", len(records)))
+                succeeded = int(diagnostics.get("succeeded", len(records)))
+                failed = int(diagnostics.get("failed", 0))
+                skipped = int(diagnostics.get("skipped", 0))
+                if succeeded + failed + skipped != detected:
+                    raise ValueError(
+                        f"适配器核算不平: {succeeded}+{failed}+{skipped}!={detected}"
+                    )
+                report.records_expected += expected
+                report.records_detected += detected
+                report.records_succeeded += succeeded
+                report.records_failed += failed
+                report.records_skipped += skipped
+                report.issues.extend(
+                    ImportIssue.model_validate(issue)
+                    for issue in diagnostics.get("issues", [])
+                )
             except Exception as exc:
+                report.records_expected += 1
+                report.records_detected += 1
                 report.records_failed += 1
                 report.issues.append(ImportIssue(
-                    file=path.name, code="parse_failed", message=str(exc),
+                    file=path.name, location="file", code="parse_failed",
+                    message=f"{type(exc).__name__}: {exc}", sample_hash=_sha256(path),
                 ))
 
         merged, duplicates, conflicts = merge_patent_records(parsed)
@@ -99,6 +126,9 @@ class PatentDatasetImporter:
         report.field_conflicts = conflicts
         report.field_coverage = _field_coverage(merged)
         report.language_distribution = _language_distribution(merged)
+        report.parse_rate = round(
+            report.records_succeeded / report.records_detected, 4,
+        ) if report.records_detected else 0.0
         adapters_seen = {
             record.provenance.source.adapter
             for record in parsed if record.provenance is not None
@@ -120,7 +150,32 @@ class PatentDatasetImporter:
             report.warnings.append("导入记录不含权利要求全文，不能据此形成 FTO 结论。")
         if not any(item.current_legal_status for item in report.source_capabilities.values()):
             report.warnings.append("数据源不提供实时法律状态；状态字段仅代表标注日期时的来源记录。")
+        quarantined = [
+            item for item in report.issues
+            if item.record_id or item.code in {"parse_failed", "record_parse_failed"}
+        ]
+        if quarantined:
+            report.quarantine_path = self._write_quarantine(root, quarantined, report)
         return merged, report, manifest
+
+    @staticmethod
+    def _write_quarantine(
+        root: Path, issues: list[ImportIssue], report: ImportReport,
+    ) -> str:
+        """Atomically persist only redacted locations and hashes, never raw records."""
+        target = root / ".patentagent-import-quarantine.jsonl"
+        try:
+            fd, temp_name = tempfile.mkstemp(
+                prefix=".patentagent-quarantine-", suffix=".tmp", dir=root,
+            )
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                for issue in issues:
+                    handle.write(issue.model_dump_json() + "\n")
+            os.replace(temp_name, target)
+            return str(target)
+        except OSError as exc:
+            report.warnings.append(f"隔离清单写入失败: {exc}")
+            return ""
 
     @staticmethod
     def _apply_manifest_metadata(

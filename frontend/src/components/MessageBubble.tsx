@@ -1,4 +1,4 @@
-import { User, Bot, Lightbulb, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
+import { User, Bot, Lightbulb, Loader2, RefreshCw, AlertTriangle, ListChecks } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { ToolStepCard } from "./ToolStepCard";
 import type { Message, ToolStep } from "../types";
@@ -41,6 +41,22 @@ export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: 
             <Loader2 className="w-3.5 h-3.5 animate-spin" />{message.streamStatus}
           </div>
         )}
+
+        {message.plan?.steps?.length ? (
+          <div className="mb-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3">
+            <div className="mb-2 flex items-center justify-between text-xs font-semibold text-blue-800">
+              <span className="flex items-center gap-1.5"><ListChecks className="h-3.5 w-3.5" />分析计划</span>
+              {typeof message.plan.costWeight === "number" && <span className="font-normal text-blue-500">成本权重 {message.plan.costWeight}</span>}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {message.plan.steps.map((step, index) => (
+                <span key={index} className="rounded-full border border-blue-100 bg-white px-2.5 py-1 text-[11px] text-slate-600">
+                  {index + 1}. {String(step.tool || step.name || step.description || "分析步骤")}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {message.steps && message.steps.length > 0 && (
           <div className="mb-3">

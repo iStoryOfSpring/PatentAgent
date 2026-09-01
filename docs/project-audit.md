@@ -29,7 +29,7 @@ PatentAgent 适合降低专利全景、公开趋势、主题聚类、IPC 分布�
 兼容方式演进为 `PatentRecord` v2，`DatasetSnapshot` 固定数据集内容哈希、schema、来源、
 记录数和字段覆盖；DataFrame 仍是性能实现，不再充当业务契约。
 
-16 个工具现在公开 `ToolDefinition`，并能形成统一 `ToolExecutionEnvelope`：结果、证据、
+24 个工具现在公开 `ToolDefinition`，并能形成统一 `ToolExecutionEnvelope`：结果、证据、
 警告、结构化错误、数据版本、输入/分析数量、采样、字段覆盖、算法/参数、耗时、缓存和重试
 指标均为强制执行元数据。REST 保留扁平结果并附加这些字段，MCP 与 Agent 复用相同内部契约。
 主 Agent 流水线已拆为 IntentParser、Planner、ExecutionPolicy、ToolExecutor、
@@ -97,7 +97,7 @@ von Wartburg 原文的实证边界尤其重要：节点是专利族，网络包�
 
 ## 验收
 
-回归门禁包括固定五年以上合成 WoS 金样、16 工具 envelope/provenance/metrics、算法合成
+回归门禁包括固定五年以上合成 WoS 金样、工具 envelope/provenance/metrics、算法合成
 数据、Agent 审批/失败/恢复、MCP 一致性、SQLite 迁移、安全边界、前端组件和生产构建及
 10,000 件去重样例全工具冒烟。计数和标识符精确比较，浮点指标使用显式容差；随机算法固定
 种子和线程配置。更新金样必须执行显式生成脚本并接受代码审查。抽样工具必须公开总体、

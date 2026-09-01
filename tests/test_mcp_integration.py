@@ -2,7 +2,7 @@
 
 Tests the full MCP lifecycle:
   1. initialize → verify server capabilities
-  2. tools/list → verify all 16 tools and algorithm evidence descriptions
+  2. tools/list → verify all 24 tools and algorithm evidence descriptions
   3. tools/call → verify get_dataset_summary works
   4. tools/call → verify error handling for unknown tool
 """
@@ -114,7 +114,7 @@ CR  US10123456B2 2018
             "id": 2,
         })
         tools = resp["result"]["tools"]
-        self.assertEqual(len(tools), 16)
+        self.assertEqual(len(tools), 24)
         for t in tools:
             self.assertIn("name", t)
             self.assertEqual(t["inputSchema"]["type"], "object")

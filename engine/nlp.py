@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 import pandas as pd
 
 from engine.preprocessing import (
-    tokenize_text, filter_stopwords, filter_english_nouns,
+    document_terms, extract_keyword_statistics, tokenize_text, filter_stopwords,
     STOP_WORDS, detect_language,  # noqa: F401
 )
 from models.analysis_results import WordFreqResult, YearlyKeywordsResult, BurstTermResult
@@ -14,38 +14,48 @@ from models.analysis_results import WordFreqResult, YearlyKeywordsResult, BurstT
 def compute_word_frequency(texts: list[str],
                            stopwords: set[str] | None = None,
                            top_n: int = 100) -> WordFreqResult:
-    """词频统计 — 使用完整流水线（分词 + 停用词 + 词性过滤）"""
+    """文档感知术语统计 — DF 为主，同时公开 TF 与文档占比。"""
     if not texts:
         return WordFreqResult(result_type="word_freq", data=[])
-    from engine.preprocessing import extract_keywords
-    keyword_counts = extract_keywords(texts, stopwords, top_n, pos_filter=True)
-    data = [{"word": w, "count": c} for w, c in keyword_counts]
-    return WordFreqResult(result_type="word_freq", data=data)
+    statistics = extract_keyword_statistics(
+        texts, stopwords=stopwords, top_n=top_n, pos_filter=True,
+    )
+    data = [{**item, "count": item["document_frequency"]} for item in statistics]
+    return WordFreqResult(
+        result_type="word_freq", data=data,
+        result_metadata={"metric": "document_frequency", "document_count": len(texts)},
+    )
 
 
 def compute_yearly_keywords(df: pd.DataFrame,
                             text_col: str = 'title',
                             top_n: int = 10) -> YearlyKeywordsResult:
     """逐年 Top 关键词"""
-    sw = STOP_WORDS.copy()
-    yearly_words = defaultdict(list)
+    yearly_documents = defaultdict(list)
 
     for _, row in df.iterrows():
         year = row.get('year')
         text = row.get(text_col, '')
         if pd.isna(year) or not text:
             continue
-        words = tokenize_text(str(text).lower())
-        words = filter_stopwords(words)
-        words = filter_english_nouns(words)
-        yearly_words[int(year)].extend(words)
+        yearly_documents[int(year)].append(str(text))
 
     result = {}
-    for year in sorted(yearly_words.keys()):
-        top_words = Counter(yearly_words[year]).most_common(top_n)
-        result[year] = [[w, c] for w, c in top_words]
+    for year in sorted(yearly_documents.keys()):
+        stats = extract_keyword_statistics(yearly_documents[year], top_n=top_n)
+        result[year] = [
+            [item["word"], item["document_frequency"]] for item in stats
+        ]
 
-    return YearlyKeywordsResult(result_type="yearly_keywords", data=result)
+    return YearlyKeywordsResult(
+        result_type="yearly_keywords", data=result,
+        result_metadata={
+            "metric": "document_frequency",
+            "documents_by_year": {
+                year: len(items) for year, items in sorted(yearly_documents.items())
+            },
+        },
+    )
 
 
 def compute_burst_terms(yearly_texts: dict[int, str],
@@ -76,9 +86,7 @@ def compute_burst_terms(yearly_texts: dict[int, str],
     def document_frequency(docs: list[str]) -> Counter:
         counts = Counter()
         for text in docs:
-            words = tokenize_text(text.lower(), min_len=3)
-            words = filter_stopwords(words, stopwords)
-            words = filter_english_nouns(words)
+            words = document_terms(text, stopwords=stopwords, min_len=3)
             counts.update(set(words))
         return counts
 

@@ -1,10 +1,74 @@
 """专利公开趋势分析（WoS PD 公开日期）"""
 
 from collections import Counter
+from datetime import date
 
 import pandas as pd
 
 from models.analysis_results import MonthlyTrendResult, YearlyTrendResult, GrowthRateResult
+
+
+def audit_publication_time_coverage(
+    df: pd.DataFrame, data_as_of: str = "",
+) -> tuple[dict, list[str]]:
+    """Separate partial tail years, historical gaps and publication lag warnings."""
+    if df.empty or "year" not in df or "month" not in df:
+        return {}, []
+    valid = df.dropna(subset=["year", "month"]).copy()
+    if valid.empty:
+        return {}, []
+    coverage = {
+        int(year): sorted({int(month) for month in group["month"] if 1 <= int(month) <= 12})
+        for year, group in valid.groupby("year")
+    }
+    latest_year = max(coverage)
+    try:
+        as_of = date.fromisoformat(str(data_as_of)[:10])
+    except (TypeError, ValueError):
+        max_date = pd.to_datetime(
+            df.get("publication_date", df.get("date")), errors="coerce",
+        ).max()
+        as_of = max_date.date() if pd.notna(max_date) else date.today()
+    expected_tail_months = (
+        set(range(1, as_of.month + 1)) if latest_year == as_of.year
+        else set(range(1, 13))
+    )
+    observed_tail = set(coverage[latest_year])
+    calendar_year_partial = len(observed_tail) < 12
+    missing_expected_tail = sorted(expected_tail_months - observed_tail)
+    historical_gaps = {
+        year: sorted(set(range(1, 13)) - set(months))
+        for year, months in coverage.items()
+        if year < latest_year and len(months) < 12
+    }
+    metadata = {
+        "data_as_of": as_of.isoformat(),
+        "latest_year": latest_year,
+        "latest_year_months_covered": coverage[latest_year],
+        "latest_year_is_partial_calendar_year": calendar_year_partial,
+        "latest_year_missing_expected_months": missing_expected_tail,
+        "historical_missing_months": historical_gaps,
+        "publication_lag_possible": calendar_year_partial,
+    }
+    warnings = []
+    if calendar_year_partial:
+        warnings.append(
+            f"尾年 {latest_year} 覆盖 {len(observed_tail)}/12 个月，属于部分自然年；"
+            "不得把尾年下降解释为技术衰退。"
+        )
+    if missing_expected_tail:
+        warnings.append(
+            f"截至 {as_of.isoformat()}，尾年缺少预期月份 "
+            + ",".join(map(str, missing_expected_tail))
+            + "；可能存在批次收录缺口。"
+        )
+    if historical_gaps:
+        warnings.append(
+            f"{len(historical_gaps)} 个历史年份存在缺月，年度比较可能受批次缺口影响。"
+        )
+    if calendar_year_partial:
+        warnings.append("专利公开存在法定与数据库收录滞后，近期公开量通常会低估最终水平。")
+    return metadata, warnings
 
 
 def compute_monthly_trend(df: pd.DataFrame) -> MonthlyTrendResult:

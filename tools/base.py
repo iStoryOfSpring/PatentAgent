@@ -1,12 +1,15 @@
 """Tool 基类与注册表"""
 
 from abc import ABC, abstractmethod
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import time
 from typing import Any
 
 from models.analysis_results import AnalysisResult
 from patent_agent.domain import (
-    ExecutionMetrics, ToolDefinition, ToolExecutionEnvelope, ToolProvenance,
+    AlgorithmExecution, AnalysisScope, ExecutionMetrics, ToolDefinition,
+    ToolExecutionEnvelope, ToolProvenance,
 )
 from storage.datastore import PatentDataStore
 from tools.evidence import evidence_for
@@ -49,6 +52,14 @@ _TOOL_COST_WEIGHTS: dict[str, int] = {
     "analyze_clustering": 3,
     "analyze_patent_valuation": 3,
     "analyze_competitor_evolution": 2,
+    "analyze_entity_portfolio": 2,
+    "analyze_concentration": 3,
+    "analyze_citation_network": 3,
+    "analyze_family_geography": 2,
+    "audit_search_strategy": 3,
+    "analyze_legal_status": 2,
+    "monitor_patent_changes": 3,
+    "analyze_claim_elements": 3,
 }
 
 _TOOL_RESULT_FIELDS: dict[str, list[str]] = {
@@ -61,14 +72,32 @@ _TOOL_RESULT_FIELDS: dict[str, list[str]] = {
     "analyze_yearly_keywords": ["data(year -> terms)"],
     "analyze_co_network": ["edges(source,target,weight)", "node_count", "edge_count"],
     "analyze_country_distribution": ["data(country,count)", "family_availability"],
-    "analyze_tech_roadmap": ["data(year -> representative patents)", "citation_paths"],
+    "analyze_tech_roadmap": ["data(year -> representative patents and annual themes)", "route_nodes", "route_edges", "main_paths", "citation_route_gate"],
     "search_patents": ["patents", "total_hits", "relevance_score"],
     "read_patent_details": ["patents", "available_source_fields"],
     "analyze_tech_matrix": ["functions", "effects", "matrix", "gap_recommendations"],
     "analyze_clustering": ["cluster_titles", "cluster_keywords", "patents_per_cluster", "silhouette_score"],
     "analyze_patent_valuation": ["data", "score_label", "coverage"],
     "analyze_competitor_evolution": ["evolution", "entropy", "dominant_share", "cosine_shift"],
+    "analyze_entity_portfolio": ["data", "aliases", "yearly_publications", "top_ipc_subclasses"],
+    "analyze_concentration": ["data", "yearly_metrics", "leaders", "hhi_bootstrap_95pct"],
+    "analyze_citation_network": ["data", "internal_edge_count", "external_edge_count", "coupling_pairs"],
+    "analyze_family_geography": ["data(priority,first_publication,family,designated,active_rights)"],
+    "audit_search_strategy": ["data", "incremental_records", "unique_records", "known_patent_recovery_ratio"],
+    "analyze_legal_status": ["data", "yearly_events", "stale_record_count"],
+    "monitor_patent_changes": ["data", "strategy_hash", "run_id", "baseline_updated"],
+    "analyze_claim_elements": ["data", "claim_tree", "elements", "product_feature_mapping_draft"],
 }
+
+_ANALYSIS_SCOPE_SCHEMA = AnalysisScope.model_json_schema()
+_CPU_EXECUTOR = ThreadPoolExecutor(
+    max_workers=4, thread_name_prefix="patentagent-cpu",
+)
+
+
+def _run_execute_callable(execute, storage, params):
+    """Run synchronous-style async tool code in a worker-thread event loop."""
+    return asyncio.run(execute(storage, **params))
 
 
 class Tool(ABC):
@@ -83,6 +112,23 @@ class Tool(ABC):
     evidence_level: str = "engineering_heuristic"
     allow_empty: bool = False
     deterministic: bool = True
+    supports_scope: bool = True
+    cpu_bound: bool = True
+    max_execution_seconds: float = 120.0
+    max_input_records: int = 1_000_000
+    memory_budget_mb: int = 1024
+
+    @property
+    def effective_parameters(self) -> dict[str, Any]:
+        parameters = dict(self.parameters)
+        if self.supports_scope:
+            parameters["scope"] = {
+                **_ANALYSIS_SCOPE_SCHEMA,
+                "description": (
+                    "统一分析范围；年份、IPC、主体、地域、专利号和文本条件在工具执行前应用。"
+                ),
+            }
+        return parameters
 
     @property
     def cost_weight(self) -> int:
@@ -105,9 +151,9 @@ class Tool(ABC):
             description=self.description,
             input_schema={
                 "type": "object",
-                "properties": self.parameters,
+                "properties": self.effective_parameters,
                 "required": [
-                    name for name, schema in self.parameters.items()
+                    name for name, schema in self.effective_parameters.items()
                     if schema.get("required", False)
                 ],
             },
@@ -180,14 +226,21 @@ class Tool(ABC):
 
     def validate_params(self, params: dict[str, Any]) -> dict[str, Any]:
         """在 Tool 入口统一校验，避免空查询和非法范围进入 Engine。"""
-        clean = {k: v for k, v in params.items() if k in self.parameters}
-        for name, schema in self.parameters.items():
+        effective = self.effective_parameters
+        unknown = sorted(set(params) - set(effective))
+        if unknown:
+            raise ValueError(f"未知参数: {', '.join(unknown)}")
+        clean = {k: v for k, v in params.items() if k in effective}
+        for name, schema in effective.items():
             value = clean.get(name)
             if schema.get("required") and (
                 value is None or value == "" or value == []
             ):
                 raise ValueError(f"参数 {name} 不能为空")
             if value is None:
+                continue
+            if name == "scope":
+                clean[name] = AnalysisScope.model_validate(value).canonical()
                 continue
             if "enum" in schema and value not in schema["enum"]:
                 raise ValueError(f"参数 {name} 必须是 {schema['enum']} 之一")
@@ -209,15 +262,76 @@ class Tool(ABC):
     async def run(self, storage: PatentDataStore, **params):
         """统一执行入口：参数校验、能力门禁、结果质量和追踪元数据。"""
         clean = self.validate_params(params)
-        capability = self.availability(storage)
+        scope = AnalysisScope.model_validate(clean.get("scope", {}))
+        execution_storage = (
+            storage.filtered_by_scope(scope) if self.supports_scope and scope.canonical()
+            else storage
+        )
+        capability = self.availability(execution_storage)
         if not capability["available"]:
             raise ValueError(capability["reason"] or "当前数据无法执行该工具")
+        input_records = len(execution_storage.get_all())
+        if input_records > self.max_input_records:
+            raise ValueError(
+                f"工具 {self.name} 输入 {input_records:,} 件，超过上限 "
+                f"{self.max_input_records:,} 件；请先使用 scope 缩小范围。"
+            )
+        estimated_input_mb = round(
+            float(execution_storage.get_all().memory_usage(deep=True).sum()) /
+            (1024 * 1024), 2,
+        )
+        if estimated_input_mb > self.memory_budget_mb:
+            raise ValueError(
+                f"工具 {self.name} 输入数据约 {estimated_input_mb:g} MiB，超过内存预算 "
+                f"{self.memory_budget_mb:g} MiB；请先使用 scope 缩小范围。"
+            )
         started = time.perf_counter()
-        result = await self.execute(storage, **clean)
+        execute_params = {key: value for key, value in clean.items() if key != "scope"}
+        try:
+            async with asyncio.timeout(self.max_execution_seconds):
+                if self.cpu_bound:
+                    loop = asyncio.get_running_loop()
+                    result = await loop.run_in_executor(
+                        _CPU_EXECUTOR, _run_execute_callable,
+                        self.execute, execution_storage, execute_params,
+                    )
+                else:
+                    result = await self.execute(execution_storage, **execute_params)
+        except TimeoutError as exc:
+            raise TimeoutError(
+                f"工具 {self.name} 超过最大执行时间 {self.max_execution_seconds:g} 秒"
+            ) from exc
         elapsed_ms = round((time.perf_counter() - started) * 1000, 1)
         if isinstance(result, AnalysisResult):
-            audit = storage.audit()
+            default_algorithm = AlgorithmExecution(
+                algorithm_id=str(self.evidence_record.get("algorithm_id", "")),
+                algorithm_version=str(self.evidence_record.get("version", "")),
+                parameters=execute_params,
+            )
+            algorithm = result.algorithm_execution or default_algorithm
+            allowed = {(
+                str(self.evidence_record.get("algorithm_id", "")),
+                str(self.evidence_record.get("version", "")),
+            )}
+            for implementation in self.evidence_record.get("implementations", {}).values():
+                allowed.add((
+                    str(implementation.get("algorithm_id", "")),
+                    str(implementation.get("version", "")),
+                ))
+            if (algorithm.algorithm_id, algorithm.algorithm_version) not in allowed:
+                raise ValueError(
+                    f"工具 {self.name} 返回了未登记算法 "
+                    f"{algorithm.algorithm_id}/{algorithm.algorithm_version}"
+                )
+            result.algorithm_execution = algorithm
+            audit = execution_storage.audit()
             snapshot = storage.snapshot()
+            family_deduplicated_count = len(execution_storage.get_all())
+            scope_record_count = (
+                execution_storage._scope_record_count_before_family_dedup
+                if execution_storage._scope_record_count_before_family_dedup is not None
+                else family_deduplicated_count
+            )
             required_coverage = [
                 capability["field_coverage"].get(field, 0.0)
                 for field in self.required_fields
@@ -242,30 +356,45 @@ class Tool(ABC):
             result.result_metadata = {
                 "tool_name": self.name,
                 "parameters": clean,
+                "scope": scope.canonical(),
+                "population_before_scope": snapshot.record_count,
+                "population_after_scope": scope_record_count,
+                "population_after_family_deduplication": family_deduplicated_count,
                 "elapsed_ms": elapsed_ms,
                 "evidence_level": self.evidence_record.get("evidence_type", self.evidence_level),
-                "algorithm_id": self.evidence_record.get("algorithm_id"),
-                "algorithm_version": self.evidence_record.get("version"),
+                "algorithm_id": algorithm.algorithm_id,
+                "algorithm_version": algorithm.algorithm_version,
+                "algorithm_execution": algorithm.model_dump(mode="json"),
                 "evidence_sources": self.evidence_record.get("sources", []),
                 "prohibited_claims": self.evidence_record.get("prohibited_claims", []),
                 "confidence": quality_level,
                 "source_capabilities": result.source_capabilities,
                 "unsupported_conclusions": result.unsupported_conclusions,
                 "data_as_of": result.data_as_of,
+                "runtime_limits": {
+                    "cpu_offloaded": self.cpu_bound,
+                    "max_execution_seconds": self.max_execution_seconds,
+                    "max_input_records": self.max_input_records,
+                    "memory_budget_mb": self.memory_budget_mb,
+                    "estimated_input_mb": estimated_input_mb,
+                    "cancellation_checkpoints": ["before_execute", "after_execute"],
+                },
                 **result.result_metadata,
             }
             analyzed_count = int(result.result_metadata.get(
                 "sample_size", result.result_metadata.get(
-                    "analyzed_record_count", snapshot.record_count,
+                    "analyzed_record_count", scope_record_count,
                 ),
             ))
-            sampled = analyzed_count < snapshot.record_count
+            sampled = analyzed_count < family_deduplicated_count
             result.provenance = ToolProvenance(
                 dataset_id=snapshot.dataset_id,
                 dataset_version_id=snapshot.version_id,
                 dataset_content_hash=snapshot.content_hash,
                 adapter=snapshot.adapter,
                 input_record_count=snapshot.record_count,
+                scope_record_count=scope_record_count,
+                family_deduplicated_record_count=family_deduplicated_count,
                 analyzed_record_count=analyzed_count,
                 sampled=sampled,
                 sample_size=analyzed_count if sampled else None,
@@ -273,9 +402,10 @@ class Tool(ABC):
                     "sampling_method", "tool_declared" if sampled else "none",
                 )),
                 field_coverage=capability["field_coverage"],
-                algorithm_id=str(self.evidence_record.get("algorithm_id", "")),
-                algorithm_version=str(self.evidence_record.get("version", "")),
+                algorithm_id=algorithm.algorithm_id,
+                algorithm_version=algorithm.algorithm_version,
                 parameters=clean,
+                scope=scope.canonical(),
             )
             result.metrics = ExecutionMetrics(elapsed_ms=elapsed_ms)
             visual = _VISUALIZATION_DEFAULTS.get(result.result_type)
@@ -291,8 +421,6 @@ class Tool(ABC):
                         result.warnings.append(message)
             if not result.summary:
                 result.summary = self._default_summary(result)
-            if not result.chart_html and not result.warnings:
-                result.warnings.append("该工具返回结构化结果但没有图表，请查看摘要和数据。")
         elif isinstance(result, (list, tuple)):
             # 深读工具历史上返回 FullPatent 列表；保留类型但仍由调用端记录参数。
             return result
@@ -330,7 +458,7 @@ class Tool(ABC):
             **params: 用户/Agent 指定的参数
 
         Returns:
-            AnalysisResult（可附带 chart_html）
+            结构化 AnalysisResult；浏览器可视化由受信任的前端渲染器生成。
         """
         ...
 
@@ -341,9 +469,9 @@ class Tool(ABC):
             "description": self.description,
             "parameters": {
                 "type": "object",
-                "properties": self.parameters,
+                "properties": self.effective_parameters,
                 "required": [
-                    k for k, v in self.parameters.items()
+                    k for k, v in self.effective_parameters.items()
                     if v.get("required", False)
                 ],
             },
@@ -387,9 +515,9 @@ class Tool(ABC):
             "description": description,
             "parameters": {
                 "type": "object",
-                "properties": self.parameters,
+                "properties": self.effective_parameters,
                 "required": [
-                    name for name, item in self.parameters.items()
+                    name for name, item in self.effective_parameters.items()
                     if item.get("required", False)
                 ],
                 "additionalProperties": False,

@@ -47,7 +47,7 @@ from patent_agent.infrastructure.observability import (
 )
 from patent_agent.security import validate_input_dir
 from patent_agent.application import (
-    AnalysisService, DatasetImportService, ProviderService, ReportService,
+    AnalysisService, DatasetImportService, DatasetRuntimeManager, ProviderService, ReportService,
     SearchIndexService, TaskService,
     ToolExecutionService,
     normalize_evidence_history, normalize_history_messages,
@@ -127,8 +127,17 @@ async def lifespan(fastapi_app: FastAPI):
     await runtime.provider_store.initialize()
     runtime.provider_service = ProviderService(runtime)
     await runtime.conversation_store.upsert_dataset_snapshot(
-        runtime.store.snapshot().model_dump(mode="json"),
+        {
+            **runtime.store.snapshot().model_dump(mode="json"),
+            "storage_path": runtime.store._source_dir,
+            "source_root": runtime.store._source_dir,
+        },
     )
+    runtime.dataset_runtime = DatasetRuntimeManager(
+        runtime.conversation_store, runtime.dataset_service,
+        runtime.settings.dataset_cache_size,
+    )
+    runtime.dataset_runtime.register(runtime.store)
     await runtime.conversation_store.mark_inflight_interrupted()
     runtime.task_service = TaskService(runtime.conversation_store, resynthesize_turn)
     try:
@@ -170,6 +179,9 @@ app.add_middleware(
 app.add_middleware(
     RequestGuardMiddleware,
     max_request_bytes=app.state.container.settings.max_request_bytes,
+    streaming_path_limits={
+        "/api/datasets/imports": app.state.container.settings.max_upload_total_bytes,
+    },
 )
 app.add_middleware(TraceMiddleware)
 app.include_router(datasets_router)
@@ -368,8 +380,6 @@ async def agent_chat(req: ChatRequest):
     """Streaming agent chat via Server-Sent Events."""
     if not _runtime().agent:
         raise HTTPException(400, "Agent not configured. Call /api/agent/config first.")
-    if not _runtime().store or _runtime().store.is_empty:
-        raise HTTPException(400, "No patent data. Call /api/data/load first.")
     # Freeze the Agent/profile pair for the whole turn. Provider mutations are
     # rejected while the generator below is active.
     turn_agent = _runtime().agent
@@ -379,8 +389,18 @@ async def agent_chat(req: ChatRequest):
         raise HTTPException(422, "response_mode 必须是 detailed 或 concise")
     repo = _conversation_repo()
     session_id = req.session_id or f"api_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+    turn_store = _runtime().store
+    if _runtime().dataset_runtime:
+        try:
+            turn_store = await _runtime().dataset_runtime.for_session(session_id, turn_store)
+        except (KeyError, ValueError) as exc:
+            raise HTTPException(409, f"会话绑定的数据集不可用: {exc}") from exc
+    if not turn_store or turn_store.is_empty:
+        raise HTTPException(400, "No patent data. Import or activate a dataset first.")
+    turn_fingerprint = turn_store.dataset_fingerprint()
+    turn_version_id = turn_store.snapshot().version_id
     persisted_session = await repo.ensure_session(
-        session_id, _dataset_fingerprint(), "API Chat",
+        session_id, turn_fingerprint, "API Chat", turn_version_id,
     )
     recent_messages = normalize_history_messages(
         await repo.get_recent_messages(session_id),
@@ -415,14 +435,14 @@ async def agent_chat(req: ChatRequest):
         provider_profile_id=str(turn_provider_snapshot.get("id", "")),
         provider_name=str(turn_provider_snapshot.get("name", "")),
         provider_protocol=str(turn_provider_snapshot.get("protocol", "")),
-        dataset_version_id=_runtime().store.snapshot().version_id,
+        dataset_version_id=turn_version_id,
         trace_id=current_trace_id(),
     )
     session = Session(
         id=session_id,
         name=persisted_session.get("name", "API Chat"),
         created_at=datetime.fromisoformat(persisted_session["created_at"]),
-        dataset_id=_dataset_fingerprint(),
+        dataset_id=turn_fingerprint,
         messages=recent_messages,
     )
     _runtime().sessions[session_id] = session
@@ -432,7 +452,7 @@ async def agent_chat(req: ChatRequest):
 
     async def reuse_lookup(tool_name: str, params: dict, algorithm_version: str):
         key = execution_cache_key(
-            _dataset_fingerprint(), tool_name, params, algorithm_version,
+            turn_fingerprint, tool_name, params, algorithm_version,
         )
         found = await repo.find_reusable(session_id, key)
         if not found:
@@ -457,13 +477,18 @@ async def agent_chat(req: ChatRequest):
         final_metadata: dict = {}
         _runtime().active_generation_turns.add(turn_id)
         try:
+            yield await _persist_sse(repo, turn_id, {
+                "type": "task_status", "status": "queued", "turn_id": turn_id,
+            })
             async for event in turn_agent.stream_query(
-                effective_message, session, _runtime().store, req.response_mode,
+                effective_message, session, turn_store, req.response_mode,
                 historical_evidence=historical_evidence,
                 turn_id=turn_id,
                 reuse_lookup=reuse_lookup,
                 approval_granted=approval_granted,
             ):
+                event.setdefault("turn_id", turn_id)
+                event.setdefault("dataset_version_id", turn_version_id)
                 current_task = await repo.get_turn(turn_id)
                 if current_task and current_task.get("cancel_requested"):
                     raise asyncio.CancelledError
@@ -528,6 +553,11 @@ async def agent_chat(req: ChatRequest):
                         }, status=next_state,
                     )
                     yield await _persist_sse(repo, turn_id, event)
+                    if next_state == "running":
+                        yield await _persist_sse(repo, turn_id, {
+                            "type": "task_status", "status": "running",
+                            "turn_id": turn_id,
+                        })
                 elif event["type"] == "clarification":
                     await repo.update_turn(
                         turn_id, status="awaiting_clarification",
@@ -552,7 +582,7 @@ async def agent_chat(req: ChatRequest):
                         error=event.get("error") or "",
                         duration_ms=float(event.get("duration_ms", 0) or 0),
                         algorithm_version=str(metadata.get("algorithm_version", "")),
-                        dataset_fingerprint=_dataset_fingerprint(),
+                        dataset_fingerprint=turn_fingerprint,
                         coverage={
                             "fields_read": sorted(result_payload.keys()),
                             "omitted": False,

@@ -25,10 +25,20 @@ class ChatRequest(BaseModel):
 
 class SessionCreateRequest(BaseModel):
     name: str = "新会话"
+    dataset_version_id: str | None = None
 
 
 class SessionRenameRequest(BaseModel):
     name: str
+
+
+class SessionDatasetRequest(BaseModel):
+    dataset_version_id: str
+
+
+class DatasetUpdateRequest(BaseModel):
+    name: str | None = None
+    status: str | None = None
 
 
 class ResynthesizeRequest(BaseModel):
@@ -39,6 +49,12 @@ class ExportRequest(BaseModel):
     messages: list[dict]
     title: str = "PatentAgent Report"
     session_id: str | None = None
+    turn_id: str | None = None
+
+
+class CreateReportRequest(BaseModel):
+    session_id: str
+    title: str = "PatentAgent 专利分析报告"
     turn_id: str | None = None
 
 

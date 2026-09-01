@@ -3,8 +3,16 @@
   "tools": {
     "analyze_burst_terms": {
       "result_type": "burst_terms",
-      "sha256": "c7c2131627f741e11cc82cb5f2379f685901537a3794e51d40bc32abb027d111",
+      "sha256": "ca01f094d40d4c448e37a356483b403fdfdc93c2ace5f67a8e9ce24bf608944c",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "recent_document_frequency_growth",
+          "algorithm_version": "2.1",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {}
+        },
         "data": [
           {
             "burst": 1.05,
@@ -253,8 +261,9 @@
           "algorithm_id": "recent_document_frequency_growth",
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
             "publication_date": 1.0,
@@ -264,9 +273,19 @@
           "parameters": {},
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "recent_document_frequency_growth",
+            "algorithm_version": "2.1",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {}
+          },
           "algorithm_id": "recent_document_frequency_growth",
           "algorithm_version": "2.1",
           "confidence": "high",
@@ -281,6 +300,9 @@
           ],
           "minimum_document_support": 3,
           "parameters": {},
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "Kleinberg burst detection",
             "validated emerging technology forecast"
@@ -289,6 +311,18 @@
             2023,
             2024
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_burst_terms",
           "unsupported_conclusions": [
@@ -324,32 +358,42 @@
     },
     "analyze_clustering": {
       "result_type": "clustering",
-      "sha256": "6f868682f89d9030dff0e93e250c9993a07950d4f842095146d0ad9f617f7ab4",
+      "sha256": "c2b2dd3a254b60c6fbc70142343d9ce9d71cb122b13337b23a22c876eb96e4cd",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
+          "algorithm_version": "3.2",
+          "fallback_reason": null,
+          "mode_requested": "char_ngram_tfidf",
+          "mode_used": "char_ngram_tfidf",
+          "parameters": {
+            "n_clusters": 6
+          }
+        },
         "centroids": [
           [
-            0.53244768,
-            -0.25681301
+            0.59188159,
+            0.57493815
           ],
           [
-            0.50186952,
-            0.85833978
+            0.59405617,
+            -0.47088052
           ],
           [
-            0.55425931,
-            -0.13262524
+            0.56630574,
+            0.1600696
           ],
           [
-            0.55425931,
-            -0.13262524
+            0.61121911,
+            0.11249598
           ],
           [
-            0.55425931,
-            -0.13262524
+            0.57521727,
+            -0.02015911
           ],
           [
-            0.55425931,
-            -0.13262524
+            0.59987131,
+            -0.34737117
           ]
         ],
         "cluster_keywords": {
@@ -360,10 +404,10 @@
             "storage",
             "energy",
             "generation",
-            "advantage",
-            "apparatus",
             "efficiency",
-            "improved"
+            "improved",
+            "loss",
+            "reduced"
           ],
           "1": [
             "capture",
@@ -372,10 +416,10 @@
             "gas",
             "separation",
             "generation",
-            "advantage",
-            "apparatus",
             "efficiency",
-            "energy"
+            "energy",
+            "improved",
+            "loss"
           ],
           "2": [
             "coating",
@@ -383,11 +427,11 @@
             "conversion",
             "solar",
             "generation",
-            "advantage",
-            "apparatus",
             "efficiency",
             "energy",
-            "improved"
+            "improved",
+            "loss",
+            "reduced"
           ],
           "3": [
             "catalyst",
@@ -395,11 +439,11 @@
             "electrolysis",
             "water",
             "generation",
-            "advantage",
-            "apparatus",
             "efficiency",
             "energy",
-            "improved"
+            "improved",
+            "loss",
+            "reduced"
           ],
           "4": [
             "management",
@@ -407,11 +451,11 @@
             "heat",
             "transfer",
             "generation",
-            "advantage",
-            "apparatus",
             "efficiency",
             "energy",
-            "improved"
+            "improved",
+            "loss",
+            "reduced"
           ],
           "5": [
             "robotic",
@@ -419,12 +463,422 @@
             "measurement",
             "precision",
             "generation",
-            "advantage",
-            "apparatus",
             "efficiency",
             "energy",
-            "improved"
+            "improved",
+            "loss",
+            "reduced"
           ]
+        },
+        "cluster_profiles": {
+          "0": {
+            "record_count": 50,
+            "share": 0.166667,
+            "top_applicants": [
+              {
+                "applicant": "Applicant 00 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Applicant 06 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Research Institute 00",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 02",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 04",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 01",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 03",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 05",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 06",
+                "count": 1
+              }
+            ],
+            "year_distribution": [
+              {
+                "count": 9,
+                "year": "2019"
+              },
+              {
+                "count": 8,
+                "year": "2020"
+              },
+              {
+                "count": 8,
+                "year": "2021"
+              },
+              {
+                "count": 9,
+                "year": "2022"
+              },
+              {
+                "count": 8,
+                "year": "2023"
+              },
+              {
+                "count": 8,
+                "year": "2024"
+              }
+            ]
+          },
+          "1": {
+            "record_count": 50,
+            "share": 0.166667,
+            "top_applicants": [
+              {
+                "applicant": "Applicant 01 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Applicant 07 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Research Institute 01",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 04",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 06",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 00",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 02",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 03",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 05",
+                "count": 1
+              }
+            ],
+            "year_distribution": [
+              {
+                "count": 9,
+                "year": "2019"
+              },
+              {
+                "count": 8,
+                "year": "2020"
+              },
+              {
+                "count": 8,
+                "year": "2021"
+              },
+              {
+                "count": 9,
+                "year": "2022"
+              },
+              {
+                "count": 8,
+                "year": "2023"
+              },
+              {
+                "count": 8,
+                "year": "2024"
+              }
+            ]
+          },
+          "2": {
+            "record_count": 50,
+            "share": 0.166667,
+            "top_applicants": [
+              {
+                "applicant": "Applicant 02 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Applicant 08 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Research Institute 01",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 03",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 06",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 00",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 02",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 04",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 05",
+                "count": 1
+              }
+            ],
+            "year_distribution": [
+              {
+                "count": 8,
+                "year": "2019"
+              },
+              {
+                "count": 9,
+                "year": "2020"
+              },
+              {
+                "count": 8,
+                "year": "2021"
+              },
+              {
+                "count": 8,
+                "year": "2022"
+              },
+              {
+                "count": 9,
+                "year": "2023"
+              },
+              {
+                "count": 8,
+                "year": "2024"
+              }
+            ]
+          },
+          "3": {
+            "record_count": 50,
+            "share": 0.166667,
+            "top_applicants": [
+              {
+                "applicant": "Applicant 03 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Applicant 09 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Research Institute 01",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 03",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 05",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 00",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 02",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 04",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 06",
+                "count": 1
+              }
+            ],
+            "year_distribution": [
+              {
+                "count": 8,
+                "year": "2019"
+              },
+              {
+                "count": 9,
+                "year": "2020"
+              },
+              {
+                "count": 8,
+                "year": "2021"
+              },
+              {
+                "count": 8,
+                "year": "2022"
+              },
+              {
+                "count": 9,
+                "year": "2023"
+              },
+              {
+                "count": 8,
+                "year": "2024"
+              }
+            ]
+          },
+          "4": {
+            "record_count": 50,
+            "share": 0.166667,
+            "top_applicants": [
+              {
+                "applicant": "Applicant 04 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Applicant 10 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Research Institute 00",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 03",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 05",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 01",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 02",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 04",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 06",
+                "count": 1
+              }
+            ],
+            "year_distribution": [
+              {
+                "count": 8,
+                "year": "2019"
+              },
+              {
+                "count": 8,
+                "year": "2020"
+              },
+              {
+                "count": 9,
+                "year": "2021"
+              },
+              {
+                "count": 8,
+                "year": "2022"
+              },
+              {
+                "count": 8,
+                "year": "2023"
+              },
+              {
+                "count": 9,
+                "year": "2024"
+              }
+            ]
+          },
+          "5": {
+            "record_count": 50,
+            "share": 0.166667,
+            "top_applicants": [
+              {
+                "applicant": "Applicant 05 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Applicant 11 Corp",
+                "count": 25
+              },
+              {
+                "applicant": "Research Institute 00",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 02",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 05",
+                "count": 2
+              },
+              {
+                "applicant": "Research Institute 01",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 03",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 04",
+                "count": 1
+              },
+              {
+                "applicant": "Research Institute 06",
+                "count": 1
+              }
+            ],
+            "year_distribution": [
+              {
+                "count": 8,
+                "year": "2019"
+              },
+              {
+                "count": 8,
+                "year": "2020"
+              },
+              {
+                "count": 9,
+                "year": "2021"
+              },
+              {
+                "count": 8,
+                "year": "2022"
+              },
+              {
+                "count": 8,
+                "year": "2023"
+              },
+              {
+                "count": 9,
+                "year": "2024"
+              }
+            ]
+          }
         },
         "cluster_titles": {
           "0": "battery_electrolyte",
@@ -829,7 +1283,7 @@
           4,
           5
         ],
-        "methodology": "TF-IDF 空间 K-means；未指定 k 时以 silhouette 与多次初始化稳定性选择；簇标题使用 Tseng CC0.5 文档相关系数。",
+        "methodology": "默认字符 n-gram TF-IDF 空间 K-means；采用固定种子的多次随机样本初始化，标签使用分词词项与 Tseng CC0.5；未指定 k 时以 silhouette 与 ARI 稳定性选择。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,
@@ -846,11 +1300,12 @@
         },
         "provenance": {
           "adapter": "wos_derwent",
-          "algorithm_id": "tfidf_kmeans_cc05_labels",
-          "algorithm_version": "2.2",
+          "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
+          "algorithm_version": "3.2",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
             "title": 1.0
@@ -861,11 +1316,411 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
+        },
+        "record_ids": [
+          "EP2019000000-A1",
+          "EP2019000001-A1",
+          "EP2019000002-A1",
+          "EP2019000003-A1",
+          "EP2019000004-A1",
+          "EP2019000005-A1",
+          "EP2019000006-A1",
+          "EP2019000007-A1",
+          "EP2019000008-A1",
+          "EP2019000009-A1",
+          "EP2019000010-A1",
+          "EP2019000011-A1",
+          "EP2019000012-A1",
+          "EP2019000013-A1",
+          "EP2019000014-A1",
+          "EP2019000015-A1",
+          "EP2019000016-A1",
+          "EP2019000017-A1",
+          "EP2019000018-A1",
+          "EP2019000019-A1",
+          "EP2019000020-A1",
+          "EP2019000021-A1",
+          "EP2019000022-A1",
+          "EP2019000023-A1",
+          "EP2019000024-A1",
+          "EP2019000025-A1",
+          "EP2019000026-A1",
+          "EP2019000027-A1",
+          "EP2019000028-A1",
+          "EP2019000029-A1",
+          "EP2019000030-A1",
+          "EP2019000031-A1",
+          "EP2019000032-A1",
+          "EP2019000033-A1",
+          "EP2019000034-A1",
+          "EP2019000035-A1",
+          "EP2019000036-A1",
+          "EP2019000037-A1",
+          "EP2019000038-A1",
+          "EP2019000039-A1",
+          "EP2019000040-A1",
+          "EP2019000041-A1",
+          "EP2019000042-A1",
+          "EP2019000043-A1",
+          "EP2019000044-A1",
+          "EP2019000045-A1",
+          "EP2019000046-A1",
+          "EP2019000047-A1",
+          "EP2019000048-A1",
+          "EP2019000049-A1",
+          "EP2020000050-A1",
+          "EP2020000051-A1",
+          "EP2020000052-A1",
+          "EP2020000053-A1",
+          "EP2020000054-A1",
+          "EP2020000055-A1",
+          "EP2020000056-A1",
+          "EP2020000057-A1",
+          "EP2020000058-A1",
+          "EP2020000059-A1",
+          "EP2020000060-A1",
+          "EP2020000061-A1",
+          "EP2020000062-A1",
+          "EP2020000063-A1",
+          "EP2020000064-A1",
+          "EP2020000065-A1",
+          "EP2020000066-A1",
+          "EP2020000067-A1",
+          "EP2020000068-A1",
+          "EP2020000069-A1",
+          "EP2020000070-A1",
+          "EP2020000071-A1",
+          "EP2020000072-A1",
+          "EP2020000073-A1",
+          "EP2020000074-A1",
+          "EP2020000075-A1",
+          "EP2020000076-A1",
+          "EP2020000077-A1",
+          "EP2020000078-A1",
+          "EP2020000079-A1",
+          "EP2020000080-A1",
+          "EP2020000081-A1",
+          "EP2020000082-A1",
+          "EP2020000083-A1",
+          "EP2020000084-A1",
+          "EP2020000085-A1",
+          "EP2020000086-A1",
+          "EP2020000087-A1",
+          "EP2020000088-A1",
+          "EP2020000089-A1",
+          "EP2020000090-A1",
+          "EP2020000091-A1",
+          "EP2020000092-A1",
+          "EP2020000093-A1",
+          "EP2020000094-A1",
+          "EP2020000095-A1",
+          "EP2020000096-A1",
+          "EP2020000097-A1",
+          "EP2020000098-A1",
+          "EP2020000099-A1",
+          "EP2021000100-A1",
+          "EP2021000101-A1",
+          "EP2021000102-A1",
+          "EP2021000103-A1",
+          "EP2021000104-A1",
+          "EP2021000105-A1",
+          "EP2021000106-A1",
+          "EP2021000107-A1",
+          "EP2021000108-A1",
+          "EP2021000109-A1",
+          "EP2021000110-A1",
+          "EP2021000111-A1",
+          "EP2021000112-A1",
+          "EP2021000113-A1",
+          "EP2021000114-A1",
+          "EP2021000115-A1",
+          "EP2021000116-A1",
+          "EP2021000117-A1",
+          "EP2021000118-A1",
+          "EP2021000119-A1",
+          "EP2021000120-A1",
+          "EP2021000121-A1",
+          "EP2021000122-A1",
+          "EP2021000123-A1",
+          "EP2021000124-A1",
+          "EP2021000125-A1",
+          "EP2021000126-A1",
+          "EP2021000127-A1",
+          "EP2021000128-A1",
+          "EP2021000129-A1",
+          "EP2021000130-A1",
+          "EP2021000131-A1",
+          "EP2021000132-A1",
+          "EP2021000133-A1",
+          "EP2021000134-A1",
+          "EP2021000135-A1",
+          "EP2021000136-A1",
+          "EP2021000137-A1",
+          "EP2021000138-A1",
+          "EP2021000139-A1",
+          "EP2021000140-A1",
+          "EP2021000141-A1",
+          "EP2021000142-A1",
+          "EP2021000143-A1",
+          "EP2021000144-A1",
+          "EP2021000145-A1",
+          "EP2021000146-A1",
+          "EP2021000147-A1",
+          "EP2021000148-A1",
+          "EP2021000149-A1",
+          "EP2022000150-A1",
+          "EP2022000151-A1",
+          "EP2022000152-A1",
+          "EP2022000153-A1",
+          "EP2022000154-A1",
+          "EP2022000155-A1",
+          "EP2022000156-A1",
+          "EP2022000157-A1",
+          "EP2022000158-A1",
+          "EP2022000159-A1",
+          "EP2022000160-A1",
+          "EP2022000161-A1",
+          "EP2022000162-A1",
+          "EP2022000163-A1",
+          "EP2022000164-A1",
+          "EP2022000165-A1",
+          "EP2022000166-A1",
+          "EP2022000167-A1",
+          "EP2022000168-A1",
+          "EP2022000169-A1",
+          "EP2022000170-A1",
+          "EP2022000171-A1",
+          "EP2022000172-A1",
+          "EP2022000173-A1",
+          "EP2022000174-A1",
+          "EP2022000175-A1",
+          "EP2022000176-A1",
+          "EP2022000177-A1",
+          "EP2022000178-A1",
+          "EP2022000179-A1",
+          "EP2022000180-A1",
+          "EP2022000181-A1",
+          "EP2022000182-A1",
+          "EP2022000183-A1",
+          "EP2022000184-A1",
+          "EP2022000185-A1",
+          "EP2022000186-A1",
+          "EP2022000187-A1",
+          "EP2022000188-A1",
+          "EP2022000189-A1",
+          "EP2022000190-A1",
+          "EP2022000191-A1",
+          "EP2022000192-A1",
+          "EP2022000193-A1",
+          "EP2022000194-A1",
+          "EP2022000195-A1",
+          "EP2022000196-A1",
+          "EP2022000197-A1",
+          "EP2022000198-A1",
+          "EP2022000199-A1",
+          "EP2023000200-A1",
+          "EP2023000201-A1",
+          "EP2023000202-A1",
+          "EP2023000203-A1",
+          "EP2023000204-A1",
+          "EP2023000205-A1",
+          "EP2023000206-A1",
+          "EP2023000207-A1",
+          "EP2023000208-A1",
+          "EP2023000209-A1",
+          "EP2023000210-A1",
+          "EP2023000211-A1",
+          "EP2023000212-A1",
+          "EP2023000213-A1",
+          "EP2023000214-A1",
+          "EP2023000215-A1",
+          "EP2023000216-A1",
+          "EP2023000217-A1",
+          "EP2023000218-A1",
+          "EP2023000219-A1",
+          "EP2023000220-A1",
+          "EP2023000221-A1",
+          "EP2023000222-A1",
+          "EP2023000223-A1",
+          "EP2023000224-A1",
+          "EP2023000225-A1",
+          "EP2023000226-A1",
+          "EP2023000227-A1",
+          "EP2023000228-A1",
+          "EP2023000229-A1",
+          "EP2023000230-A1",
+          "EP2023000231-A1",
+          "EP2023000232-A1",
+          "EP2023000233-A1",
+          "EP2023000234-A1",
+          "EP2023000235-A1",
+          "EP2023000236-A1",
+          "EP2023000237-A1",
+          "EP2023000238-A1",
+          "EP2023000239-A1",
+          "EP2023000240-A1",
+          "EP2023000241-A1",
+          "EP2023000242-A1",
+          "EP2023000243-A1",
+          "EP2023000244-A1",
+          "EP2023000245-A1",
+          "EP2023000246-A1",
+          "EP2023000247-A1",
+          "EP2023000248-A1",
+          "EP2023000249-A1",
+          "EP2024000250-A1",
+          "EP2024000251-A1",
+          "EP2024000252-A1",
+          "EP2024000253-A1",
+          "EP2024000254-A1",
+          "EP2024000255-A1",
+          "EP2024000256-A1",
+          "EP2024000257-A1",
+          "EP2024000258-A1",
+          "EP2024000259-A1",
+          "EP2024000260-A1",
+          "EP2024000261-A1",
+          "EP2024000262-A1",
+          "EP2024000263-A1",
+          "EP2024000264-A1",
+          "EP2024000265-A1",
+          "EP2024000266-A1",
+          "EP2024000267-A1",
+          "EP2024000268-A1",
+          "EP2024000269-A1",
+          "EP2024000270-A1",
+          "EP2024000271-A1",
+          "EP2024000272-A1",
+          "EP2024000273-A1",
+          "EP2024000274-A1",
+          "EP2024000275-A1",
+          "EP2024000276-A1",
+          "EP2024000277-A1",
+          "EP2024000278-A1",
+          "EP2024000279-A1",
+          "EP2024000280-A1",
+          "EP2024000281-A1",
+          "EP2024000282-A1",
+          "EP2024000283-A1",
+          "EP2024000284-A1",
+          "EP2024000285-A1",
+          "EP2024000286-A1",
+          "EP2024000287-A1",
+          "EP2024000288-A1",
+          "EP2024000289-A1",
+          "EP2024000290-A1",
+          "EP2024000291-A1",
+          "EP2024000292-A1",
+          "EP2024000293-A1",
+          "EP2024000294-A1",
+          "EP2024000295-A1",
+          "EP2024000296-A1",
+          "EP2024000297-A1",
+          "EP2024000298-A1",
+          "EP2024000299-A1"
+        ],
+        "representative_patents": {
+          "0": [
+            {
+              "patent_number": "EP2019000000-A1",
+              "title": "Solid Electrolyte Battery apparatus generation 0"
+            },
+            {
+              "patent_number": "EP2019000006-A1",
+              "title": "Solid Electrolyte Battery apparatus generation 6"
+            },
+            {
+              "patent_number": "EP2019000012-A1",
+              "title": "Solid Electrolyte Battery apparatus generation 2"
+            }
+          ],
+          "1": [
+            {
+              "patent_number": "EP2019000001-A1",
+              "title": "Carbon Capture Membrane apparatus generation 1"
+            },
+            {
+              "patent_number": "EP2019000007-A1",
+              "title": "Carbon Capture Membrane apparatus generation 7"
+            },
+            {
+              "patent_number": "EP2019000013-A1",
+              "title": "Carbon Capture Membrane apparatus generation 3"
+            }
+          ],
+          "2": [
+            {
+              "patent_number": "EP2019000002-A1",
+              "title": "Photovoltaic Coating apparatus generation 2"
+            },
+            {
+              "patent_number": "EP2019000008-A1",
+              "title": "Photovoltaic Coating apparatus generation 8"
+            },
+            {
+              "patent_number": "EP2019000014-A1",
+              "title": "Photovoltaic Coating apparatus generation 4"
+            }
+          ],
+          "3": [
+            {
+              "patent_number": "EP2019000003-A1",
+              "title": "Hydrogen Catalyst apparatus generation 3"
+            },
+            {
+              "patent_number": "EP2019000009-A1",
+              "title": "Hydrogen Catalyst apparatus generation 9"
+            },
+            {
+              "patent_number": "EP2019000015-A1",
+              "title": "Hydrogen Catalyst apparatus generation 5"
+            }
+          ],
+          "4": [
+            {
+              "patent_number": "EP2019000004-A1",
+              "title": "Thermal Management apparatus generation 4"
+            },
+            {
+              "patent_number": "EP2019000010-A1",
+              "title": "Thermal Management apparatus generation 0"
+            },
+            {
+              "patent_number": "EP2019000016-A1",
+              "title": "Thermal Management apparatus generation 6"
+            }
+          ],
+          "5": [
+            {
+              "patent_number": "EP2019000005-A1",
+              "title": "Robotic Sensor apparatus generation 5"
+            },
+            {
+              "patent_number": "EP2019000011-A1",
+              "title": "Robotic Sensor apparatus generation 1"
+            },
+            {
+              "patent_number": "EP2019000017-A1",
+              "title": "Robotic Sensor apparatus generation 7"
+            }
+          ]
         },
         "result_metadata": {
-          "algorithm_id": "tfidf_kmeans_cc05_labels",
-          "algorithm_version": "2.2",
+          "algorithm_execution": {
+            "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
+            "algorithm_version": "3.2",
+            "fallback_reason": null,
+            "mode_requested": "char_ngram_tfidf",
+            "mode_used": "char_ngram_tfidf",
+            "parameters": {
+              "n_clusters": 6
+            }
+          },
+          "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
+          "algorithm_version": "3.2",
           "confidence": "high",
           "data_as_of": "",
           "display_reduction": "TruncatedSVD-2D",
@@ -876,18 +1731,37 @@
           "k_selection": {
             "selection": "user_specified"
           },
+          "label_vectorization": "segmented_document_terms_tfidf",
           "parameters": {
             "n_clusters": 6
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "population_size": 300,
           "prohibited_claims": [
             "complete Tseng multi-stage pipeline",
             "ground-truth technology taxonomy"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
           "sample_size": 300,
           "sampled": false,
+          "sampling_method": "none",
+          "scope": {},
           "selected_k": 6,
           "source_capabilities": {},
+          "subsample_fraction": 0.8,
+          "subsample_stability_ari": 1.0,
           "tool_name": "analyze_clustering",
           "unsupported_conclusions": [
             "正式专利价值或交易价格结论",
@@ -898,6 +1772,7 @@
             "当前权利状态判断",
             "基于完整外部前向引证的影响力结论"
           ],
+          "vectorization_mode": "char_ngram_tfidf",
           "visualization": {
             "default_mode": "natural",
             "height": 520,
@@ -906,7 +1781,7 @@
           }
         },
         "result_type": "clustering",
-        "silhouette_score": 1.0,
+        "silhouette_score": 0.862,
         "source_capabilities": {},
         "summary": "clustering 分析已完成。",
         "unsupported_conclusions": [
@@ -923,8 +1798,16 @@
     },
     "analyze_co_network": {
       "result_type": "co_occurrence",
-      "sha256": "0f83a666d310f069732b97e503aea12441a05838a35820016029e2efe6d74bad",
+      "sha256": "7b29e09f8ea4d23db3a9687789bfb774ae813d10f2639881c5a3a7f8b69002de",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "co_applicant_network",
+          "algorithm_version": "2.1",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {}
+        },
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
@@ -1019,308 +1902,308 @@
         "edge_count": 60,
         "edges": [
           {
-            "source": "Applicant 00 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 00",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 05 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 05",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 10 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 10",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 03 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 03",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 08 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 08",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 01 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 01",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 06 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 06",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 11 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 11",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 04 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 04",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 09 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 09",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 02 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 02",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 07 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 07",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 00 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 00",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 05 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 05",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 10 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 10",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 03 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 03",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 08 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 08",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 01 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 01",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 06 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 06",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 11 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 11",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 04 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 04",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 09 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 09",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 02 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 02",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 07 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 07",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 00 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 00",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 05 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 05",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 10 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 10",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 03 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 03",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 08 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 08",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 01 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 01",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 06 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 06",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 11 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 11",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 04 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 04",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 09 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 09",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 02 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 02",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 07 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 07",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 00 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 00",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 05 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 05",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 10 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 10",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 03 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 03",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 08 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 08",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 01 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 01",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 06 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 06",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 11 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 11",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 04 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 04",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 09 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 09",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 02 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 02",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 07 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 07",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 00 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 00",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 05 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 05",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 10 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 10",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 03 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 03",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 08 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 08",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           },
           {
-            "source": "Applicant 01 Corp",
-            "target": "Research Institute 06",
+            "source": "APPLICANT 01",
+            "target": "RESEARCH INSTITUTE 06",
             "weight": 1
           },
           {
-            "source": "Applicant 06 Corp",
-            "target": "Research Institute 04",
+            "source": "APPLICANT 06",
+            "target": "RESEARCH INSTITUTE 04",
             "weight": 1
           },
           {
-            "source": "Applicant 11 Corp",
-            "target": "Research Institute 02",
+            "source": "APPLICANT 11",
+            "target": "RESEARCH INSTITUTE 02",
             "weight": 1
           },
           {
-            "source": "Applicant 04 Corp",
-            "target": "Research Institute 00",
+            "source": "APPLICANT 04",
+            "target": "RESEARCH INSTITUTE 00",
             "weight": 1
           },
           {
-            "source": "Applicant 09 Corp",
-            "target": "Research Institute 05",
+            "source": "APPLICANT 09",
+            "target": "RESEARCH INSTITUTE 05",
             "weight": 1
           },
           {
-            "source": "Applicant 02 Corp",
-            "target": "Research Institute 03",
+            "source": "APPLICANT 02",
+            "target": "RESEARCH INSTITUTE 03",
             "weight": 1
           },
           {
-            "source": "Applicant 07 Corp",
-            "target": "Research Institute 01",
+            "source": "APPLICANT 07",
+            "target": "RESEARCH INSTITUTE 01",
             "weight": 1
           }
         ],
         "evidence_level": "descriptive_statistic",
-        "methodology": "同一专利的多申请人共现网络；不把名称相似自动视作同一主体。",
+        "methodology": "同一专利的多申请人共现网络；使用可逆的确定性格式/公司后缀规范化，不做模糊实体合并。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,
@@ -1331,10 +2214,11 @@
         "provenance": {
           "adapter": "wos_derwent",
           "algorithm_id": "co_applicant_network",
-          "algorithm_version": "2.0",
+          "algorithm_version": "2.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "applicants": 1.0
           },
@@ -1342,21 +2226,46 @@
           "parameters": {},
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "co_applicant_network",
+            "algorithm_version": "2.1",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {}
+          },
           "algorithm_id": "co_applicant_network",
-          "algorithm_version": "2.0",
+          "algorithm_version": "2.1",
           "confidence": "high",
           "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "parameters": {},
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "alliance",
             "technology transfer",
             "co-invention"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_co_network",
           "unsupported_conclusions": [
@@ -1392,21 +2301,31 @@
     },
     "analyze_competitor_evolution": {
       "result_type": "competitor_evolution",
-      "sha256": "44d546aa8e9c23d14f909c8c95fa1058fe60ab02712d67cd473bd22ac45aea6d",
+      "sha256": "619f5bc3152da96a65471e0ce349ed1883ba79c18034880535434fc2baaf8220",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "ipc_profile_evolution",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "top_n": 5
+          }
+        },
         "data": {
           "applicants": [
-            "Applicant 00 Corp",
-            "Applicant 01 Corp",
-            "Applicant 02 Corp",
-            "Applicant 03 Corp",
-            "Applicant 04 Corp"
+            "APPLICANT 00",
+            "APPLICANT 01",
+            "APPLICANT 02",
+            "APPLICANT 03",
+            "APPLICANT 04"
           ],
-          "cross_insights": "技术最多元化: Applicant 00 Corp (IPC熵=0.0)；技术最聚焦: Applicant 00 Corp (主导IPC份额=1.0)；IPC画像变化最大: Applicant 00 Corp (累计余弦距离=0.00)",
+          "cross_insights": "技术最多元化: APPLICANT 00 (IPC熵=0.0)；技术最聚焦: APPLICANT 00 (主导IPC份额=1.0)；IPC画像变化最大: APPLICANT 00 (累计余弦距离=0.00)",
           "evidence_level": "engineering_heuristic_not_DICT",
           "evolution": [
             {
-              "applicant": "Applicant 00 Corp",
+              "applicant": "APPLICANT 00",
               "dominant_ipc_share": [
                 1.0,
                 1.0,
@@ -1452,7 +2371,7 @@
                 ]
               ],
               "total_patents": 25,
-              "trend_summary": "Applicant 00 Corp: 技术布局稳定",
+              "trend_summary": "APPLICANT 00: 技术布局稳定",
               "years": [
                 2019,
                 2020,
@@ -1463,7 +2382,7 @@
               ]
             },
             {
-              "applicant": "Applicant 01 Corp",
+              "applicant": "APPLICANT 01",
               "dominant_ipc_share": [
                 1.0,
                 1.0,
@@ -1509,7 +2428,7 @@
                 ]
               ],
               "total_patents": 25,
-              "trend_summary": "Applicant 01 Corp: 技术布局稳定",
+              "trend_summary": "APPLICANT 01: 技术布局稳定",
               "years": [
                 2019,
                 2020,
@@ -1520,7 +2439,7 @@
               ]
             },
             {
-              "applicant": "Applicant 02 Corp",
+              "applicant": "APPLICANT 02",
               "dominant_ipc_share": [
                 1.0,
                 1.0,
@@ -1566,7 +2485,7 @@
                 ]
               ],
               "total_patents": 25,
-              "trend_summary": "Applicant 02 Corp: 技术布局稳定",
+              "trend_summary": "APPLICANT 02: 技术布局稳定",
               "years": [
                 2019,
                 2020,
@@ -1577,7 +2496,7 @@
               ]
             },
             {
-              "applicant": "Applicant 03 Corp",
+              "applicant": "APPLICANT 03",
               "dominant_ipc_share": [
                 1.0,
                 1.0,
@@ -1623,7 +2542,7 @@
                 ]
               ],
               "total_patents": 25,
-              "trend_summary": "Applicant 03 Corp: 技术布局稳定",
+              "trend_summary": "APPLICANT 03: 技术布局稳定",
               "years": [
                 2019,
                 2020,
@@ -1634,7 +2553,7 @@
               ]
             },
             {
-              "applicant": "Applicant 04 Corp",
+              "applicant": "APPLICANT 04",
               "dominant_ipc_share": [
                 1.0,
                 1.0,
@@ -1680,7 +2599,7 @@
                 ]
               ],
               "total_patents": 25,
-              "trend_summary": "Applicant 04 Corp: 技术布局稳定",
+              "trend_summary": "APPLICANT 04: 技术布局稳定",
               "years": [
                 2019,
                 2020,
@@ -1799,8 +2718,9 @@
           "algorithm_id": "ipc_profile_evolution",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "applicants": 1.0,
             "ipc": 1.0,
@@ -1812,9 +2732,21 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "ipc_profile_evolution",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "top_n": 5
+            }
+          },
           "algorithm_id": "ipc_profile_evolution",
           "algorithm_version": "2.0",
           "confidence": "high",
@@ -1826,11 +2758,26 @@
           "parameters": {
             "top_n": 5
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "PatentMiner DICT",
             "heterogeneous-network co-ranking",
             "paper-exact competitor evolution"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_competitor_evolution",
           "unsupported_conclusions": [
@@ -1866,8 +2813,16 @@
     },
     "analyze_country_distribution": {
       "result_type": "country_distribution",
-      "sha256": "e967201140094da7e221571700116d6bf54aaf52cf8fab4eb34e5154b8bca174",
+      "sha256": "4e0b221a2a1b920a8561e74307f5f581ad91f79d71c040bf3b1864c316372fed",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "primary_publication_office_count",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {}
+        },
         "data": [
           {
             "count": 300,
@@ -1979,8 +2934,9 @@
           "algorithm_id": "primary_publication_office_count",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "family_members": 1.0,
             "patent_number": 1.0
@@ -1989,9 +2945,19 @@
           "parameters": {},
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "primary_publication_office_count",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {}
+          },
           "algorithm_id": "primary_publication_office_count",
           "algorithm_version": "2.0",
           "confidence": "high",
@@ -2000,10 +2966,25 @@
           "evidence_sources": [],
           "geography_semantics": "first_publication_office",
           "parameters": {},
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "family market coverage",
             "market attractiveness"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_country_distribution",
           "unsupported_conclusions": [
@@ -2024,7 +3005,7 @@
         },
         "result_type": "country_distribution",
         "source_capabilities": {},
-        "summary": "按主公开号统计 1 个首个公开局；该分布不是同族市场覆盖。",
+        "summary": "主公开号首次公开局分布包含 1 个局；该分布不是同族市场覆盖。",
         "unsupported_conclusions": [
           "正式专利价值或交易价格结论",
           "权利要求范围判断",
@@ -2039,8 +3020,18 @@
     },
     "analyze_ipc_distribution": {
       "result_type": "ipc_matrix",
-      "sha256": "e09aba2a4c7ff6ec1494a8e9a176d5c8803ead36d1ddead0cf8fd0bba33c4ca6",
+      "sha256": "6d7d72888bd59fad1813609a7885ba3d4f87fd441fdcffd277fcdc8c8bb01e3c",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "ipc_publication_matrix_assignment_count",
+          "algorithm_version": "2.1",
+          "fallback_reason": null,
+          "mode_requested": "assignment_count",
+          "mode_used": "assignment_count",
+          "parameters": {
+            "count_mode": "assignment_count"
+          }
+        },
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
@@ -2187,11 +3178,12 @@
         },
         "provenance": {
           "adapter": "wos_derwent",
-          "algorithm_id": "ipc_publication_matrix",
-          "algorithm_version": "2.0",
+          "algorithm_id": "ipc_publication_matrix_assignment_count",
+          "algorithm_version": "2.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "ipc": 1.0,
             "publication_date": 1.0
@@ -2200,19 +3192,50 @@
           "parameters": {},
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
-          "algorithm_id": "ipc_publication_matrix",
-          "algorithm_version": "2.0",
+          "algorithm_execution": {
+            "algorithm_id": "ipc_publication_matrix_assignment_count",
+            "algorithm_version": "2.1",
+            "fallback_reason": null,
+            "mode_requested": "assignment_count",
+            "mode_used": "assignment_count",
+            "parameters": {
+              "count_mode": "assignment_count"
+            }
+          },
+          "algorithm_id": "ipc_publication_matrix_assignment_count",
+          "algorithm_version": "2.1",
           "confidence": "high",
+          "count_mode": "assignment_count",
           "data_as_of": "",
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
+          "invalid_ipc_count": 0,
+          "invalid_ipc_examples": [],
+          "metric_label": "IPC 标注次数",
           "parameters": {},
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "exclusive technology share"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_ipc_distribution",
           "unsupported_conclusions": [
@@ -2223,6 +3246,16 @@
             "实时有效性判断",
             "当前权利状态判断",
             "基于完整外部前向引证的影响力结论"
+          ],
+          "valid_sections": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "visualization": {
             "default_mode": "natural",
@@ -2263,8 +3296,16 @@
     },
     "analyze_lifecycle": {
       "result_type": "s_curve",
-      "sha256": "6892c87bc86d5f1d8ff9c30be5ed08bd63644c5093b313165f4d89ed90e8a69f",
+      "sha256": "eec6e520c6b0391eb2063ac2f59f3f2eeccbeeecfab9d732ec82de58b83fa615",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "publication_growth_summary",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {}
+        },
         "counts": [
           50,
           50,
@@ -2394,8 +3435,9 @@
           "algorithm_id": "publication_growth_summary",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "publication_date": 1.0
           },
@@ -2403,24 +3445,127 @@
           "parameters": {},
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "publication_growth_summary",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {}
+          },
           "algorithm_id": "publication_growth_summary",
           "algorithm_version": "2.0",
+          "cagr_pct": 0.0,
+          "cagr_period_years": 5,
           "confidence": "high",
           "data_as_of": "",
           "date_semantics": "publication_date",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
-          "latest_year_months_covered": 1,
           "parameters": {},
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "S-curve lifecycle stage",
             "decline stage",
             "technology maturity"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
+          "time_coverage": {
+            "data_as_of": "2024-01-02",
+            "historical_missing_months": {
+              "2019": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2020": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2021": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2022": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2023": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            },
+            "latest_year": 2024,
+            "latest_year_is_partial_calendar_year": true,
+            "latest_year_missing_expected_months": [],
+            "latest_year_months_covered": [
+              1
+            ],
+            "publication_lag_possible": true
+          },
           "tool_name": "analyze_lifecycle",
           "unsupported_conclusions": [
             "正式专利价值或交易价格结论",
@@ -2436,7 +3581,15 @@
             "height": 520,
             "kind": "combo",
             "width": 960
-          }
+          },
+          "year_over_year_growth_pct": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
         },
         "result_type": "s_curve",
         "source_capabilities": {},
@@ -2451,7 +3604,9 @@
           "基于完整外部前向引证的影响力结论"
         ],
         "warnings": [
-          "尾年 2024 仅覆盖 1 个月，不应把下降解释为技术衰退。"
+          "尾年 2024 覆盖 1/12 个月，属于部分自然年；不得把尾年下降解释为技术衰退。",
+          "5 个历史年份存在缺月，年度比较可能受批次缺口影响。",
+          "专利公开存在法定与数据库收录滞后，近期公开量通常会低估最终水平。"
         ],
         "years": [
           2019,
@@ -2465,8 +3620,18 @@
     },
     "analyze_patent_trend": {
       "result_type": "yearly_trend",
-      "sha256": "02928cd207caaa2756905da9470baf0a4d0d0c472a95eb8a3d24e7eb2b6fc5e6",
+      "sha256": "49152f010ea859e5756f9f772098f20058bcd7a1b010c98479bfdd17328d3adc",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "publication_count_trend",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "chart_type": "yearly"
+          }
+        },
         "data": [
           {
             "count": 50,
@@ -2599,8 +3764,9 @@
           "algorithm_id": "publication_count_trend",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "applicants": 1.0,
             "ipc": 1.0,
@@ -2612,9 +3778,21 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "publication_count_trend",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "chart_type": "yearly"
+            }
+          },
           "algorithm_id": "publication_count_trend",
           "algorithm_version": "2.0",
           "confidence": "high",
@@ -2625,13 +3803,105 @@
           "parameters": {
             "chart_type": "yearly"
           },
+          "population_after_family_deduplication": 300,
           "population_after_filters": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "application trend",
             "technology decline",
             "technology lifecycle"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
+          "time_coverage": {
+            "data_as_of": "2024-01-02",
+            "historical_missing_months": {
+              "2019": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2020": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2021": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2022": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "2023": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            },
+            "latest_year": 2024,
+            "latest_year_is_partial_calendar_year": true,
+            "latest_year_missing_expected_months": [],
+            "latest_year_months_covered": [
+              1
+            ],
+            "publication_lag_possible": true
+          },
           "tool_name": "analyze_patent_trend",
           "unsupported_conclusions": [
             "正式专利价值或交易价格结论",
@@ -2662,14 +3932,27 @@
           "基于完整外部前向引证的影响力结论"
         ],
         "warnings": [
-          "尾年 2024 仅覆盖 1 个月，下降可能来自数据未完整收录或公开滞后。"
+          "尾年 2024 覆盖 1/12 个月，属于部分自然年；不得把尾年下降解释为技术衰退。",
+          "5 个历史年份存在缺月，年度比较可能受批次缺口影响。",
+          "专利公开存在法定与数据库收录滞后，近期公开量通常会低估最终水平。"
         ]
       }
     },
     "analyze_patent_valuation": {
       "result_type": "value_indicators",
-      "sha256": "b81badadea47044e2afb931ac24f8ad2aab1a82212b13302cd9924de78306edf",
+      "sha256": "ac5f7b70d52cad72265c1b51300525112b775fa98e6649091867b7c2db5e8169",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "patent_family_citation_screening",
+          "algorithm_version": "3.1",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "citation_mode": "screening",
+            "top_n": 10
+          }
+        },
         "coverage": {
           "backward_citations": 0.9967,
           "european_style_share": 1.0,
@@ -2681,263 +3964,423 @@
         },
         "data": [
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|F28D",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000250-A1",
+            "publication_year": 2024,
             "rank": 1,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Thermal Management apparatus generation 0"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|G01D",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000251-A1",
+            "publication_year": 2024,
             "rank": 2,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Robotic Sensor apparatus generation 1"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|H01M",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000252-A1",
+            "publication_year": 2024,
             "rank": 3,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Solid Electrolyte Battery apparatus generation 2"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|B01D",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000253-A1",
+            "publication_year": 2024,
             "rank": 4,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Carbon Capture Membrane apparatus generation 3"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|H01L",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000254-A1",
+            "publication_year": 2024,
             "rank": 5,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Photovoltaic Coating apparatus generation 4"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|C25B",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000255-A1",
+            "publication_year": 2024,
             "rank": 6,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Hydrogen Catalyst apparatus generation 5"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|F28D",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000256-A1",
+            "publication_year": 2024,
             "rank": 7,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Thermal Management apparatus generation 6"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|G01D",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000257-A1",
+            "publication_year": 2024,
             "rank": 8,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Robotic Sensor apparatus generation 7"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|H01M",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000258-A1",
+            "publication_year": 2024,
             "rank": 9,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Solid Electrolyte Battery apparatus generation 8"
           },
           {
-            "bibliographical_coupling": 0.0,
+            "available_weight_ratio": 1.0,
+            "bibliographical_coupling": null,
             "citation_count": 0,
-            "cited_refs_count": 1,
-            "cited_refs_count_percentile": 0.5033,
+            "citation_normalization_group": "2024|B01D",
+            "cited_refs_count": 1.0,
+            "cited_refs_count_percentile": 0.501672,
             "claim_count": 0,
+            "comparability_group": "wos_derwent|cited_refs_count,family_size,ipc_breadth,is_triadic,patent_age",
+            "comparability_group_size": 299,
+            "comparable_within_group": true,
+            "confidence_level": "high",
             "family_size": 2,
-            "family_size_percentile": 0.5017,
+            "family_size_percentile": 0.501667,
             "ipc_breadth": 1,
-            "ipc_breadth_percentile": 0.5017,
+            "ipc_breadth_percentile": 0.501667,
             "is_triadic": 0,
+            "is_triadic_percentile": 0.501667,
+            "missing_dimensions": [],
             "patent_age": 2,
-            "patent_age_percentile": 0.9183,
+            "patent_age_percentile": 0.918333,
             "patent_number": "EP2024000259-A1",
+            "publication_year": 2024,
             "rank": 10,
-            "reachability_out_degree": 0.0,
-            "score": 57.77,
+            "rank_scope": "comparability_group",
+            "reachability_out_degree": null,
+            "score": 56.58,
+            "score_interval": [
+              56.58,
+              56.58
+            ],
             "scoring_dimensions": [
               "cited_refs_count",
               "family_size",
               "ipc_breadth",
+              "is_triadic",
               "patent_age"
             ],
-            "shared_specialization": 0.0,
+            "shared_specialization": null,
+            "source_format": "wos_derwent",
             "title": "Carbon Capture Membrane apparatus generation 9"
           }
         ],
@@ -3048,10 +4491,11 @@
         "provenance": {
           "adapter": "wos_derwent",
           "algorithm_id": "patent_family_citation_screening",
-          "algorithm_version": "3.0",
+          "algorithm_version": "3.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "backward_citations": 0.9967,
             "family_members": 1.0,
@@ -3067,12 +4511,26 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "patent_family_citation_screening",
+            "algorithm_version": "3.1",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "citation_mode": "screening",
+              "top_n": 10
+            }
+          },
           "algorithm_id": "patent_family_citation_screening",
-          "algorithm_version": "3.0",
+          "algorithm_version": "3.1",
           "citation_method_mode": "engineering_screening",
+          "citation_normalization": "publication_year_by_ipc_subclass",
           "confidence": "high",
           "data_as_of": "",
           "evidence_level": "paper_adapted",
@@ -3080,11 +4538,15 @@
             "von Wartburg, Teichert & Rost 2005, Research Policy 34, 1591-1607",
             "Kim & Bae 2017, Technological Forecasting and Social Change 117, 228-237"
           ],
+          "missing_values_treated_as_zero": false,
           "paper_exact": false,
           "parameters": {
             "citation_mode": "screening",
             "top_n": 10
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "population_size": 300,
           "prohibited_claims": [
             "financial valuation",
@@ -3092,17 +4554,35 @@
             "universal patent quality",
             "paper_exact unless manually verified"
           ],
+          "ranking_scope": "within_source_and_available_dimension_group",
           "replication_gates": {
             "european_style_share_at_least_80pct": true,
             "family_coverage_at_least_50pct": true,
             "internal_edge_resolution_at_least_20pct": true
           },
           "requested_citation_mode": "screening",
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
           "sampled": false,
+          "scope": {},
           "sensitivity_analysis": {
             "interpretation": "衡量权重扰动下的排名稳定性，不是现实商业价值校准。",
             "method": "one_factor_weight_perturbation",
             "minimum_top_n_overlap": 1.0,
+            "missingness": {
+              "maximum_score_interval_width": 15.38,
+              "minimum_available_weight_ratio": 0.8462,
+              "records_with_missing_dimensions": 1
+            },
             "perturbation": 0.2,
             "scenarios": [
               {
@@ -3191,14 +4671,25 @@
         ],
         "warnings": [
           "当前数据不满足论文复现门禁，SS/RO/BC 未进入价值筛查分；结果为工程筛查，不是财务估值。",
+          "1 件记录没有同来源、同维度的可比对象，不应与其他组直接混排。",
           "当前加载数据中没有外部前向被引字段，不能直接计算外部前向被引次数。"
         ]
       }
     },
     "analyze_tech_matrix": {
       "result_type": "tech_effect_matrix",
-      "sha256": "975c4e405f736b465b79913c3a68a64002ffc83cd41b1d2a3a40d7cde489ff2c",
+      "sha256": "b168c0e9082fbae85e40f9d8d18962608a212adb200c809afba010016dd474b1",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "derwent_abstract_proxy_te_matrix",
+          "algorithm_version": "2.3",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "top_n": 10
+          }
+        },
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
@@ -3307,74 +4798,224 @@
         ],
         "gap_recommendations": [
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "conversion"
+              ]
+            },
             "effect": "conversion",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "electrolysis"
+              ]
+            },
             "effect": "electrolysis",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "gas"
+              ]
+            },
             "effect": "gas",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "heat"
+              ]
+            },
             "effect": "heat",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "measurement"
+              ]
+            },
             "effect": "measurement",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "precision"
+              ]
+            },
             "effect": "precision",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "separation"
+              ]
+            },
             "effect": "separation",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "transfer"
+              ]
+            },
             "effect": "transfer",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
+                "water"
+              ]
+            },
             "effect": "water",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "battery",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           },
           {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "capture",
+                "conversion"
+              ]
+            },
             "effect": "conversion",
+            "effect_support": 50,
+            "expected_count": 8.3333,
             "function": "capture",
             "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
             "patent_count": 0,
-            "requires_patent_review": true
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
           }
         ],
         "matrix": [
@@ -3424,10 +5065,11 @@
         "provenance": {
           "adapter": "wos_derwent",
           "algorithm_id": "derwent_abstract_proxy_te_matrix",
-          "algorithm_version": "2.1",
+          "algorithm_version": "2.3",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0
           },
@@ -3437,11 +5079,24 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "derwent_abstract_proxy_te_matrix",
+            "algorithm_version": "2.3",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "top_n": 10
+            }
+          },
           "algorithm_id": "derwent_abstract_proxy_te_matrix",
-          "algorithm_version": "2.1",
+          "algorithm_version": "2.3",
+          "coding_review_status": "single_coder_unreviewed",
           "confidence": "high",
           "data_as_of": "",
           "eligible_documents": 300,
@@ -3449,19 +5104,43 @@
           "evidence_sources": [
             "Tseng et al. 2007, Information Processing & Management 43, 1216-1247"
           ],
+          "gap_selection": "negative_pearson_residual_with_marginal_support",
+          "inter_coder_agreement": null,
           "minimum_document_support": 2,
           "parameters": {
             "top_n": 10
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "population_size": 300,
           "prohibited_claims": [
             "blue ocean",
             "validated white space",
             "paper-exact function matrix"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
           "sample_size": 300,
           "sampled": false,
+          "sampling_method": "none",
+          "scope": {},
           "source_capabilities": {},
+          "tag_source": "rule",
+          "taxonomy_creator": "PatentAgent deterministic rules",
+          "taxonomy_id": "derwent-section-proxy",
+          "taxonomy_mode": "derwent_section_proxy_v1",
+          "taxonomy_scope": "NOVELTY as technology; USE/ADVANTAGE as use-effect proxy",
+          "taxonomy_version": "1.0",
           "tool_name": "analyze_tech_matrix",
           "unsupported_conclusions": [
             "正式专利价值或交易价格结论",
@@ -3498,8 +5177,21 @@
     },
     "analyze_tech_roadmap": {
       "result_type": "roadmap",
-      "sha256": "b2f99abe60c4820512f17073810b2986d54d668a0232be8be27150199c0737ab",
+      "sha256": "6726af200f6054dad2ef44adaf29739da2e9de421d361682fb8f766caeeeeee7",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "annual_theme_timeline",
+          "algorithm_version": "2.2",
+          "fallback_reason": "citation_route_gate_failed",
+          "mode_requested": "auto",
+          "mode_used": "annual_theme_timeline",
+          "parameters": {
+            "family_id_coverage": 0.0,
+            "internal_edge_resolution_rate": 1.0,
+            "priority_date_coverage": 1.0,
+            "top_n_per_year": 2
+          }
+        },
         "data": {
           "2019": [
             {
@@ -3716,7 +5408,9 @@
           "source_capabilities": {},
           "tool_field_coverage": {
             "backward_citations": 0.9967,
+            "family_members": 1.0,
             "patent_number": 1.0,
+            "priority_date": 1.0,
             "publication_date": 1.0,
             "title": 1.0
           },
@@ -3753,7 +5447,7 @@
           ]
         },
         "evidence_level": "engineering_screening",
-        "methodology": "按公开年度主题、代表性专利和数据可用的引证路径生成路线图。",
+        "methodology": "低覆盖时按公开年度生成主题时间线；高覆盖时按来源同族归并、优先权时间和 citing→cited 证据生成待复核路线。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,
@@ -3765,11 +5459,14 @@
           "algorithm_id": "annual_theme_timeline",
           "algorithm_version": "2.2",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "backward_citations": 0.9967,
+            "family_members": 1.0,
             "patent_number": 1.0,
+            "priority_date": 1.0,
             "publication_date": 1.0,
             "title": 1.0
           },
@@ -3779,22 +5476,64 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "annual_theme_timeline",
+            "algorithm_version": "2.2",
+            "fallback_reason": "citation_route_gate_failed",
+            "mode_requested": "auto",
+            "mode_used": "annual_theme_timeline",
+            "parameters": {
+              "family_id_coverage": 0.0,
+              "internal_edge_resolution_rate": 1.0,
+              "priority_date_coverage": 1.0,
+              "top_n_per_year": 2
+            }
+          },
           "algorithm_id": "annual_theme_timeline",
           "algorithm_version": "2.2",
+          "anomalous_edges": [],
+          "capability_name": "annual_theme_timeline",
+          "citation_paths_generated": false,
+          "citation_route_gate": {
+            "family_id_coverage": 0.0,
+            "internal_edge_resolution_rate": 1.0,
+            "priority_date_coverage": 1.0
+          },
           "confidence": "high",
           "data_as_of": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
+          "legacy_tool_name": "analyze_tech_roadmap",
+          "main_paths": [],
           "parameters": {
             "top_n_per_year": 2
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "complete invention genealogy",
             "causal technology route"
           ],
+          "route_edges": [],
+          "route_nodes": [],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_tech_roadmap",
           "unsupported_conclusions": [
@@ -3825,13 +5564,25 @@
           "当前权利状态判断",
           "基于完整外部前向引证的影响力结论"
         ],
-        "warnings": []
+        "warnings": [
+          "同族、优先权时间或内部引证覆盖门禁未通过，仅生成年度主题时间线。"
+        ]
       }
     },
     "analyze_yearly_keywords": {
       "result_type": "yearly_keywords",
-      "sha256": "f4358d13b184487f1621ad65e7aaa5cd04f8f0c1475452e6e91a9e1335d51c53",
+      "sha256": "59a1dc440f8e77c5c9d03596dea2e4a9ba81b990caff22d973d5d2de722247ff",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "yearly_phrase_frequency",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "text_source": "title"
+          }
+        },
         "data": {
           "2019": [
             [
@@ -3839,15 +5590,7 @@
               50
             ],
             [
-              "electrolyte",
-              9
-            ],
-            [
               "battery",
-              9
-            ],
-            [
-              "carbon",
               9
             ],
             [
@@ -3855,23 +5598,31 @@
               9
             ],
             [
+              "capture_membrane",
+              9
+            ],
+            [
+              "carbon",
+              9
+            ],
+            [
+              "carbon_capture",
+              9
+            ],
+            [
+              "electrolyte",
+              9
+            ],
+            [
+              "electrolyte_battery",
+              9
+            ],
+            [
               "membrane",
               9
             ],
             [
-              "photovoltaic",
-              8
-            ],
-            [
-              "hydrogen",
-              8
-            ],
-            [
               "catalyst",
-              8
-            ],
-            [
-              "management",
               8
             ]
           ],
@@ -3881,7 +5632,7 @@
               50
             ],
             [
-              "photovoltaic",
+              "catalyst",
               9
             ],
             [
@@ -3889,23 +5640,23 @@
               9
             ],
             [
-              "catalyst",
+              "hydrogen_catalyst",
               9
             ],
             [
-              "management",
-              8
-            ],
-            [
-              "sensor",
-              8
-            ],
-            [
-              "electrolyte",
-              8
+              "photovoltaic",
+              9
             ],
             [
               "battery",
+              8
+            ],
+            [
+              "capture",
+              8
+            ],
+            [
+              "capture_membrane",
               8
             ],
             [
@@ -3913,7 +5664,7 @@
               8
             ],
             [
-              "capture",
+              "carbon_capture",
               8
             ]
           ],
@@ -3931,15 +5682,7 @@
               9
             ],
             [
-              "electrolyte",
-              8
-            ],
-            [
               "battery",
-              8
-            ],
-            [
-              "carbon",
               8
             ],
             [
@@ -3947,15 +5690,23 @@
               8
             ],
             [
-              "membrane",
+              "capture_membrane",
               8
             ],
             [
-              "photovoltaic",
+              "carbon",
               8
             ],
             [
-              "hydrogen",
+              "carbon_capture",
+              8
+            ],
+            [
+              "catalyst",
+              8
+            ],
+            [
+              "electrolyte",
               8
             ]
           ],
@@ -3965,15 +5716,7 @@
               50
             ],
             [
-              "electrolyte",
-              9
-            ],
-            [
               "battery",
-              9
-            ],
-            [
-              "carbon",
               9
             ],
             [
@@ -3981,23 +5724,31 @@
               9
             ],
             [
+              "capture_membrane",
+              9
+            ],
+            [
+              "carbon",
+              9
+            ],
+            [
+              "carbon_capture",
+              9
+            ],
+            [
+              "electrolyte",
+              9
+            ],
+            [
+              "electrolyte_battery",
+              9
+            ],
+            [
               "membrane",
               9
             ],
             [
-              "photovoltaic",
-              8
-            ],
-            [
-              "hydrogen",
-              8
-            ],
-            [
               "catalyst",
-              8
-            ],
-            [
-              "management",
               8
             ]
           ],
@@ -4007,7 +5758,7 @@
               50
             ],
             [
-              "photovoltaic",
+              "catalyst",
               9
             ],
             [
@@ -4015,23 +5766,23 @@
               9
             ],
             [
-              "catalyst",
+              "hydrogen_catalyst",
               9
             ],
             [
-              "management",
-              8
-            ],
-            [
-              "sensor",
-              8
-            ],
-            [
-              "electrolyte",
-              8
+              "photovoltaic",
+              9
             ],
             [
               "battery",
+              8
+            ],
+            [
+              "capture",
+              8
+            ],
+            [
+              "capture_membrane",
               8
             ],
             [
@@ -4039,7 +5790,7 @@
               8
             ],
             [
-              "capture",
+              "carbon_capture",
               8
             ]
           ],
@@ -4057,15 +5808,7 @@
               9
             ],
             [
-              "electrolyte",
-              8
-            ],
-            [
               "battery",
-              8
-            ],
-            [
-              "carbon",
               8
             ],
             [
@@ -4073,15 +5816,23 @@
               8
             ],
             [
-              "membrane",
+              "capture_membrane",
               8
             ],
             [
-              "photovoltaic",
+              "carbon",
               8
             ],
             [
-              "hydrogen",
+              "carbon_capture",
+              8
+            ],
+            [
+              "catalyst",
+              8
+            ],
+            [
+              "electrolyte",
               8
             ]
           ]
@@ -4180,7 +5931,7 @@
           ]
         },
         "evidence_level": "engineering_screening",
-        "methodology": "按公开年份统计经过清洗与最小支持过滤的技术术语。",
+        "methodology": "按公开年份统计经过清洗的技术术语文档频率；一件专利对同一术语每年最多贡献一次。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,
@@ -4192,8 +5943,9 @@
           "algorithm_id": "yearly_phrase_frequency",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
             "publication_date": 1.0,
@@ -4205,21 +5957,57 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "yearly_phrase_frequency",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "text_source": "title"
+            }
+          },
           "algorithm_id": "yearly_phrase_frequency",
           "algorithm_version": "2.0",
           "confidence": "high",
           "data_as_of": "",
+          "documents_by_year": {
+            "2019": 50,
+            "2020": 50,
+            "2021": 50,
+            "2022": 50,
+            "2023": 50,
+            "2024": 50
+          },
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
+          "metric": "document_frequency",
           "parameters": {
             "text_source": "title"
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "causal technology migration"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "analyze_yearly_keywords",
           "unsupported_conclusions": [
@@ -4255,51 +6043,141 @@
     },
     "generate_wordcloud": {
       "result_type": "word_freq",
-      "sha256": "e7e752be2723e18b310e170f5260b53d997b7da5b817a78fbee2bc78bbeefb6e",
+      "sha256": "785281e205fef60729e3888119c118f4394f0bc0a832c03b18ba05f146a54eb5",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "derwent_phrase_frequency",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "text_source": "title"
+          }
+        },
         "data": [
           {
             "count": 300,
+            "document_frequency": 300,
+            "document_ratio": 1.0,
+            "term_frequency": 300,
+            "term_type": "unigram",
             "word": "generation"
           },
           {
             "count": 50,
-            "word": "electrolyte"
-          },
-          {
-            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
             "word": "battery"
           },
           {
             "count": 50,
-            "word": "carbon"
-          },
-          {
-            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
             "word": "capture"
           },
           {
             "count": 50,
-            "word": "membrane"
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "capture_membrane"
           },
           {
             "count": 50,
-            "word": "photovoltaic"
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "carbon"
           },
           {
             "count": 50,
-            "word": "hydrogen"
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "carbon_capture"
           },
           {
             "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
             "word": "catalyst"
           },
           {
             "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "electrolyte"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "electrolyte_battery"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "hydrogen"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "hydrogen_catalyst"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
             "word": "management"
           },
           {
             "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "membrane"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "photovoltaic"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
             "word": "sensor"
           }
         ],
@@ -4396,7 +6274,7 @@
           ]
         },
         "evidence_level": "engineering_screening",
-        "methodology": "Derwent 模板清洗、词形规范化、文档频率过滤后的技术术语频次。",
+        "methodology": "Derwent 模板清洗后按专利文档频率统计术语和高支持短语，同时公开原始词频与文档占比。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,
@@ -4408,8 +6286,9 @@
           "algorithm_id": "derwent_phrase_frequency",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
             "title": 1.0
@@ -4420,24 +6299,53 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "derwent_phrase_frequency",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "text_source": "title"
+            }
+          },
           "algorithm_id": "derwent_phrase_frequency",
           "algorithm_version": "2.0",
           "confidence": "high",
           "data_as_of": "",
+          "document_count": 300,
           "evidence_level": "engineering_screening",
           "evidence_sources": [
             "Tseng et al. 2007, Information Processing & Management 43, 1216-1247"
           ],
+          "metric": "document_frequency",
           "parameters": {
             "text_source": "title"
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "paper-exact text mining pipeline",
             "technology value"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "generate_wordcloud",
           "unsupported_conclusions": [
@@ -4458,7 +6366,7 @@
         },
         "result_type": "word_freq",
         "source_capabilities": {},
-        "summary": "word_freq 已生成，共 11 项结构化结果。",
+        "summary": "word_freq 已生成，共 15 项结构化结果。",
         "unsupported_conclusions": [
           "正式专利价值或交易价格结论",
           "权利要求范围判断",
@@ -4473,8 +6381,16 @@
     },
     "get_dataset_summary": {
       "result_type": "dataset_summary",
-      "sha256": "deafe1e6860cc3812f7faf867a41dea87c0edad25af901cd033aaf1b9d729f4b",
+      "sha256": "afacfdd131232de7a0539c75780df42670532a8f866eeba3946571c250008daa",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "dataset_field_audit",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {}
+        },
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
@@ -4584,16 +6500,27 @@
           "algorithm_id": "dataset_field_audit",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {},
           "input_record_count": 300,
           "parameters": {},
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "dataset_field_audit",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {}
+          },
           "algorithm_id": "dataset_field_audit",
           "algorithm_version": "2.0",
           "confidence": "high",
@@ -4601,7 +6528,22 @@
           "evidence_level": "descriptive_statistic",
           "evidence_sources": [],
           "parameters": {},
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "get_dataset_summary",
           "unsupported_conclusions": [
@@ -4626,43 +6568,43 @@
         "top_applicants": [
           {
             "count": 25,
-            "name": "Applicant 00 Corp"
+            "name": "APPLICANT 00"
           },
           {
             "count": 25,
-            "name": "Applicant 01 Corp"
+            "name": "APPLICANT 01"
           },
           {
             "count": 25,
-            "name": "Applicant 02 Corp"
+            "name": "APPLICANT 02"
           },
           {
             "count": 25,
-            "name": "Applicant 03 Corp"
+            "name": "APPLICANT 03"
           },
           {
             "count": 25,
-            "name": "Applicant 04 Corp"
+            "name": "APPLICANT 04"
           },
           {
             "count": 25,
-            "name": "Applicant 05 Corp"
+            "name": "APPLICANT 05"
           },
           {
             "count": 25,
-            "name": "Applicant 06 Corp"
+            "name": "APPLICANT 06"
           },
           {
             "count": 25,
-            "name": "Applicant 07 Corp"
+            "name": "APPLICANT 07"
           },
           {
             "count": 25,
-            "name": "Applicant 08 Corp"
+            "name": "APPLICANT 08"
           },
           {
             "count": 25,
-            "name": "Applicant 09 Corp"
+            "name": "APPLICANT 09"
           }
         ],
         "total_patents": 300,
@@ -4685,8 +6627,20 @@
     },
     "read_patent_details": {
       "result_type": "patent_details",
-      "sha256": "66080da0275af14b7974d4e7dd8c8bd17d8ceedad87487ea56b5e072ec09c1e8",
+      "sha256": "cdbad8dedfd924f555e1678c527e2de3b3afbfb3fbaf6d3de9b2d3ba1142fc5e",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "structured_record_lookup",
+          "algorithm_version": "2.0",
+          "fallback_reason": null,
+          "mode_requested": "default",
+          "mode_used": "default",
+          "parameters": {
+            "patent_numbers": [
+              "EP2019000000-A1"
+            ]
+          }
+        },
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
@@ -4798,11 +6752,13 @@
               "Research Institute 00"
             ],
             "application_number": "",
+            "assignee_parties": [],
             "backward_citations": [],
             "citation_records": [],
             "claims": [],
             "classifications": [],
             "cpc_codes": [],
+            "current_rights_holder_parties": [],
             "data_as_of": "",
             "description": "",
             "family_details": [],
@@ -4854,8 +6810,9 @@
           "algorithm_id": "structured_record_lookup",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "claims_json": 0.0,
             "description": 0.0,
@@ -4870,9 +6827,23 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "structured_record_lookup",
+            "algorithm_version": "2.0",
+            "fallback_reason": null,
+            "mode_requested": "default",
+            "mode_used": "default",
+            "parameters": {
+              "patent_numbers": [
+                "EP2019000000-A1"
+              ]
+            }
+          },
           "algorithm_id": "structured_record_lookup",
           "algorithm_version": "2.0",
           "confidence": "high",
@@ -4884,11 +6855,26 @@
               "EP2019000000-A1"
             ]
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "full specification",
             "complete claims",
             "legal status conclusion"
           ],
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "read_patent_details",
           "unsupported_conclusions": [
@@ -4928,8 +6914,18 @@
     },
     "search_patents": {
       "result_type": "patent_search",
-      "sha256": "0ff5b667658cb487d074e81feea3ccdb4fa70e282f74aec07fe72fb192dcf01f",
+      "sha256": "0e1fab959b13f104163dc778139405c715f28ccb2b7265cfbecf69fcf9910e5e",
       "projection": {
+        "algorithm_execution": {
+          "algorithm_id": "tfidf_cosine_retrieval",
+          "algorithm_version": "2.2",
+          "fallback_reason": null,
+          "mode_requested": "lexical",
+          "mode_used": "lexical",
+          "parameters": {
+            "top_k": 5
+          }
+        },
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
@@ -5034,7 +7030,7 @@
         "patents": [
           {
             "abstract": "NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.",
-            "applicants": "",
+            "applicants": "RESEARCH INSTITUTE 00, APPLICANT 00",
             "patent_number": "EP2019000000-A1",
             "relevance_score": 0.808,
             "title": "Solid Electrolyte Battery apparatus generation 0",
@@ -5042,7 +7038,7 @@
           },
           {
             "abstract": "NOVELTY - improved solid electrolyte battery structure generation 6. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.",
-            "applicants": "",
+            "applicants": "APPLICANT 06",
             "patent_number": "EP2019000006-A1",
             "relevance_score": 0.808,
             "title": "Solid Electrolyte Battery apparatus generation 6",
@@ -5050,7 +7046,7 @@
           },
           {
             "abstract": "NOVELTY - improved solid electrolyte battery structure generation 2. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.",
-            "applicants": "",
+            "applicants": "APPLICANT 00",
             "patent_number": "EP2019000012-A1",
             "relevance_score": 0.808,
             "title": "Solid Electrolyte Battery apparatus generation 2",
@@ -5058,7 +7054,7 @@
           },
           {
             "abstract": "NOVELTY - improved solid electrolyte battery structure generation 8. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.",
-            "applicants": "",
+            "applicants": "APPLICANT 06",
             "patent_number": "EP2019000018-A1",
             "relevance_score": 0.808,
             "title": "Solid Electrolyte Battery apparatus generation 8",
@@ -5066,7 +7062,7 @@
           },
           {
             "abstract": "NOVELTY - improved solid electrolyte battery structure generation 4. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.",
-            "applicants": "",
+            "applicants": "APPLICANT 00",
             "patent_number": "EP2019000024-A1",
             "relevance_score": 0.808,
             "title": "Solid Electrolyte Battery apparatus generation 4",
@@ -5076,10 +7072,11 @@
         "provenance": {
           "adapter": "wos_derwent",
           "algorithm_id": "tfidf_cosine_retrieval",
-          "algorithm_version": "2.1",
+          "algorithm_version": "2.2",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "aac33effff6c647efede919be4059083117c52665075cbcaebf767238931b67e",
-          "dataset_version_id": "version_aac33effff6c647efede919b",
+          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
+          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
             "patent_number": 1.0,
@@ -5092,11 +7089,23 @@
           },
           "sample_size": null,
           "sampled": false,
-          "sampling_method": "none"
+          "sampling_method": "none",
+          "scope": {},
+          "scope_record_count": 300
         },
         "result_metadata": {
+          "algorithm_execution": {
+            "algorithm_id": "tfidf_cosine_retrieval",
+            "algorithm_version": "2.2",
+            "fallback_reason": null,
+            "mode_requested": "lexical",
+            "mode_used": "lexical",
+            "parameters": {
+              "top_k": 5
+            }
+          },
           "algorithm_id": "tfidf_cosine_retrieval",
-          "algorithm_version": "2.1",
+          "algorithm_version": "2.2",
           "beta_fallback": false,
           "confidence": "high",
           "data_as_of": "",
@@ -5108,6 +7117,9 @@
             "query": "solid electrolyte battery",
             "top_k": 5
           },
+          "population_after_family_deduplication": 300,
+          "population_after_scope": 300,
+          "population_before_scope": 300,
           "prohibited_claims": [
             "vector embedding",
             "legal novelty search",
@@ -5115,6 +7127,18 @@
           ],
           "retrieval_mode_requested": "lexical",
           "retrieval_mode_used": "lexical",
+          "runtime_limits": {
+            "cancellation_checkpoints": [
+              "before_execute",
+              "after_execute"
+            ],
+            "cpu_offloaded": true,
+            "estimated_input_mb": 1.0,
+            "max_execution_seconds": 120.0,
+            "max_input_records": 1000000,
+            "memory_budget_mb": 1024
+          },
+          "scope": {},
           "source_capabilities": {},
           "tool_name": "search_patents",
           "unsupported_conclusions": [
@@ -5134,9 +7158,11 @@
           }
         },
         "result_type": "patent_search",
+        "returned_count": 5,
         "source_capabilities": {},
         "summary": "patent_search 已生成，共 5 项结构化结果。",
-        "total_hits": 5,
+        "total_hits": null,
+        "total_hits_exact": false,
         "unsupported_conclusions": [
           "正式专利价值或交易价格结论",
           "权利要求范围判断",

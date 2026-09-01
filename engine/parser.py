@@ -68,6 +68,7 @@ class PatentMiner:
             with open(stopwords_path, 'r', encoding='utf-8') as f:
                 self.stopwords = {line.strip() for line in f if line.strip()}
         self.entity_map: dict[str, str] = entity_map or {}
+        self.last_parse_diagnostics: dict = {}
 
     def _clean_entity(self, name: str) -> str:
         name = name.strip()
@@ -126,39 +127,78 @@ class PatentMiner:
         v2.1: 直接在解析时计算 year 列，避免 prepare_patent_df 重解析日期。"""
         fname = os.path.basename(filepath)
         patents = []
+        diagnostics = {
+            "expected": 0, "detected": 0, "succeeded": 0,
+            "failed": 0, "skipped": 0, "issues": [],
+        }
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 content = f.read()
                 records = content.split('\nER\n')
 
-                for record in records:
-                    if (not record.strip() or record.startswith('FN ') or
-                            not _RE_PN.search(record)):
+                for position, record in enumerate(records, 1):
+                    stripped = record.strip()
+                    if not stripped or stripped.startswith('FN ') or stripped == 'EF':
                         continue
-
-                    data = self._record_to_dict(record)
-                    data['source_file'] = fname
-                    # 从 publication_date 直接提取年份
-                    pub_date = data.get('publication_date', '')
-                    data['year'] = int(pub_date[:4]) if pub_date and len(pub_date) >= 4 else None
-                    # Phase 1 兼容: 列表/对象字段序列化为字符串
-                    data['applicants'] = ';'.join(data.get('applicants', []))
-                    data['inventors'] = ';'.join(data.get('inventors', []))
-                    data['derwent_classes'] = ';'.join(data.get('derwent_classes', []))
-                    data['cited_refs'] = ';'.join(data.get('cited_refs', []))
-                    data['backward_citations'] = data['cited_refs']
-                    data['family_details'] = ';'.join(data.get('family_details', []))
-                    data['family_members'] = ';'.join(data.get('family_members', []))
-                    data['publication_numbers'] = ';'.join(data.get('publication_numbers', []))
-                    data['priority_numbers'] = ';'.join(data.get('priority_numbers', []))
-                    data['non_patent_references'] = '\n'.join(
-                        data.get('non_patent_references', [])
-                    )
-                    patents.append(data)
+                    has_type_marker = stripped.startswith('PT ')
+                    has_publication_number = bool(_RE_PN.search(record))
+                    if not has_type_marker and not has_publication_number:
+                        continue
+                    diagnostics["expected"] += 1
+                    diagnostics["detected"] += 1
+                    source_id_match = _RE_UT.search(record)
+                    source_id = source_id_match.group(1).strip() if source_id_match else f"record:{position}"
+                    if not has_publication_number:
+                        diagnostics["skipped"] += 1
+                        diagnostics["issues"].append({
+                            "file": fname, "record_id": source_id,
+                            "location": f"record:{position}", "code": "missing_record_marker_or_publication_number",
+                            "message": "记录缺少 PN 标记，已跳过。",
+                            "sample_hash": hashlib.sha256(record.encode("utf-8")).hexdigest(),
+                        })
+                        continue
+                    try:
+                        data = self._record_to_dict(record)
+                        data['source_file'] = fname
+                        # 从 publication_date 直接提取年份
+                        pub_date = data.get('publication_date', '')
+                        data['year'] = int(pub_date[:4]) if pub_date and len(pub_date) >= 4 else None
+                        # Phase 1 兼容: 列表/对象字段序列化为字符串
+                        data['applicants'] = ';'.join(data.get('applicants', []))
+                        data['inventors'] = ';'.join(data.get('inventors', []))
+                        data['derwent_classes'] = ';'.join(data.get('derwent_classes', []))
+                        data['cited_refs'] = ';'.join(data.get('cited_refs', []))
+                        data['backward_citations'] = data['cited_refs']
+                        data['family_details'] = ';'.join(data.get('family_details', []))
+                        data['family_members'] = ';'.join(data.get('family_members', []))
+                        data['publication_numbers'] = ';'.join(data.get('publication_numbers', []))
+                        data['priority_numbers'] = ';'.join(data.get('priority_numbers', []))
+                        data['non_patent_references'] = '\n'.join(
+                            data.get('non_patent_references', [])
+                        )
+                        patents.append(data)
+                        diagnostics["succeeded"] += 1
+                    except Exception as exc:
+                        diagnostics["failed"] += 1
+                        diagnostics["issues"].append({
+                            "file": fname, "record_id": source_id,
+                            "location": f"record:{position}", "code": "record_parse_failed",
+                            "message": f"{type(exc).__name__}: {exc}",
+                            "sample_hash": hashlib.sha256(record.encode("utf-8")).hexdigest(),
+                        })
 
         except Exception as e:
             logging.error(f"解析文件 {filepath} 失败: {str(e)}")
+            diagnostics["expected"] += 1
+            diagnostics["detected"] += 1
+            diagnostics["failed"] += 1
+            diagnostics["issues"].append({
+                "file": fname, "record_id": "", "location": "file",
+                "code": "file_read_failed", "message": f"{type(e).__name__}: {e}",
+                "sample_hash": "",
+            })
 
+        self.last_parse_diagnostics = diagnostics
         return pd.DataFrame(patents)
 
     def _record_to_dict(self, record: str) -> dict:

@@ -1,11 +1,11 @@
 """Tool: stable lexical retrieval plus an explicit multilingual beta mode."""
 
-import html
 import json
 import time
 from tools.base import Tool, tool_registry
 from storage.datastore import PatentDataStore
 from models.analysis_results import PatentSearchResult, PatentDetailsResult
+from patent_agent.domain import AlgorithmExecution
 from weakref import WeakKeyDictionary
 
 
@@ -24,6 +24,9 @@ class SearchTool(Tool):
         "top_k": {
             "type": "integer",
             "description": "返回结果数量。默认 20。",
+            "default": 20,
+            "minimum": 1,
+            "maximum": 100,
         },
         "year_start": {
             "type": "integer",
@@ -44,6 +47,7 @@ class SearchTool(Tool):
             "type": "string",
             "enum": ["lexical", "multilingual_hybrid_beta"],
             "description": "默认 lexical；显式选择 multilingual_hybrid_beta 才会加载本地多语言模型。",
+            "default": "lexical",
         },
     }
     required_fields = ("title", "abstract", "patent_number")
@@ -108,11 +112,13 @@ class SearchTool(Tool):
             for r in results
         ]
 
-        total_hits = len(patents)
+        returned_count = len(patents)
         result = PatentSearchResult(
             result_type="patent_search",
             patents=patents,
-            total_hits=total_hits,
+            total_hits=None,
+            total_hits_exact=False,
+            returned_count=returned_count,
             query_embedding_time_ms=query_time,
             warnings=warnings,
             result_metadata={
@@ -128,24 +134,24 @@ class SearchTool(Tool):
                     if mode_used == "multilingual_hybrid_beta" else {}
                 ),
             },
+            algorithm_execution=AlgorithmExecution(
+                algorithm_id=(
+                    "multilingual_minilm_rrf_beta"
+                    if mode_used == "multilingual_hybrid_beta"
+                    else "tfidf_cosine_retrieval"
+                ),
+                algorithm_version=(
+                    "1.0-beta" if mode_used == "multilingual_hybrid_beta" else "2.2"
+                ),
+                mode_requested=retrieval_mode,
+                mode_used=mode_used,
+                fallback_reason=(
+                    warnings[-1] if retrieval_mode != mode_used and warnings else None
+                ),
+                parameters={"top_k": top_k},
+            ),
         )
 
-        # 搜索结果直接展示为列表（不需要图表）
-        lines = [
-            '<div style="background:#1a1a2e;color:#e0e0e0;padding:16px;'
-            'border-radius:8px;font-family:monospace;line-height:1.6">',
-            f'<b>检索结果: {total_hits} 件</b>',
-            '<hr style="border-color:#333">',
-        ]
-        for i, p in enumerate(patents, 1):
-            score_str = f" [{p.get('relevance_score', 0):.2f}]" if p.get('relevance_score') else ""
-            lines.append(
-                f'<b>{i}. {html.escape(str(p["patent_number"]))}</b>{score_str}<br>'
-                f'{html.escape(str(p["title"][:120]))}<br>'
-                f'<small>{html.escape(str(p.get("applicants", "")))}</small><br>'
-            )
-        lines.append('</div>')
-        result.chart_html = '<br>'.join(lines)
         return result
 
 
@@ -323,6 +329,9 @@ def _row_to_pseudo_patent(row) -> "FullPatent":
         abstract=str(row.get("abstract", "")),
         claims=[],
         publication_date=str(row.get("publication_date", row.get("date", ""))),
+        applicants=list(_safe_list(
+            row.get("applicant_canonical_names", row.get("applicants", ""))
+        )),
         ipc_codes=list(_safe_list(row.get("ipc", ""))),
         backward_citations=list(_safe_list(
             row.get("backward_citations", row.get("cited_refs", ""))

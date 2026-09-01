@@ -46,40 +46,61 @@ def compute_patent_value_indicators(patents: list,
     data = []
     for p in patents:
         pn = getattr(p, 'patent_number', '')
+        availability = getattr(p, 'source_availability', {}) or {}
         # Family size includes the focal publication/family node itself.
-        family = 1 + len(getattr(p, 'family_members', []) or [])
+        family_members = getattr(p, 'family_members', []) or []
+        family = (
+            1 + len(family_members)
+            if availability.get("family_members", bool(family_members)) else None
+        )
         claims = len(getattr(p, 'claims', []) or [])
         ipc_codes = getattr(p, 'ipc_codes', []) or []
-        ipc_sections = set(c[0] for c in ipc_codes if c and c[0].isalpha())
-        ipc_breadth = len(ipc_sections)
+        # Use IPC subclass breadth (for example H01M), not the overly coarse A-H section count.
+        ipc_subclasses = {
+            str(code).strip().upper()[:4]
+            for code in ipc_codes
+            if len(str(code).strip()) >= 4 and str(code).strip()[0].upper() in "ABCDEFGH"
+        }
+        ipc_breadth = len(ipc_subclasses) if ipc_subclasses else None
         backward = getattr(p, 'backward_citations', []) or []
-        cited_refs_count = len(backward)
+        cited_refs_count = (
+            len(backward)
+            if availability.get("backward_citations", bool(backward)) else None
+        )
 
         # 专利年龄
         pub_date = getattr(p, 'publication_date', '') or ''
-        patent_age = 0
+        patent_age = None
+        publication_year = None
         if pub_date and len(pub_date) >= 4:
             try:
-                patent_age = current_year - int(pub_date[:4])
+                publication_year = int(pub_date[:4])
+                patent_age = max(0, current_year - publication_year)
             except ValueError:
                 pass
 
         # 三方专利
-        family_pns = ' '.join(getattr(p, 'family_members', []) or [])
+        family_pns = ' '.join(family_members)
         has_us = 'US' in family_pns or pn.startswith('US')
         has_ep = 'EP' in family_pns or pn.startswith('EP')
         has_jp = 'JP' in family_pns or pn.startswith('JP')
-        is_triadic = 1 if (has_us and has_ep and has_jp) else 0
+        is_triadic = (
+            1 if (has_us and has_ep and has_jp) else 0
+        ) if availability.get("family_members", bool(family_members)) else None
 
         # 引证网络指标
-        ss = ss_scores.get(pn, {}) if ss_scores else {}
-        ss_val = ss.get("shared_specialization", 0.0)
-        ro_val = ss.get("reachability_out_degree", 0.0)
-        bc_val = ss.get("bibliographical_coupling", 0.0)
+        ss = ss_scores.get(pn) if ss_scores else None
+        ss_val = ss.get("shared_specialization") if ss is not None else None
+        ro_val = ss.get("reachability_out_degree") if ss is not None else None
+        bc_val = ss.get("bibliographical_coupling") if ss is not None else None
+        primary_ipc = sorted(ipc_subclasses)[0] if ipc_subclasses else "unknown"
 
         data.append({
             "patent_number": pn,
             "title": getattr(p, 'title', '')[:100],
+            "source_format": getattr(p, "source_format", "unknown") or "unknown",
+            "publication_year": publication_year,
+            "citation_normalization_group": f"{publication_year or 'unknown'}|{primary_ipc}",
             "shared_specialization": ss_val,
             "reachability_out_degree": ro_val,
             "bibliographical_coupling": bc_val,
@@ -148,29 +169,88 @@ def rank_patents_by_value(patents: list,
     import pandas as pd
     frame = pd.DataFrame(scored)
     requested_weights = weights or DEFAULT_WEIGHTS
-    available = {}
-    for key, weight in requested_weights.items():
-        values = pd.to_numeric(frame.get(key), errors="coerce").fillna(0)
-        # age 即使相同仍是可用字段；其他全零指标不参与并自动重分配。
-        if key == "patent_age" or bool((values != 0).any()):
-            available[key] = weight
-    weight_total = sum(available.values()) or 1.0
-    normalized_weights = {k: v / weight_total for k, v in available.items()}
-    frame["score"] = 0.0
-    for key, weight in normalized_weights.items():
-        values = pd.to_numeric(frame[key], errors="coerce").fillna(0)
-        percentile = values.rank(method="average", pct=True)
+    requested_weights = {
+        key: float(weight) for key, weight in requested_weights.items()
+        if key in frame.columns and float(weight) > 0
+    }
+    requested_total = sum(requested_weights.values()) or 1.0
+
+    # Citation-network position is normalized within publication-year and IPC-subclass
+    # observation groups. Other metadata dimensions are normalized within source strata.
+    citation_dimensions = {
+        "shared_specialization", "reachability_out_degree", "bibliographical_coupling",
+    }
+    for key in requested_weights:
+        values = pd.to_numeric(frame[key], errors="coerce")
+        grouping = (
+            frame["citation_normalization_group"]
+            if key in citation_dimensions else frame["source_format"]
+        )
+        percentile = values.groupby(grouping, dropna=False).rank(method="average", pct=True)
         if key == "patent_age":
-            percentile = 1.0 - percentile + (1.0 / len(frame))
-        frame[f"{key}_percentile"] = percentile.round(4)
-        frame["score"] += percentile * weight * 100
-    scored = frame.to_dict(orient="records")
-    for item in scored:
-        item["score"] = round(float(item["score"]), 2)
-        item["scoring_dimensions"] = sorted(normalized_weights)
-    scored.sort(key=lambda x: x["score"], reverse=True)
-    for i, item in enumerate(scored):
-        item["rank"] = i + 1
+            group_sizes = values.notna().groupby(grouping, dropna=False).transform("sum")
+            percentile = 1.0 - percentile + (1.0 / group_sizes.clip(lower=1))
+        frame[f"{key}_percentile"] = percentile.round(6)
+
+    rows: list[dict] = []
+    for _, row in frame.iterrows():
+        dimensions = [
+            key for key in requested_weights
+            if pd.notna(row.get(key)) and pd.notna(row.get(f"{key}_percentile"))
+        ]
+        missing = sorted(set(requested_weights) - set(dimensions))
+        available_weight = sum(requested_weights[key] for key in dimensions)
+        available_ratio = available_weight / requested_total
+        weighted_observed = sum(
+            float(row[f"{key}_percentile"]) * requested_weights[key]
+            for key in dimensions
+        )
+        score = 100 * weighted_observed / available_weight if available_weight else 0.0
+        lower = 100 * weighted_observed / requested_total
+        upper = lower + 100 * (1.0 - available_ratio)
+        item = {
+            key: (None if pd.isna(value) else value)
+            for key, value in row.to_dict().items()
+        }
+        item.update({
+            "score": round(score, 2),
+            "score_interval": [round(lower, 2), round(min(100.0, upper), 2)],
+            "available_weight_ratio": round(available_ratio, 4),
+            "missing_dimensions": missing,
+            "scoring_dimensions": sorted(dimensions),
+            "confidence_level": (
+                "high" if available_ratio >= 0.85
+                else "medium" if available_ratio >= 0.6 else "low"
+            ),
+        })
+        item["comparability_group"] = (
+            f"{item.get('source_format', 'unknown')}|" + ",".join(sorted(dimensions))
+        )
+        rows.append(item)
+
+    group_sizes: dict[str, int] = {}
+    for item in rows:
+        group = item["comparability_group"]
+        group_sizes[group] = group_sizes.get(group, 0) + 1
+    for item in rows:
+        item["comparability_group_size"] = group_sizes[item["comparability_group"]]
+        item["comparable_within_group"] = group_sizes[item["comparability_group"]] >= 2
+
+    # A rank is only meaningful inside a group with the same source and dimensions.
+    for group in sorted(group_sizes):
+        members = [item for item in rows if item["comparability_group"] == group]
+        members.sort(key=lambda item: (-item["score"], item["patent_number"]))
+        for index, item in enumerate(members, start=1):
+            item["rank"] = index
+            item["rank_scope"] = "comparability_group"
+    scored = sorted(
+        rows,
+        key=lambda item: (
+            not item["comparable_within_group"],
+            item["comparability_group"],
+            item["rank"],
+        ),
+    )
     return scored
 
 

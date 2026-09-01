@@ -4,6 +4,7 @@ import type {
   SessionSummary, SessionDetail,
   ProviderCredentials, ProviderProfile, ProviderProfileInput, ProviderProbeResult,
   AgentTask, DatasetVersion, SearchCapabilityStatus, TaskEvent,
+  CapabilityDefinition, DatasetImportStatus, DatasetRecord, ReportSummary,
 } from "./types";
 
 const BASE = "/api";
@@ -60,8 +61,36 @@ export function loadData(inputDir: string, sourceFormat: SourceFormat = "auto"):
   });
 }
 
-export function fetchDatasets(): Promise<{ datasets: Record<string, unknown>[]; trace_id?: string }> {
-  return request<{ datasets: Record<string, unknown>[]; trace_id?: string }>("/datasets");
+export function fetchDatasets(): Promise<{ datasets: DatasetRecord[]; trace_id?: string }> {
+  return request<{ datasets: DatasetRecord[]; trace_id?: string }>("/datasets");
+}
+
+export async function uploadDataset(
+  files: File[], name: string, sourceFormat: SourceFormat = "auto", datasetId = "",
+): Promise<{ import_id: string; status: string; dataset_id: string; files: string[] }> {
+  const form = new FormData();
+  files.forEach(file => form.append("files", file));
+  form.append("name", name);
+  form.append("source_format", sourceFormat);
+  if (datasetId) form.append("dataset_id", datasetId);
+  const response = await fetch(`${BASE}/datasets/imports`, { method: "POST", body: form });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError((body as { detail?: string }).detail || response.statusText);
+  }
+  return response.json();
+}
+
+export function fetchImport(id: string): Promise<DatasetImportStatus> {
+  return request<{ import: DatasetImportStatus }>(`/imports/${id}`).then(result => result.import);
+}
+
+export function updateDataset(
+  id: string, values: { name?: string; status?: "ready" | "archived" },
+): Promise<DatasetRecord> {
+  return request<{ dataset: DatasetRecord }>(`/datasets/${id}`, {
+    method: "PATCH", body: JSON.stringify(values),
+  }).then(result => result.dataset);
 }
 
 export function fetchDatasetVersions(id: string): Promise<{ versions: DatasetVersion[] }> {
@@ -72,6 +101,10 @@ export function fetchDatasetVersions(id: string): Promise<{ versions: DatasetVer
 
 export function fetchTools(): Promise<{ tools: Tool[] }> {
   return request<{ tools: Tool[] }>("/tools");
+}
+
+export function fetchCapabilities(): Promise<{ capabilities: CapabilityDefinition[] }> {
+  return request<{ capabilities: CapabilityDefinition[] }>("/capabilities");
 }
 
 export function fetchSearchStatus(): Promise<SearchCapabilityStatus> {
@@ -149,9 +182,17 @@ export function disconnectLLM(): Promise<{ status: string }> {
 
 // ── Persistent sessions ──
 
-export function createSession(name = "新会话"): Promise<SessionSummary> {
+export function createSession(name = "新会话", datasetVersionId?: string): Promise<SessionSummary> {
   return request<SessionSummary>("/sessions", {
-    method: "POST", body: JSON.stringify({ name }),
+    method: "POST", body: JSON.stringify({ name, dataset_version_id: datasetVersionId }),
+  });
+}
+
+export function bindSessionDataset(id: string, datasetVersionId: string): Promise<{
+  session: SessionSummary; stale_evidence_count: number;
+}> {
+  return request(`/sessions/${id}/dataset`, {
+    method: "PUT", body: JSON.stringify({ dataset_version_id: datasetVersionId }),
   });
 }
 
@@ -325,4 +366,20 @@ export function exportReport(messages: { role: string; content: string }[], titl
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages, title }),
   }).then(res => res.text());
+}
+
+export function createReport(
+  sessionId: string, title: string, turnId?: string,
+): Promise<ReportSummary> {
+  return request<{ report: ReportSummary }>("/reports", {
+    method: "POST", body: JSON.stringify({ session_id: sessionId, title, turn_id: turnId }),
+  }).then(result => result.report);
+}
+
+export function fetchReports(): Promise<{ reports: ReportSummary[] }> {
+  return request<{ reports: ReportSummary[] }>("/reports");
+}
+
+export function reportUrl(id: string): string {
+  return `${BASE}/reports/${id}`;
 }

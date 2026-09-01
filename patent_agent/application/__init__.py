@@ -11,6 +11,7 @@ from .conversations import (
 )
 from .providers import ProviderBusyError, ProviderInUseError, ProviderService
 from .tasks import TaskNotFoundError, TaskService, TaskStateError
+from .dataset_runtime import DatasetRuntimeManager
 
 __all__ = [
     "AnalysisService", "DatasetCatalog", "DatasetImportService",
@@ -19,4 +20,5 @@ __all__ = [
     "normalize_session_detail",
     "ProviderBusyError", "ProviderInUseError", "ProviderService",
     "TaskNotFoundError", "TaskService", "TaskStateError",
+    "DatasetRuntimeManager",
 ]

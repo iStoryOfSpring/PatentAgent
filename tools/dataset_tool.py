@@ -26,6 +26,7 @@ class DatasetSummaryTool(Tool):
     methodology = "数据集记录数、公开日期范围、IPC 与申请人字段的描述性汇总。"
     evidence_level = "descriptive_statistics"
     allow_empty = True
+    supports_scope = False
 
     async def execute(self, storage: PatentDataStore) -> DatasetSummaryResult:
         summary = storage.get_summary()
@@ -41,22 +42,6 @@ class DatasetSummaryTool(Tool):
             top_applicants=top_apps,
         )
 
-        lines = [
-            f"**专利总量**: {summary.total_patents:,} 件",
-            f"**时间跨度**: {summary.year_range[0]} – {summary.year_range[1]}",
-            f"**IPC 部级分类**: {', '.join(summary.ipc_sections)}",
-            "",
-            "**主要申请人 (Top 10)**:",
-        ]
-        for i, (name, count) in enumerate(summary.top_applicants, 1):
-            lines.append(f"  {i}. {name}: {count:,} 件")
-
-        result.chart_html = (
-            '<div style="background:#1a1a2e;color:#e0e0e0;padding:20px;'
-            'border-radius:8px;font-family:monospace;line-height:1.8">'
-            + '<br>'.join(lines).replace('\n', '<br>') +
-            '</div>'
-        )
         return result
 
 

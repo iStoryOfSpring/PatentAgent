@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from patent_agent.domain import ExecutionMetrics, ToolProvenance
+from patent_agent.domain import AlgorithmExecution, ExecutionMetrics, ToolProvenance
 
 
 class AnalysisResult(BaseModel):
@@ -22,6 +22,7 @@ class AnalysisResult(BaseModel):
     source_capabilities: dict[str, Any] = Field(default_factory=dict)
     unsupported_conclusions: list[str] = Field(default_factory=list)
     data_as_of: str = ""
+    algorithm_execution: AlgorithmExecution | None = None
 
 
 class GenericAnalysisResult(AnalysisResult):
@@ -115,6 +116,9 @@ class ClusteringResult(AnalysisResult):
     patents_per_cluster: dict[int, int]
     cluster_titles: dict[int, str] = Field(default_factory=dict)
     silhouette_score: float | None = None
+    record_ids: list[str] = Field(default_factory=list)
+    representative_patents: dict[int, list[dict]] = Field(default_factory=dict)
+    cluster_profiles: dict[int, dict] = Field(default_factory=dict)
 
 
 class TechEffectMatrix(AnalysisResult):
@@ -135,7 +139,9 @@ class ValueIndicators(AnalysisResult):
 class PatentSearchResult(AnalysisResult):
     result_type: str = "patent_search"
     patents: list[dict]  # PatentSummary 列表
-    total_hits: int
+    total_hits: int | None = None
+    total_hits_exact: bool = False
+    returned_count: int = 0
     query_embedding_time_ms: float = 0.0
 
 

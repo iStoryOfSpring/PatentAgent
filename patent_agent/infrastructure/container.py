@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         ProviderService, SearchIndexService, TaskService,
         ToolExecutionService,
     )
+    from patent_agent.application.dataset_runtime import DatasetRuntimeManager
     from patent_agent.infrastructure.settings import AppSettings
     from storage.conversation_store import ConversationStore
     from storage.datastore import PatentDataStore
@@ -37,6 +38,7 @@ class AppContainer:
     report_service: ReportService | None = None
     search_index_service: SearchIndexService | None = None
     task_service: TaskService | None = None
+    dataset_runtime: DatasetRuntimeManager | None = None
     sessions: dict[str, Session] = field(default_factory=dict)
     credential_vault: CredentialVault = field(default_factory=CredentialVault)
     connected_profile_id: str | None = None

@@ -38,6 +38,15 @@ my_patents/
 .patent_cache*.hash
 .patent_cache*.parquet
 
+# Local development reference material — do not publish source books or PDFs
+专利分析方法-图表解读与情报挖掘/
+论文：理论依据/
+**/参考资料/
+**/参考文件/
+**/reference/
+**/references/
+*.pdf
+
 # Generated output — charts, CSVs, rendered HTML
 output/
 

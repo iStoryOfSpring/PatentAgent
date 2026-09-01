@@ -108,11 +108,10 @@ class TFIDFEmbedding(EmbeddingProvider):
             self._fitted = True
         else:
             vectors = self.vectorizer.transform(texts)
-        # 转为稠密矩阵并 L2 归一化
-        dense = vectors.toarray().astype(np.float32)
-        norms = np.linalg.norm(dense, axis=1, keepdims=True)
-        norms[norms == 0] = 1.0
-        return dense / norms
+        # TfidfVectorizer already applies row-wise L2 normalization. Preserve
+        # CSR sparsity: densifying 100k x 768 float vectors costs hundreds of
+        # MiB and provides no benefit for a single-query dot product.
+        return vectors.astype(np.float32).tocsr()
 
 
 # ── 工厂函数 ──

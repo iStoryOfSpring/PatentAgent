@@ -8,6 +8,18 @@ export default defineConfig({
     // Keep the warning threshold below 1 MiB while treating that isolated
     // optional chunk separately from the 430 KiB application shell.
     chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        // Keep the optional visualization runtime cacheable and under the
+        // per-chunk gzip budget. ECharts computation and zrender drawing have
+        // different change rates and do not need to invalidate each other.
+        manualChunks(id) {
+          if (id.includes("/node_modules/zrender/")) return "zrender-runtime";
+          if (id.includes("/node_modules/echarts/")) return "echarts-runtime";
+          return undefined;
+        },
+      },
+    },
   },
   server: {
     port: 5173,

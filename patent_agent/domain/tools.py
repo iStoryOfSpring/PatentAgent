@@ -9,6 +9,17 @@ from pydantic import BaseModel, Field
 from .tasks import ErrorInfo
 
 
+class AlgorithmExecution(BaseModel):
+    """The algorithm path that actually produced one tool result."""
+
+    algorithm_id: str
+    algorithm_version: str
+    mode_requested: str = "default"
+    mode_used: str = "default"
+    fallback_reason: str | None = None
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+
 class ToolDefinition(BaseModel):
     name: str
     version: str
@@ -27,6 +38,8 @@ class ToolProvenance(BaseModel):
     dataset_content_hash: str
     adapter: str
     input_record_count: int
+    scope_record_count: int = 0
+    family_deduplicated_record_count: int = 0
     analyzed_record_count: int
     sampled: bool = False
     sample_size: int | None = None
@@ -35,6 +48,7 @@ class ToolProvenance(BaseModel):
     algorithm_id: str = ""
     algorithm_version: str = ""
     parameters: dict[str, Any] = Field(default_factory=dict)
+    scope: dict[str, Any] = Field(default_factory=dict)
 
 
 class ExecutionMetrics(BaseModel):

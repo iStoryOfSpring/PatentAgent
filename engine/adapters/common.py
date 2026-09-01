@@ -155,6 +155,10 @@ def _merge_into(target: PatentRecord, source: PatentRecord) -> None:
         ("citation_records", lambda item: (
             item.source_publication_number, item.target_publication_number, item.citation_type,
         )),
+        ("applicant_parties", lambda item: (item.name, item.role, item.source_role)),
+        ("assignee_parties", lambda item: (item.name, item.role, item.source_role)),
+        ("current_rights_holder_parties", lambda item: (item.name, item.role, item.source_role)),
+        ("inventor_parties", lambda item: (item.name, item.role, item.source_role)),
     )
     for field, identity in keyed_lists:
         current = list(getattr(target, field))

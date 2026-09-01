@@ -9,16 +9,26 @@ class ConversationService:
     def __init__(self, repository):
         self.repository = repository
 
-    async def create(self, name: str, dataset_fingerprint: str):
-        return await self.repository.create_session(name, dataset_fingerprint)
+    async def create(
+        self, name: str, dataset_fingerprint: str, dataset_version_id: str = "",
+    ):
+        return await self.repository.create_session(
+            name, dataset_fingerprint, dataset_version_id=dataset_version_id,
+        )
 
     async def list(self):
         return await self.repository.list_sessions()
 
-    async def get(self, session_id: str, dataset_fingerprint: str):
-        await self.repository.ensure_session(session_id, dataset_fingerprint)
+    async def get(self, session_id: str, dataset_fingerprint: str = ""):
         return normalize_session_detail(
             await self.repository.get_session_detail(session_id)
+        )
+
+    async def bind_dataset(
+        self, session_id: str, dataset_version_id: str, dataset_fingerprint: str,
+    ):
+        return await self.repository.bind_session_dataset(
+            session_id, dataset_version_id, dataset_fingerprint,
         )
 
     async def rename(self, session_id: str, name: str):

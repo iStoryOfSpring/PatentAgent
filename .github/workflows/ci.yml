@@ -49,7 +49,31 @@ jobs:
       - run: uv export --frozen --extra mcp --group dev --format requirements-txt --no-emit-project --output-file requirements.txt
       - run: git diff --exit-code -- requirements.txt
       - run: uv sync --frozen --extra mcp --group dev
+      - run: uv run python -m scripts.verify_import_manifest tests/fixtures/official_formats
+      - run: uv run python -m scripts.validate_official_samples
+      - run: uv run python -m scripts.verify_contracts
+      - run: uv run python -m scripts.verify_methodology_registry
       - run: uv run python -m pytest tests/test_mcp_integration.py tests/test_provider_profiles.py tests/test_reproducibility.py -q
+
+  performance:
+    name: performance-100k-baseline
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: "0"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      LOKY_MAX_CPU_COUNT: "4"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.30"
+          enable-cache: true
+          python-version: "3.13"
+      - run: uv sync --frozen --extra mcp --group dev
+      - run: uv run python -m scripts.benchmark_retrieval --records 100000
+      - run: uv run python -m scripts.benchmark_tool_runtime --records 100000
 
   frontend:
     name: frontend-node-20

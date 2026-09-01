@@ -8,6 +8,7 @@ Protect the default branch and require these GitHub Actions checks before merge:
 - `backend-python-3.13`
 - `backend-python-3.14`
 - `contracts-lock-migrations-mcp`
+- `performance-100k-baseline`
 - `frontend-node-20`
 
 Also require pull requests, dismiss stale approvals after new commits, and block force pushes.

@@ -153,17 +153,46 @@ def test_manifest_rejects_paths_outside_dataset(tmp_path):
 def test_malformed_inputs_and_oversized_text_are_bounded(tmp_path):
     malformed_json = tmp_path / "broken.jsonl"
     malformed_json.write_text('{"publication_number":', encoding="utf-8")
-    with pytest.raises(ValueError):
-        GooglePatentsExportAdapter().parse_file(str(malformed_json))
+    json_adapter = GooglePatentsExportAdapter()
+    assert json_adapter.parse_file(str(malformed_json)) == []
+    assert json_adapter.parse_diagnostics["detected"] == 1
+    assert json_adapter.parse_diagnostics["failed"] == 1
+    assert json_adapter.parse_diagnostics["issues"][0]["sample_hash"]
 
     malformed_xml = tmp_path / "broken.xml"
     malformed_xml.write_text("<us-patent-grant><broken>", encoding="utf-8")
-    with pytest.raises(Exception):
-        USPTOGrantXmlAdapter().parse_file(str(malformed_xml))
+    xml_adapter = USPTOGrantXmlAdapter()
+    assert xml_adapter.parse_file(str(malformed_xml)) == []
+    assert xml_adapter.parse_diagnostics["detected"] == 1
+    assert xml_adapter.parse_diagnostics["failed"] == 1
 
     localized = _localized({"language": "en", "text": "x" * (MAX_LOCALIZED_TEXT_CHARS + 1)})
     assert len(localized[0].text) == MAX_LOCALIZED_TEXT_CHARS
     assert localized[0].truncated
+
+
+def test_record_level_import_accounting_and_redacted_quarantine(tmp_path):
+    source = tmp_path / "mixed.jsonl"
+    source.write_text(
+        '{"publication_number":"US1A1","title_localized":[{"language":"en","text":"ok"}]}\n'
+        '{"publication_number":\n',
+        encoding="utf-8",
+    )
+
+    records, report, _ = PatentDatasetImporter().import_directory(
+        str(tmp_path), "google_patents_jsonl",
+    )
+
+    assert len(records) == 1
+    assert report.records_expected == 2
+    assert report.records_detected == 2
+    assert report.records_succeeded == 1
+    assert report.records_failed == 1
+    assert report.records_skipped == 0
+    assert report.records_succeeded + report.records_failed + report.records_skipped == report.records_detected
+    assert report.parse_rate == 0.5
+    assert report.issues[0].sample_hash
+    assert report.quarantine_path.endswith(".patentagent-import-quarantine.jsonl")
 
 
 def test_data_load_api_accepts_source_format_and_returns_import_report(tmp_path, monkeypatch):

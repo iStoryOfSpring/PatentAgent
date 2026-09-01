@@ -295,6 +295,8 @@ class ProviderService:
         new_agent = PatentAgentOrchestrator(
             llm_client=new_client, tool_registry=tool_registry,
             knowledge_base=build_default_knowledge(),
+            tool_semaphore=self.container.tool_semaphore,
+            queue_wait_timeout=self.container.settings.max_tool_queue_wait_seconds,
         )
         try:
             await self.repository.select_profile(profile_id)
@@ -356,6 +358,8 @@ class ProviderService:
             self.container.agent = PatentAgentOrchestrator(
                 llm_client=candidate, tool_registry=tool_registry,
                 knowledge_base=build_default_knowledge(),
+                tool_semaphore=self.container.tool_semaphore,
+                queue_wait_timeout=self.container.settings.max_tool_queue_wait_seconds,
             )
             self.container.connected_profile_id = None
             self.container.connected_profile_snapshot = {

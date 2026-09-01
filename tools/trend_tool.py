@@ -3,7 +3,6 @@
 from tools.base import Tool, tool_registry
 from storage.datastore import PatentDataStore
 from engine import trend
-from viz import charts
 from models.analysis_results import MonthlyTrendResult
 
 
@@ -18,6 +17,7 @@ class TrendTool(Tool):
             "type": "string",
             "enum": ["monthly", "yearly"],
             "description": "图表类型: monthly=月度趋势, yearly=年度趋势。默认 monthly。",
+            "default": "monthly",
         },
         "year_start": {
             "type": "integer",
@@ -53,10 +53,8 @@ class TrendTool(Tool):
                            applicant_filter=applicant_filter)
         if chart_type == "yearly":
             result = trend.compute_yearly_trend(df)
-            chart_obj = charts.plot_yearly_trend(result)
         else:
             result = trend.compute_monthly_trend(df)
-            chart_obj = charts.plot_monthly_trend(result)
         result.summary = (
             f"按专利公开日期生成 {chart_type} 趋势，共 {len(result.data)} 个时间点，"
             f"筛选后 {len(df):,} 件记录。"
@@ -65,14 +63,11 @@ class TrendTool(Tool):
             "population_after_filters": len(df),
             "date_semantics": "publication_date",
         })
-        if not df.empty and "year" in df and "month" in df:
-            max_year = int(df["year"].dropna().max())
-            months = df.loc[df["year"] == max_year, "month"].dropna().nunique()
-            if months < 10:
-                result.warnings.append(
-                    f"尾年 {max_year} 仅覆盖 {months} 个月，下降可能来自数据未完整收录或公开滞后。"
-                )
-        result.chart_html = chart_obj.render_embed()
+        time_audit, warnings = trend.audit_publication_time_coverage(
+            df, storage.audit().get("data_as_of", ""),
+        )
+        result.result_metadata["time_coverage"] = time_audit
+        result.warnings.extend(warnings)
         return result
 
 

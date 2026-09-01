@@ -82,7 +82,7 @@ def test_committed_wos_fixture_matches_golden_dataset_contract(golden_store):
 
 
 @pytest.mark.parametrize("tool_name", sorted(PARAMETERS))
-def test_all_sixteen_tools_emit_traceable_contract(tool_name, golden_store):
+def test_all_core_tools_emit_traceable_contract(tool_name, golden_store):
     tool = tool_registry.get_tool(tool_name)
     assert tool.availability(golden_store)["available"], tool.availability(golden_store)
     result = asyncio.run(tool.run(golden_store, **PARAMETERS[tool_name]))

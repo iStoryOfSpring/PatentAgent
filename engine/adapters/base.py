@@ -38,6 +38,34 @@ class PatentAdapter(ABC):
     display_name: str = ""
     version: str = "1.0"
 
+    def _reset_parse_diagnostics(self) -> None:
+        self.parse_diagnostics = {
+            "expected": 0,
+            "detected": 0,
+            "succeeded": 0,
+            "failed": 0,
+            "skipped": 0,
+            "issues": [],
+        }
+
+    def _record_parse_issue(
+        self, *, filepath: str, record_id: str, location: str,
+        code: str, message: str, sample: str | bytes = "",
+        outcome: str = "failed",
+    ) -> None:
+        if not hasattr(self, "parse_diagnostics"):
+            self._reset_parse_diagnostics()
+        sample_bytes = sample if isinstance(sample, bytes) else str(sample).encode("utf-8")
+        self.parse_diagnostics[outcome] += 1
+        self.parse_diagnostics["issues"].append({
+            "file": os.path.basename(filepath),
+            "record_id": record_id,
+            "location": location,
+            "code": code,
+            "message": message,
+            "sample_hash": hashlib.sha256(sample_bytes).hexdigest() if sample_bytes else "",
+        })
+
     # ── Abstract ──
 
     @abstractmethod
@@ -207,6 +235,10 @@ class PatentAdapter(ABC):
                 'record_provenance_json': (
                     p.provenance.model_dump_json() if p.provenance else ''
                 ),
+                'applicant_parties_json': _json_dump(p.applicant_parties),
+                'assignee_parties_json': _json_dump(p.assignee_parties),
+                'current_rights_holder_parties_json': _json_dump(p.current_rights_holder_parties),
+                'inventor_parties_json': _json_dump(p.inventor_parties),
                 'source_file': p.source_file,
             })
         df = pd.DataFrame(rows)

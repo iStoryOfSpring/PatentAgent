@@ -3,7 +3,6 @@
 from tools.base import Tool, tool_registry
 from storage.datastore import PatentDataStore
 from engine import nlp
-from viz import charts
 from models.analysis_results import WordFreqResult, BurstTermResult, YearlyKeywordsResult
 
 
@@ -18,11 +17,12 @@ class NLPWordCloudTool(Tool):
             "type": "string",
             "enum": ["title", "abstract"],
             "description": "文本来源: title=标题, abstract=摘要。默认 title。",
+            "default": "title",
         },
     }
     required_fields = ("title",)
     optional_fields = ("abstract",)
-    methodology = "Derwent 模板清洗、词形规范化、文档频率过滤后的技术术语频次。"
+    methodology = "Derwent 模板清洗后按专利文档频率统计术语和高支持短语，同时公开原始词频与文档占比。"
     evidence_level = "engineering_approximation"
 
     async def execute(self, storage: PatentDataStore,
@@ -30,15 +30,6 @@ class NLPWordCloudTool(Tool):
         df = storage.get_all()
         texts = df[text_source].dropna().tolist()
         result = nlp.compute_word_frequency(texts, top_n=100)
-        if result.data:
-            wc = charts.plot_wordcloud(result, f"专利{text_source}关键词云")
-            bar = charts.plot_wordfreq_bar(result, f"专利{text_source}高频词 Top 20")
-            result.chart_html = (
-                '<div style="display:flex;flex-direction:column;gap:40px">'
-                f'<div>{wc.render_embed()}</div>'
-                f'<div>{bar.render_embed()}</div>'
-                '</div>'
-            )
         return result
 
 
@@ -65,9 +56,6 @@ class BurstTermTool(Tool):
         yearly_texts = {int(k): v for k, v in yearly_texts.items()
                         if not (isinstance(k, float) and k != k)}
         result = nlp.compute_burst_terms(yearly_texts, top_n=20)
-        if result.data:
-            chart_obj = charts.plot_burst_terms(result)
-            result.chart_html = chart_obj.render_embed()
         return result
 
 
@@ -82,20 +70,18 @@ class YearlyKeywordsTool(Tool):
             "type": "string",
             "enum": ["title", "abstract"],
             "description": "文本来源。默认 title。",
+            "default": "title",
         },
     }
     required_fields = ("publication_date", "title")
     optional_fields = ("abstract",)
-    methodology = "按公开年份统计经过清洗与最小支持过滤的技术术语。"
+    methodology = "按公开年份统计经过清洗的技术术语文档频率；一件专利对同一术语每年最多贡献一次。"
     evidence_level = "descriptive_statistics"
 
     async def execute(self, storage: PatentDataStore,
                       text_source: str = "title") -> YearlyKeywordsResult:
         df = storage.get_all()
         result = nlp.compute_yearly_keywords(df, text_col=text_source, top_n=10)
-        if result.data:
-            chart_obj = charts.plot_yearly_keywords(result)
-            result.chart_html = chart_obj.render_embed()
         return result
 
 

@@ -59,6 +59,20 @@ def test_beta_fuses_lexical_and_multilingual_rankings(monkeypatch):
     assert any("Beta" in warning for warning in result.warnings)
 
 
+def test_tool_run_records_actual_beta_algorithm(monkeypatch):
+    def searcher(_store, mode="lexical"):
+        return _Searcher(["A", "B"] if mode == "lexical" else ["B", "A"])
+
+    monkeypatch.setattr("tools.search_tool._get_searcher", searcher)
+    result = asyncio.run(SearchTool().run(
+        _store(), query="固态电池", top_k=2,
+        retrieval_mode="multilingual_hybrid_beta",
+    ))
+    assert result.provenance.algorithm_id == "multilingual_minilm_rrf_beta"
+    assert result.provenance.algorithm_version == "1.0-beta"
+    assert result.algorithm_execution.mode_used == "multilingual_hybrid_beta"
+
+
 def test_beta_failure_is_visible_and_uses_lexical_results(monkeypatch):
     def searcher(_store, mode="lexical"):
         if mode != "lexical":
@@ -74,6 +88,23 @@ def test_beta_failure_is_visible_and_uses_lexical_results(monkeypatch):
     assert result.result_metadata["retrieval_mode_used"] == "lexical"
     assert result.result_metadata["beta_fallback"]
     assert "明确回退" in result.warnings[0]
+
+
+def test_tool_run_records_fallback_algorithm(monkeypatch):
+    def searcher(_store, mode="lexical"):
+        if mode != "lexical":
+            raise ImportError("sentence-transformers missing")
+        return _Searcher(["A"])
+
+    monkeypatch.setattr("tools.search_tool._get_searcher", searcher)
+    result = asyncio.run(SearchTool().run(
+        _store(), query="battery", top_k=1,
+        retrieval_mode="multilingual_hybrid_beta",
+    ))
+    assert result.provenance.algorithm_id == "tfidf_cosine_retrieval"
+    assert result.algorithm_execution.mode_requested == "multilingual_hybrid_beta"
+    assert result.algorithm_execution.mode_used == "lexical"
+    assert result.algorithm_execution.fallback_reason
 
 
 def test_vector_index_cache_round_trip_without_pickle(tmp_path):

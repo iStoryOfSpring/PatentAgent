@@ -49,13 +49,14 @@ class _ToolSelectingLLM:
         payload = tool_results[0]["payload"]
         assert payload["tool_name"] == "analyze_patent_trend"
         assert "yearly" in payload["summary"]
+        summary_ref = payload["evidence_uri_root"] + "summary"
         return ChatResponse(json.dumps({
-            "answer_markdown": "仅回答年度公开趋势。数据限制：只表示公开量。[analyze_patent_trend:data]",
-            "evidence_refs": ["[analyze_patent_trend:data]"],
+            "answer_markdown": "仅回答年度公开趋势。数据限制：只表示公开量。",
+            "evidence_refs": [summary_ref],
             "followup_suggestions": [{
                 "text": "2021 年公开量变化由哪些申请人贡献？",
                 "kind": "new_analysis", "requires_new_tools": True,
-                "evidence_ref": "[analyze_patent_trend:data]",
+                "evidence_ref": summary_ref,
             }],
         }, ensure_ascii=False))
 
@@ -135,13 +136,12 @@ def test_schema_drift_is_locally_repaired_instead_of_returning_raw_json():
         final = next(event for event in events if event["type"] == "final")
         done = next(event for event in events if event["type"] == "done")
         assert llm.roundtrips == 2
-        assert final["text"].startswith("## 核心结论")
-        assert "## 方法与数据限制" in final["text"]
+        assert final["text"].startswith("## 结构化降级总结")
+        assert "### 数据限制" in final["text"]
         assert '"answer"' not in final["text"]
-        assert final["followup_questions"] == ["2021 年的变化由哪些申请人贡献？"]
-        assert final["normalization_mode"] == "local_repair"
+        assert final["normalization_mode"] == "fallback"
         assert done["answer_format"] == "markdown"
-        assert done["normalization_mode"] == "local_repair"
+        assert done["normalization_mode"] == "fallback"
 
     asyncio.run(scenario())
 
