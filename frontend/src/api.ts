@@ -6,6 +6,7 @@ import type {
   AgentTask, DatasetVersion, SearchCapabilityStatus, TaskEvent,
   CapabilityDefinition, DatasetImportStatus, DatasetRecord, ReportSummary,
 } from "./types";
+import { httpStatusLabel, localizeErrorMessage } from "./uiLabels";
 
 const BASE = "/api";
 
@@ -26,15 +27,20 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(BASE + path, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+  let res: Response;
+  try {
+    res = await fetch(BASE + path, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+  } catch (error) {
+    throw new ApiError(localizeErrorMessage((error as Error).message));
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const raw = (body as { detail?: string | ApiErrorDetail }).detail;
     const detail = typeof raw === "object" && raw ? raw : undefined;
-    const message = typeof raw === "string" ? raw : detail?.message || res.statusText;
+    const message = localizeErrorMessage(typeof raw === "string" ? raw : detail?.message || httpStatusLabel(res.status, res.statusText));
     throw new ApiError(message, detail);
   }
   return res.json();
@@ -73,10 +79,15 @@ export async function uploadDataset(
   form.append("name", name);
   form.append("source_format", sourceFormat);
   if (datasetId) form.append("dataset_id", datasetId);
-  const response = await fetch(`${BASE}/datasets/imports`, { method: "POST", body: form });
+  let response: Response;
+  try {
+    response = await fetch(`${BASE}/datasets/imports`, { method: "POST", body: form });
+  } catch (error) {
+    throw new ApiError(localizeErrorMessage((error as Error).message));
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new ApiError((body as { detail?: string }).detail || response.statusText);
+    throw new ApiError(localizeErrorMessage((body as { detail?: string }).detail || httpStatusLabel(response.status, response.statusText)));
   }
   return response.json();
 }
@@ -254,7 +265,7 @@ export function streamTaskEvents(
       headers: afterEventId ? { "Last-Event-ID": String(afterEventId) } : undefined,
       signal: controller.signal,
     });
-    if (!response.ok || !response.body) throw new Error(response.statusText);
+    if (!response.ok || !response.body) throw new Error(httpStatusLabel(response.status, response.statusText));
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -306,7 +317,7 @@ export function streamChat(
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
-        throw new Error((body as { detail?: string }).detail || response.statusText);
+        throw new Error(localizeErrorMessage((body as { detail?: string }).detail || httpStatusLabel(response.status, response.statusText)));
       }
 
       const reader = response.body!.getReader();
@@ -350,7 +361,7 @@ export function streamChat(
       onDone();
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
-        onError(err as Error);
+        onError(new Error(localizeErrorMessage((err as Error).message)));
       }
     }
   })();

@@ -74,7 +74,7 @@ export const EChartCanvas = forwardRef<EChartCanvasHandle, EChartCanvasProps>(
         <div
           ref={elementRef}
           role="img"
-          aria-label="PatentAgent 数据可视化"
+          aria-label="PatentAgent 数据可视化图表"
           style={{
             width: fit ? "100%" : `${width}px`,
             minWidth: fit ? 0 : `${width}px`,

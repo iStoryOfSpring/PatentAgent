@@ -12,6 +12,9 @@ import type {
   ProviderCredentials, ProviderProfile, ProviderProfileInput, ProviderProtocol,
   ProviderProbeResult,
 } from "../types";
+import {
+  authModeLabel, errorCategoryLabel, probeStageLabel, protocolLabel, reasoningEffortLabel, thinkingModeLabel,
+} from "../uiLabels";
 
 type Preset = { label: string; profile: ProviderProfileInput };
 
@@ -51,12 +54,6 @@ const RESERVED_BODY_KEYS = new Set([
   "model", "messages", "tools", "tool_choice", "response_format",
   "max_tokens", "max_completion_tokens", "stream",
 ]);
-
-const protocolLabel = (protocol: ProviderProtocol) => ({
-  openai_chat: "OpenAI Chat",
-  anthropic_messages: "Anthropic Messages",
-  deepseek_chat: "DeepSeek Chat",
-}[protocol]);
 
 const groupModels = (models: string[]) => models.reduce<Record<string, string[]>>((groups, model) => {
   const namespace = model.includes("/") ? model.split("/", 1)[0] :
@@ -179,7 +176,7 @@ export function LLMAdvancedSettings({
   };
 
   const save = async (): Promise<ProviderProfile> => {
-    if (jsonError) throw new Error("请先修复 Extra Body JSON")
+    if (jsonError) throw new Error("请先修复附加请求体 JSON")
     if (!draft.name.trim()) {
       throw new Error("供应商名称不能为空");
     }
@@ -208,7 +205,7 @@ export function LLMAdvancedSettings({
       if (
         action !== "models" && draft.auth_mode !== "none" && !apiKey &&
         !currentStored?.credential_loaded
-      ) throw new Error("当前配置需要 API Key");
+      ) throw new Error("当前配置需要接口密钥（API Key）");
       const saved = dirty || !editingId ? await save() : profiles.find(item => item.id === editingId)!;
       setBusy(action);
       if (action === "models") {
@@ -277,12 +274,12 @@ export function LLMAdvancedSettings({
   const currentStored = profiles.find(profile => profile.id === editingId);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950/35 backdrop-blur-sm flex items-center justify-center p-0 lg:p-6" role="dialog" aria-modal="true" aria-label="LLM 高级设置">
+    <div className="fixed inset-0 z-[100] bg-slate-950/35 backdrop-blur-sm flex items-center justify-center p-0 lg:p-6" role="dialog" aria-modal="true" aria-label="语言模型（LLM）高级设置">
       <div className="w-full h-full lg:h-[min(900px,94vh)] lg:max-w-[1240px] bg-white lg:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         <header className="h-16 px-5 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="font-bold text-slate-900">LLM 高级设置</h2>
-            <p className="text-xs text-slate-500">多供应商配置 · 凭证仅保存在后端内存</p>
+            <h2 className="font-bold text-slate-900">语言模型（LLM）高级设置</h2>
+            <p className="text-xs text-slate-500">多供应商配置 · 敏感凭证仅保存在后端进程内存中</p>
           </div>
           <button onClick={close} className="p-2 rounded-lg hover:bg-slate-100" aria-label="关闭高级设置"><X className="w-5 h-5" /></button>
         </header>
@@ -304,7 +301,7 @@ export function LLMAdvancedSettings({
                   </div>
                   <div className="text-[11px] text-slate-500 mt-1 truncate">{protocolLabel(profile.protocol)} · {profile.model || "未指定模型"}</div>
                   <div className={`text-[10px] mt-1 ${profile.connected ? "text-emerald-600" : profile.probe_status === "failed" ? "text-rose-600" : profile.credential_loaded ? "text-amber-600" : "text-slate-400"}`}>
-                    {profile.connected ? "已连接" : profile.needs_reconnect ? "配置已修改，需要重新连接" : profile.probe_status === "failed" ? `探测失败${profile.probe_error_category ? ` · ${profile.probe_error_category}` : ""}` : profile.auth_mode === "none" ? "无需凭证，尚未连接" : profile.credential_loaded ? "凭证已载入，尚未连接" : "待输入凭证"}
+                    {profile.connected ? "已连接" : profile.needs_reconnect ? "配置已修改，需要重新连接" : profile.probe_status === "failed" ? `探测失败${profile.probe_error_category ? ` · ${errorCategoryLabel(profile.probe_error_category)}` : ""}` : profile.auth_mode === "none" ? "无需凭证，尚未连接" : profile.credential_loaded ? "凭证已载入，尚未连接" : "待输入凭证"}
                   </div>
                 </button>
               ))}
@@ -321,7 +318,7 @@ export function LLMAdvancedSettings({
                   <h3 className="text-sm font-bold text-slate-800 mb-3">基础信息</h3>
                   <div className="grid lg:grid-cols-2 gap-4">
                     <label className="field-label">供应商名称<input value={draft.name} onChange={e => setField("name", e.target.value)} className="field-input" /></label>
-                    <label className="field-label">API 协议<select value={draft.protocol} onChange={e => { const value = e.target.value as ProviderProtocol; setField("protocol", value); if (value !== "deepseek_chat") setField("thinking_mode", "auto"); }} className="field-input"><option value="openai_chat">OpenAI Chat Compatible</option><option value="anthropic_messages">Anthropic Messages</option><option value="deepseek_chat">DeepSeek Chat</option></select></label>
+                    <label className="field-label">接口协议<select value={draft.protocol} onChange={e => { const value = e.target.value as ProviderProtocol; setField("protocol", value); if (value !== "deepseek_chat") setField("thinking_mode", "auto"); }} className="field-input"><option value="openai_chat">OpenAI 对话接口（兼容 Chat Completions）</option><option value="anthropic_messages">Anthropic 消息接口</option><option value="deepseek_chat">DeepSeek 对话接口</option></select><span className="field-help">决定请求地址、鉴权方式和消息格式；括号中的英文是服务端协议标识。</span></label>
                     <label className="field-label">官网地址<input value={draft.website_url} onChange={e => setField("website_url", e.target.value)} placeholder="https://example.com" className="field-input" /></label>
                     <label className="field-label lg:col-span-2">备注<textarea value={draft.notes} onChange={e => setField("notes", e.target.value)} rows={2} className="field-input resize-y" placeholder="用途、账号或模型能力说明" /></label>
                   </div>
@@ -330,12 +327,12 @@ export function LLMAdvancedSettings({
                 <div>
                   <h3 className="text-sm font-bold text-slate-800 mb-3">连接配置</h3>
                   <div className="grid lg:grid-cols-2 gap-4">
-                    <label className="field-label lg:col-span-2">请求地址<input value={draft.base_url} onChange={e => setField("base_url", e.target.value)} placeholder="https://api.example.com/v1" className="field-input font-mono" /><span className="field-help">远程地址必须使用 HTTPS；localhost 可使用 HTTP。</span></label>
-                    <label className="field-label">鉴权方式<select value={draft.auth_mode} onChange={e => setField("auth_mode", e.target.value as ProviderProfileInput["auth_mode"])} className="field-input"><option value="bearer">Bearer Token</option><option value="x_api_key">x-api-key</option><option value="custom_header">自定义 Header</option><option value="none">无鉴权</option></select></label>
-                    {draft.auth_mode !== "none" && <label className="field-label">API Key<div className="relative"><input type={showKey ? "text" : "password"} value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder={currentStored?.credential_loaded ? "已在内存中加载；留空继续使用" : "输入本次连接凭证"} className="field-input pr-10" autoComplete="off" /><button type="button" onClick={() => setShowKey(v => !v)} className="absolute right-2 top-2.5 text-slate-400">{showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div></label>}
-                    {draft.auth_mode !== "none" && <><label className="field-label">鉴权 Header<input value={draft.auth_header_name} onChange={e => setField("auth_header_name", e.target.value)} className="field-input" /></label><label className="field-label">值前缀<input value={draft.auth_prefix} onChange={e => setField("auth_prefix", e.target.value)} className="field-input" /></label></>}
-                    <label className="field-label">模型 ID<div className="flex gap-2"><input list="provider-model-list" value={draft.model} onChange={e => setField("model", e.target.value)} className="field-input min-w-0" /><button type="button" onClick={() => withSaved("models")} disabled={Boolean(busy)} className="secondary-button shrink-0">{busy === "models" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}获取模型</button></div><datalist id="provider-model-list">{models.map(model => <option key={model} value={model} />)}</datalist>{models.length > 0 && <><select aria-label="已发现模型" value={models.includes(draft.model) ? draft.model : ""} onChange={e => e.target.value && setField("model", e.target.value)} className="field-input"><option value="">选择发现的模型（或继续手工输入）</option>{Object.entries(groupedModels).map(([group, entries]) => <optgroup key={group} label={group}>{entries.map(model => <option key={model} value={model}>{model}</option>)}</optgroup>)}</select><span className="field-help">已发现 {models.length} 个模型，按命名空间/模型族分组。</span></>}</label>
-                    <label className="field-label">模型发现路径<input value={draft.model_discovery_path} onChange={e => setField("model_discovery_path", e.target.value)} className="field-input font-mono" /></label>
+                    <label className="field-label lg:col-span-2">请求地址<input value={draft.base_url} onChange={e => setField("base_url", e.target.value)} placeholder="https://api.example.com/v1" className="field-input font-mono" /><span className="field-help">远程地址必须使用 HTTPS；本机地址（localhost）可使用 HTTP。</span></label>
+                    <label className="field-label">鉴权方式<select value={draft.auth_mode} onChange={e => setField("auth_mode", e.target.value as ProviderProfileInput["auth_mode"])} className="field-input"><option value="bearer">{authModeLabel("bearer")}</option><option value="x_api_key">{authModeLabel("x_api_key")}</option><option value="custom_header">{authModeLabel("custom_header")}</option><option value="none">无鉴权</option></select><span className="field-help">鉴权用于证明请求来自已授权客户端。</span></label>
+                    {draft.auth_mode !== "none" && <label className="field-label">接口密钥（API Key）<div className="relative"><input aria-label="接口密钥（API Key）" type={showKey ? "text" : "password"} value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder={currentStored?.credential_loaded ? "已在内存中加载；留空继续使用" : "输入本次连接凭证"} className="field-input pr-10" autoComplete="off" /><button type="button" onClick={() => setShowKey(v => !v)} aria-label={showKey ? "隐藏接口密钥" : "显示接口密钥"} className="absolute right-2 top-2.5 text-slate-400">{showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div><span className="field-help">服务商发放的访问凭证，仅用于当前连接，不会回填到页面。</span></label>}
+                    {draft.auth_mode !== "none" && <><label className="field-label">鉴权请求头（Header）<input value={draft.auth_header_name} onChange={e => setField("auth_header_name", e.target.value)} className="field-input" /><span className="field-help">服务商要求的请求头名称，例如 Authorization。</span></label><label className="field-label">值前缀<input value={draft.auth_prefix} onChange={e => setField("auth_prefix", e.target.value)} className="field-input" /><span className="field-help">拼接在接口密钥前的文本，例如 Bearer 后的空格。</span></label></>}
+                    <label className="field-label">模型标识（ID）<div className="flex gap-2"><input list="provider-model-list" value={draft.model} onChange={e => setField("model", e.target.value)} className="field-input min-w-0" /><button type="button" onClick={() => withSaved("models")} disabled={Boolean(busy)} className="secondary-button shrink-0">{busy === "models" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}获取可用模型</button></div><datalist id="provider-model-list">{models.map(model => <option key={model} value={model} />)}</datalist>{models.length > 0 ? <select aria-label="已发现模型" value={models.includes(draft.model) ? draft.model : ""} onChange={e => { if (e.target.value) setField("model", e.target.value); }} className="field-input"><option value="">选择发现的模型（或继续手工输入）</option>{Object.entries(groupedModels).map(([group, entries]) => <optgroup key={group} label={group}>{entries.map(model => <option key={model} value={model}>{model}</option>)}</optgroup>)}</select> : null}<span className="field-help">模型标识是服务商用于区分具体模型的名称；可以手工填写，也可以从服务商返回的列表中选择。</span>{models.length > 0 && <span className="field-help">已发现 {models.length} 个模型，按供应商或模型系列分组。</span>}</label>
+                    <label className="field-label">模型列表路径<input value={draft.model_discovery_path} onChange={e => setField("model_discovery_path", e.target.value)} className="field-input font-mono" /><span className="field-help">服务商提供模型列表的 API 路径，通常是 /models。</span></label>
                   </div>
                 </div>
 
@@ -343,28 +340,29 @@ export function LLMAdvancedSettings({
                   <button type="button" onClick={() => setAdvanced(value => !value)} className="w-full flex items-center justify-between py-2 text-sm font-bold text-slate-800 border-b border-slate-200">请求参数与专家配置{advanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</button>
                   {advanced && <div className="pt-4 space-y-5">
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <label className="field-label">超时（秒）<input type="number" min={5} max={300} value={draft.timeout_seconds} onChange={e => setField("timeout_seconds", Number(e.target.value))} className="field-input" /></label>
+                      <label className="field-label">请求超时（秒）<input type="number" min={5} max={300} value={draft.timeout_seconds} onChange={e => setField("timeout_seconds", Number(e.target.value))} className="field-input" /><span className="field-help">单次网络请求最多等待的时间。</span></label>
                       <label className="field-label">重试次数<input type="number" min={0} max={5} value={draft.max_retries} onChange={e => setField("max_retries", Number(e.target.value))} className="field-input" /></label>
-                      <label className="field-label">最大输出 Token<input type="number" min={256} max={32768} value={draft.max_output_tokens} onChange={e => setField("max_output_tokens", Number(e.target.value))} className="field-input" /></label>
-                      <label className="field-label">温度（留空为服务默认）<input type="number" min={0} max={2} step={0.1} value={draft.temperature ?? ""} onChange={e => setField("temperature", e.target.value === "" ? null : Number(e.target.value))} className="field-input" /></label>
-                      <label className="field-label">推理强度<select value={draft.reasoning_effort} onChange={e => setField("reasoning_effort", e.target.value as ProviderProfileInput["reasoning_effort"])} className="field-input"><option value="default">服务默认</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="max">Max</option></select></label>
-                      {draft.protocol === "deepseek_chat" && <label className="field-label">Thinking mode<select value={draft.thinking_mode} onChange={e => setField("thinking_mode", e.target.value as ProviderProfileInput["thinking_mode"])} className="field-input"><option value="auto">Auto</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></label>}
+                      <label className="field-label">最大输出长度（Token）<input type="number" min={256} max={32768} value={draft.max_output_tokens} onChange={e => setField("max_output_tokens", Number(e.target.value))} className="field-input" /><span className="field-help">模型最多生成的文本长度；Token 是模型处理文本的计量单位。</span></label>
+                      <label className="field-label">随机性（温度）<input type="number" min={0} max={2} step={0.1} value={draft.temperature ?? ""} onChange={e => setField("temperature", e.target.value === "" ? null : Number(e.target.value))} className="field-input" /><span className="field-help">数值越高，回答可能越发散；留空使用服务商默认值。</span></label>
+                      <label className="field-label">推理强度<select value={draft.reasoning_effort} onChange={e => setField("reasoning_effort", e.target.value as ProviderProfileInput["reasoning_effort"])} className="field-input"><option value="default">服务默认</option><option value="low">{reasoningEffortLabel("low")}</option><option value="medium">{reasoningEffortLabel("medium")}</option><option value="high">{reasoningEffortLabel("high")}</option><option value="max">{reasoningEffortLabel("max")}</option></select><span className="field-help">控制模型在回答前投入的推理计算量；不一定被所有服务商支持。</span></label>
+                      {draft.protocol === "deepseek_chat" && <label className="field-label">思考模式<select value={draft.thinking_mode} onChange={e => setField("thinking_mode", e.target.value as ProviderProfileInput["thinking_mode"])} className="field-input"><option value="auto">{thinkingModeLabel("auto")}</option><option value="enabled">{thinkingModeLabel("enabled")}</option><option value="disabled">{thinkingModeLabel("disabled")}</option></select><span className="field-help">控制是否启用模型的深度思考输出。</span></label>}
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">Extra Headers</span><button type="button" onClick={() => setField("extra_headers", [...draft.extra_headers, { name: "", value: "", sensitive: false }])} className="secondary-button"><Plus className="w-3 h-3" />添加</button></div>
-                      <div className="space-y-2">{draft.extra_headers.map((header, index) => <div key={index} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center"><input value={header.name} onChange={e => { const oldName = header.name; const newName = e.target.value; const next = [...draft.extra_headers]; next[index] = { ...header, name: newName }; if (header.sensitive && sensitiveHeaders[oldName]) setSensitiveHeaders(values => { const updated = { ...values, [newName]: values[oldName] }; delete updated[oldName]; return updated; }); setField("extra_headers", next); }} placeholder="Header name" className="field-input font-mono" /><input type={header.sensitive ? "password" : "text"} value={header.sensitive ? (sensitiveHeaders[header.name] || "") : header.value} onChange={e => header.sensitive ? setSensitiveHeaders(values => ({ ...values, [header.name]: e.target.value })) : (() => { const next = [...draft.extra_headers]; next[index] = { ...header, value: e.target.value }; setField("extra_headers", next); })()} placeholder={header.sensitive && header.credential_loaded ? "已加载" : "Value"} className="field-input" /><label className="text-xs text-slate-600 flex items-center gap-1"><input type="checkbox" checked={header.sensitive} onChange={e => { const next = [...draft.extra_headers]; next[index] = { ...header, sensitive: e.target.checked, value: e.target.checked ? "" : header.value }; setField("extra_headers", next); }} />敏感</label><button type="button" onClick={() => setField("extra_headers", draft.extra_headers.filter((_, i) => i !== index))} className="p-2 text-rose-500"><Trash2 className="w-4 h-4" /></button></div>)}</div>
+                      <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">附加请求头（Extra Headers）</span><button type="button" onClick={() => setField("extra_headers", [...draft.extra_headers, { name: "", value: "", sensitive: false }])} className="secondary-button"><Plus className="w-3 h-3" />添加</button></div>
+                      <p className="field-help mb-2">除鉴权请求头之外，随每次请求一起发送的自定义键值对。</p>
+                      <div className="space-y-2">{draft.extra_headers.map((header, index) => <div key={index} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center"><input aria-label={`附加请求头名称 ${index + 1}`} value={header.name} onChange={e => { const oldName = header.name; const newName = e.target.value; const next = [...draft.extra_headers]; next[index] = { ...header, name: newName }; if (header.sensitive && sensitiveHeaders[oldName]) setSensitiveHeaders(values => { const updated = { ...values, [newName]: values[oldName] }; delete updated[oldName]; return updated; }); setField("extra_headers", next); }} placeholder="请求头名称" className="field-input font-mono" /><input aria-label={`附加请求头值 ${index + 1}`} type={header.sensitive ? "password" : "text"} value={header.sensitive ? (sensitiveHeaders[header.name] || "") : header.value} onChange={e => header.sensitive ? setSensitiveHeaders(values => ({ ...values, [header.name]: e.target.value })) : (() => { const next = [...draft.extra_headers]; next[index] = { ...header, value: e.target.value }; setField("extra_headers", next); })()} placeholder={header.sensitive && header.credential_loaded ? "已加载" : "请求头值"} className="field-input" /><label className="text-xs text-slate-600 flex items-center gap-1"><input type="checkbox" checked={header.sensitive} onChange={e => { const next = [...draft.extra_headers]; next[index] = { ...header, sensitive: e.target.checked, value: e.target.checked ? "" : header.value }; setField("extra_headers", next); }} />敏感字段</label><button type="button" onClick={() => setField("extra_headers", draft.extra_headers.filter((_, i) => i !== index))} aria-label={`删除附加请求头 ${index + 1}`} className="p-2 text-rose-500"><Trash2 className="w-4 h-4" /></button></div>)}</div>
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">Extra Body JSON</span><div className="flex gap-2"><button type="button" onClick={() => parseExtraBody("{}") } className="secondary-button">恢复默认</button><button type="button" onClick={() => { try { const formatted = JSON.stringify(JSON.parse(extraBodyText), null, 2); parseExtraBody(formatted); } catch { /* existing error remains visible */ } }} className="secondary-button">格式化</button></div></div>
+                      <div className="flex justify-between items-center mb-2"><span className="text-xs font-semibold text-slate-600">附加请求体（JSON）</span><div className="flex gap-2"><button type="button" onClick={() => parseExtraBody("{}") } className="secondary-button">恢复默认</button><button type="button" onClick={() => { try { const formatted = JSON.stringify(JSON.parse(extraBodyText), null, 2); parseExtraBody(formatted); } catch { /* existing error remains visible */ } }} className="secondary-button">格式化</button></div></div>
                       <textarea value={extraBodyText} onChange={e => parseExtraBody(e.target.value)} rows={7} spellCheck={false} className={`field-input font-mono text-xs ${jsonError ? "border-rose-400" : ""}`} />
-                      {jsonError ? <p className="text-xs text-rose-600 mt-1">{jsonError}</p> : <p className="field-help">编排器管理的 model、messages、tools、tool_choice、response_format 和 max_tokens 不可覆盖。</p>}
+                      {jsonError ? <p className="text-xs text-rose-600 mt-1">{jsonError}</p> : <p className="field-help">可向请求体补充服务商专属参数；编排器管理的 model、messages、tools、tool_choice、response_format 和 max_tokens 字段不可覆盖。</p>}
                     </div>
                   </div>}
                 </div>
 
-                {probe && <div className={`p-4 rounded-xl border ${probe.status === "failed" ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50"}`}><div className={`font-semibold text-sm mb-2 ${probe.status === "failed" ? "text-rose-800" : "text-emerald-800"}`}>{probe.status === "failed" ? `能力探测失败${probe.error_category ? ` · ${probe.error_category}` : ""}` : `能力探测通过 ${probe.latency_ms ? `· ${probe.latency_ms}ms` : ""}`}</div><div className="grid sm:grid-cols-2 gap-2">{Object.entries(probe.stages || {}).map(([name, result]) => <div key={name} className={`text-xs flex justify-between bg-white/70 rounded px-2 py-1 ${result.status === "passed" ? "text-emerald-700" : "text-rose-700"}`}><span>{({ text: "普通文本", tool_selection: "工具选择", tool_result_roundtrip: "工具回传", structured_output: "结构化输出" } as Record<string, string>)[name] || name}</span><span>{result.status === "passed" ? "通过" : "失败"}{result.latency_ms ? ` · ${result.latency_ms}ms` : ""}</span></div>)}</div></div>}
+                {probe && <div className={`p-4 rounded-xl border ${probe.status === "failed" ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50"}`}><div className={`font-semibold text-sm mb-2 ${probe.status === "failed" ? "text-rose-800" : "text-emerald-800"}`}>{probe.status === "failed" ? `能力探测失败${probe.error_category ? ` · ${errorCategoryLabel(probe.error_category)}` : ""}` : `能力探测通过 ${probe.latency_ms ? `· ${probe.latency_ms} 毫秒` : ""}`}</div><div className="grid sm:grid-cols-2 gap-2">{Object.entries(probe.stages || {}).map(([name, result]) => <div key={name} className={`text-xs flex justify-between bg-white/70 rounded px-2 py-1 ${result.status === "passed" ? "text-emerald-700" : "text-rose-700"}`}><span>{probeStageLabel(name)}</span><span>{result.status === "passed" ? "通过" : "失败"}{result.latency_ms ? ` · ${result.latency_ms} 毫秒` : ""}</span></div>)}</div></div>}
               </div>
             </div>
 

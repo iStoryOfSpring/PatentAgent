@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { MessageBubble } from "./components/MessageBubble";
 import { LLMAdvancedSettings } from "./components/LLMAdvancedSettings";
-import { TOOL_META } from "./features/tools/QuickToolsPanel";
+import { localizeErrorMessage, toolLabel } from "./uiLabels";
 import {
   fetchHealth, runTool, streamChat,
   createSession, fetchSessions, fetchSession, renameSession, deleteSession,
@@ -29,6 +29,9 @@ import { CapabilitiesPage } from "./features/capabilities/CapabilitiesPage";
 import { DatasetsPage } from "./features/datasets/DatasetsPage";
 import { ReportsPage } from "./features/reports/ReportsPage";
 import { SettingsPage } from "./features/settings/SettingsPage";
+import { QuickToolReturnPrompt } from "./features/tools/QuickToolReturnPrompt";
+
+const QUICK_TOOL_CHAT_PROMPT_KEY = "patentagent_skip_quick_tool_chat_prompt";
 
 function routeFromPath(pathname: string): WorkbenchRoute {
   if (pathname.startsWith("/datasets")) return "datasets";
@@ -65,6 +68,14 @@ export default function App() {
 
   // ── State ──
   const [quickToolLoading, setQuickToolLoading] = useState<string | null>(null);
+  const [showQuickToolChatPrompt, setShowQuickToolChatPrompt] = useState(false);
+  const [skipQuickToolChatPrompt, setSkipQuickToolChatPrompt] = useState(() => {
+    try {
+      return window.localStorage.getItem(QUICK_TOOL_CHAT_PROMPT_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [error, setError] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState("");
   const [route, setRoute] = useState<WorkbenchRoute>(() => routeFromPath(window.location.pathname));
@@ -257,20 +268,39 @@ export default function App() {
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: "system",
-        content: result.summary || `${TOOL_META[toolName]?.label || toolName}已完成。`,
+        content: result.summary || `${toolLabel(toolName)}已完成。`,
         steps: [step],
       }]);
+      if (route === "capabilities" && !skipQuickToolChatPrompt) {
+        setShowQuickToolChatPrompt(true);
+      }
       refreshSessionList().catch(() => undefined);
     } catch (e) {
       console.error("[PatentAgent] Quick tool failed:", toolName, e);
-      const message = (e as Error).message;
+      const message = localizeErrorMessage((e as Error).message);
       setMessages(prev => [...prev, {
         id: `qt-error-${Date.now()}`, role: "system", content: "",
         steps: [{ id: `qt-error-step-${Date.now()}`, tool: toolName,
           status: "failed", error: message, parameters: params }],
       }]);
+    } finally {
+      setQuickToolLoading(null);
     }
-    setQuickToolLoading(null);
+  };
+
+  const handleQuickToolPromptPreference = (checked: boolean) => {
+    setSkipQuickToolChatPrompt(checked);
+    try {
+      if (checked) window.localStorage.setItem(QUICK_TOOL_CHAT_PROMPT_KEY, "1");
+      else window.localStorage.removeItem(QUICK_TOOL_CHAT_PROMPT_KEY);
+    } catch {
+      // A restricted browser storage context should not block tool execution.
+    }
+  };
+
+  const handleReturnToChat = () => {
+    setShowQuickToolChatPrompt(false);
+    navigate("chat");
   };
 
   // ── Agent chat (SSE streaming) ──
@@ -283,7 +313,7 @@ export default function App() {
       return;
     }
     if (!llmConfigured) {
-      setError('请先配置 LLM。在左侧填入 API Key 并点击 [连接]。');
+      setError('请先配置语言模型（LLM）。在设置中填入接口密钥（API Key）并点击“保存并连接”。');
       return;
     }
     if (!activeSessionId) {
@@ -408,7 +438,7 @@ export default function App() {
             }));
             break;
           case "error":
-            updateAgent(m => ({ ...m, error: event.message, canResynthesize: Boolean(m.steps?.length) }));
+            updateAgent(m => ({ ...m, error: localizeErrorMessage(event.message), canResynthesize: Boolean(m.steps?.length) }));
             break;
           case "done":
             updateAgent(m => {
@@ -566,13 +596,20 @@ export default function App() {
           </div>
         </div>
         <div className="shrink-0 border-t border-slate-200 bg-white/95 px-4 pb-4 pt-3 backdrop-blur-md md:px-8">
-          <div className="mx-auto max-w-[860px]"><div className="mb-2 flex items-center justify-between text-[10px] text-slate-400"><span className="truncate">数据：{activeDataset?.name || "默认数据集"} · 版本 {activeVersionId ? activeVersionId.slice(-8) : "未绑定"}</span><button onClick={() => navigate("capabilities")} className="text-blue-600">查看九类能力与全部工具</button></div><div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-2 pl-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] focus-within:border-blue-300"><textarea value={inputText} onChange={event => setInputText(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); handleSendMessage(); } }} placeholder={backendOnline === false ? "后端未启动" : !llmConfigured ? "请先在设置中连接 LLM" : !dataSummary ? "请先上传或绑定数据集" : "输入专利分析问题，Enter 发送，Shift+Enter 换行"} className="max-h-32 min-h-[44px] w-full resize-none bg-transparent py-3 text-sm text-slate-700 focus:outline-none" disabled={isStreaming || backendOnline === false} rows={1} />{isStreaming ? <button onClick={handleStopStreaming} className="mb-1 rounded-xl bg-rose-500 p-2.5 text-white"><Loader2 className="h-4 w-4 animate-spin" /></button> : <button onClick={() => handleSendMessage()} disabled={!inputText.trim() || !activeSessionId} className="mb-1 rounded-xl bg-blue-600 p-2.5 text-white disabled:opacity-40"><Send className="h-4 w-4" /></button>}</div><div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-slate-400"><button onClick={() => setResponseMode(responseMode === "detailed" ? "concise" : "detailed")} className="rounded border border-slate-200 px-2 py-1">回复：{responseMode === "detailed" ? "详细" : "简洁"}</button>{lastUserQuery && !isStreaming && <button onClick={() => handleSendMessage(lastUserQuery)} className="rounded border border-slate-200 px-2 py-1">重试上次提问</button>}<button onClick={() => navigate("reports")} className="flex items-center gap-1 rounded border border-slate-200 px-2 py-1"><Download className="h-3 w-3" />报告</button></div></div>
+          <div className="mx-auto max-w-[860px]"><div className="mb-2 flex items-center justify-between text-[10px] text-slate-400"><span className="truncate">数据：{activeDataset?.name || "默认数据集"} · 版本 {activeVersionId ? activeVersionId.slice(-8) : "未绑定"}</span><button onClick={() => navigate("capabilities")} className="text-blue-600">查看九类能力与全部工具</button></div><div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-2 pl-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] focus-within:border-blue-300"><textarea value={inputText} onChange={event => setInputText(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); handleSendMessage(); } }} placeholder={backendOnline === false ? "后端未启动" : !llmConfigured ? "请先在设置中连接语言模型（LLM）" : !dataSummary ? "请先上传或绑定数据集" : "输入专利分析问题，Enter 发送，Shift+Enter 换行"} className="max-h-32 min-h-[44px] w-full resize-none bg-transparent py-3 text-sm text-slate-700 focus:outline-none" disabled={isStreaming || backendOnline === false} rows={1} />{isStreaming ? <button onClick={handleStopStreaming} className="mb-1 rounded-xl bg-rose-500 p-2.5 text-white"><Loader2 className="h-4 w-4 animate-spin" /></button> : <button onClick={() => handleSendMessage()} disabled={!inputText.trim() || !activeSessionId} className="mb-1 rounded-xl bg-blue-600 p-2.5 text-white disabled:opacity-40"><Send className="h-4 w-4" /></button>}</div><div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-slate-400"><button onClick={() => setResponseMode(responseMode === "detailed" ? "concise" : "detailed")} className="rounded border border-slate-200 px-2 py-1">回复：{responseMode === "detailed" ? "详细" : "简洁"}</button>{lastUserQuery && !isStreaming && <button onClick={() => handleSendMessage(lastUserQuery)} className="rounded border border-slate-200 px-2 py-1">重试上次提问</button>}<button onClick={() => navigate("reports")} className="flex items-center gap-1 rounded border border-slate-200 px-2 py-1"><Download className="h-3 w-3" />报告</button></div></div>
         </div>
       </section>}
       {route === "datasets" && <DatasetsPage datasets={datasets} activeSessionId={activeSessionId} activeVersionId={activeVersionId} onChanged={refreshDatasetState} onError={setError} />}
       {route === "capabilities" && <CapabilitiesPage capabilities={capabilities} tools={availableTools} searchStatus={searchStatusQuery.data} loadingTool={quickToolLoading} isStreaming={isStreaming} onPrompt={choosePrompt} onRun={handleQuickTool} />}
       {route === "reports" && <ReportsPage activeSessionId={activeSessionId} onError={setError} />}
       {route === "settings" && <SettingsPage profile={selectedProfile} connected={llmConfigured} onOpen={() => setShowAdvancedLLM(true)} onDisconnect={handleDisconnectLLM} />}
+      <QuickToolReturnPrompt
+        open={showQuickToolChatPrompt}
+        dontRemind={skipQuickToolChatPrompt}
+        onDontRemindChange={handleQuickToolPromptPreference}
+        onStay={() => setShowQuickToolChatPrompt(false)}
+        onReturnToChat={handleReturnToChat}
+      />
       <LLMAdvancedSettings
         open={showAdvancedLLM}
         profiles={providerProfiles}

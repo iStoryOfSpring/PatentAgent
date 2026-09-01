@@ -6,6 +6,10 @@ import {
   Shrink, Table2,
 } from "lucide-react";
 import { EChartCanvas, type EChartCanvasHandle } from "./EChartCanvas";
+import {
+  enumLabel, fieldLabel, formatDisplayJson, formatDisplayValue, jurisdictionLabel,
+  languageLabel,
+} from "../uiLabels";
 
 type ResultRecord = Record<string, unknown>;
 
@@ -102,10 +106,10 @@ function IPCHeatmapRenderer({ result, fit, chartRef }: RendererProps) {
   matrix.forEach((row, yi) => row.forEach((value, si) => values.push([yi, si, Number(value) || 0])));
   const max = Math.max(1, ...values.map(v => v[2]));
   const option: EChartsOption = {
-    ...baseOption(String((result.result_metadata as ResultRecord | undefined)?.metric_label || "IPC 标注次数") + "年度分布"),
+    ...baseOption(`${enumLabel(String((result.result_metadata as ResultRecord | undefined)?.metric_label || "assignment_count"))}年度分布`),
     tooltip: { position: "top", formatter: (p: unknown) => {
       const value = (p as { value: number[] }).value;
-      return `${years[value[0]]} · IPC ${sections[value[1]]}<br/><b>${value[2].toLocaleString()} · ${String((result.result_metadata as ResultRecord | undefined)?.metric_label || "IPC 标注次数")}</b>`;
+      return `${years[value[0]]} · IPC ${sections[value[1]]}<br/><b>${value[2].toLocaleString()} · ${enumLabel(String((result.result_metadata as ResultRecord | undefined)?.metric_label || "assignment_count"))}</b>`;
     } },
     grid: { left: 82, right: 100, top: 78, bottom: 64 },
     xAxis: { type: "category", data: years, splitArea: { show: true }, axisLine, axisLabel },
@@ -138,13 +142,13 @@ function WordFrequencyRenderer({ result, fit, chartRef }: RendererProps) {
     ...baseOption("技术关键词云"),
     graphic: cloudGraphics,
   } : {
-    ...baseOption("技术关键词 Top 20"),
+    ...baseOption("技术关键词（前 20 项）"),
     grid: { left: 150, right: 50, top: 72, bottom: 34 },
     xAxis: { type: "value", axisLabel, splitLine },
     yAxis: { type: "category", data: top.map(d => String(d.word)), axisLabel: { ...axisLabel, width: 125, overflow: "truncate" }, axisLine, axisTick: { show: false } },
     series: [{ type: "bar", data: top.map(d => Number(d.count) || 0), barMaxWidth: 18, label: { show: true, position: "right", color: "#475569" }, itemStyle: { color: "#2563eb", borderRadius: [0, 4, 4, 0] } }],
   };
-  return <div><div className="mb-2 flex justify-center gap-1"><TabButton active={tab === "cloud"} onClick={() => setTab("cloud")}>词云</TabButton><TabButton active={tab === "bar"} onClick={() => setTab("bar")}>Top 20</TabButton></div><EChartCanvas ref={chartRef} option={option} fit={fit} /></div>;
+  return <div><div className="mb-2 flex justify-center gap-1"><TabButton active={tab === "cloud"} onClick={() => setTab("cloud")}>词云</TabButton><TabButton active={tab === "bar"} onClick={() => setTab("bar")}>前 20 项</TabButton></div><EChartCanvas ref={chartRef} option={option} fit={fit} /></div>;
 }
 
 function BurstRenderer({ result, fit, chartRef }: RendererProps) {
@@ -211,11 +215,11 @@ function NetworkRenderer({ result, fit, chartRef }: RendererProps) {
 
 function CountryRenderer({ result, fit, chartRef }: RendererProps) {
   const all = list(result.data).sort((a, b) => Number(b.count) - Number(a.count));
-  const top = all.slice(0, 10).map(d => ({ name: String(d.country), value: Number(d.count) || 0 }));
+  const top = all.slice(0, 10).map(d => ({ name: jurisdictionLabel(d.country), value: Number(d.count) || 0 }));
   const other = all.slice(10).reduce((sum, d) => sum + (Number(d.count) || 0), 0);
   if (other) top.push({ name: "其他", value: other });
   const option: EChartsOption = {
-    ...baseOption("主公开号首次公开局分布"),
+    ...baseOption("主公开号首次公开局（国家/地区）分布"),
     legend: { orient: "vertical", left: 42, top: 92, textStyle: axisLabel },
     tooltip: { trigger: "item", formatter: "{b}<br/><b>{c} 件</b>（{d}%）" },
     series: [{ type: "pie", radius: ["40%", "70%"], center: ["62%", "54%"], avoidLabelOverlap: true, data: top,
@@ -230,9 +234,9 @@ function DatasetRenderer({ result }: RendererProps) {
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <Kpi label="专利总量" value={`${Number(result.total_patents || 0).toLocaleString()} 件`} />
       <Kpi label="公开时间跨度" value={`${result.year_start || "—"}–${result.year_end || "—"}`} />
-      <Kpi label="IPC 部级分类" value={strings(result.ipc_sections).join(" · ") || "—"} />
+      <Kpi label="IPC 部（技术领域大类）" value={strings(result.ipc_sections).join(" · ") || "—"} />
     </div>
-    <SimpleTable rows={applicants.map((r, i) => ({ rank: i + 1, applicant: r.name, count: r.count }))} labels={{ rank: "#", applicant: "主要申请人", count: "专利数" }} />
+    <SimpleTable rows={applicants.map((r, i) => ({ rank: i + 1, applicant: r.name, count: r.count }))} labels={{ rank: "排名", applicant: "主要申请人", count: "专利数" }} />
   </div>;
 }
 
@@ -257,7 +261,7 @@ function RoadmapRenderer({ result }: RendererProps) {
 function SearchRenderer({ result }: RendererProps) {
   const patents = list(result.patents);
   if (!patents.length) return <EmptyState title="没有匹配结果" text="请扩大检索词、年份或 IPC 范围后重试。" />;
-  return <div className="p-4 grid gap-3">{patents.map((patent, i) => {
+  return <div className="p-4 grid gap-3"><p className="text-[11px] text-slate-500">相关性分数仅用于当前数据集内排序，数值越高表示与检索词越相关，不等同于法律上的相似性或侵权判断。</p>{patents.map((patent, i) => {
     const score = Number(patent.relevance_score) || 0;
     return <div key={`${patent.patent_number}-${i}`} className="border border-slate-200 rounded-xl p-4 bg-white">
       <div className="flex gap-3 justify-between"><div><span className="font-mono text-xs text-blue-700">{String(patent.patent_number || "")}</span><h4 className="font-medium text-slate-800 mt-1">{String(patent.title || "")}</h4></div><span className="text-xs font-semibold text-blue-700">排序分数 {score.toFixed(4)}</span></div>
@@ -293,10 +297,10 @@ function ClusteringRenderer({ result, fit, chartRef }: RendererProps) {
   const keywords = result.cluster_keywords && typeof result.cluster_keywords === "object" ? result.cluster_keywords as Record<string, unknown> : {};
   const ids = Object.keys(counts).sort((a, b) => Number(counts[a]) - Number(counts[b]));
   const option: EChartsOption = {
-    ...baseOption(`聚类规模分布 · silhouette ${result.silhouette_score == null ? "—" : Number(result.silhouette_score).toFixed(3)}`),
+    ...baseOption(`聚类规模分布 · 轮廓系数（聚类分离度） ${result.silhouette_score == null ? "—" : Number(result.silhouette_score).toFixed(3)}`),
     grid: { left: 210, right: 70, top: 76, bottom: 36 }, xAxis: { type: "value", axisLabel, splitLine },
-    yAxis: { type: "category", data: ids.map(id => String(titles[id] || `Cluster ${id}`)), axisLabel: { ...axisLabel, width: 185, overflow: "truncate" }, axisLine },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params: unknown) => { const p = (Array.isArray(params) ? params[0] : params) as { dataIndex: number; value: number }; const id = ids[p.dataIndex]; return `${titles[id] || `Cluster ${id}`}<br/><b>${p.value} 件</b><br/>${strings(keywords[id]).slice(0, 8).join(" · ")}`; } },
+    yAxis: { type: "category", data: ids.map(id => String(titles[id] || `第 ${id} 类`)), axisLabel: { ...axisLabel, width: 185, overflow: "truncate" }, axisLine },
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params: unknown) => { const p = (Array.isArray(params) ? params[0] : params) as { dataIndex: number; value: number }; const id = ids[p.dataIndex]; return `${titles[id] || `第 ${id} 类`}<br/><b>${p.value} 件</b><br/>${strings(keywords[id]).slice(0, 8).join(" · ")}`; } },
     series: [{ type: "bar", data: ids.map(id => Number(counts[id]) || 0), label: { show: true, position: "right", color: "#475569" }, barMaxWidth: 28, itemStyle: { color: "#7c3aed", borderRadius: [0, 5, 5, 0] } }],
   };
   return <EChartCanvas ref={chartRef} option={option} fit={fit} height={Math.max(480, ids.length * 48 + 130)} />;
@@ -306,9 +310,9 @@ function ValuationRenderer({ result, fit, chartRef }: RendererProps) {
   const rows = list(result.data).slice(0, 10).reverse();
   const label = String(result.score_label || "价值筛查分");
   const option: EChartsOption = {
-    ...baseOption(`${label} Top ${rows.length}`), grid: { left: 170, right: 70, top: 76, bottom: 36 },
+    ...baseOption(`${label}（前 ${rows.length} 件）`), grid: { left: 170, right: 70, top: 76, bottom: 36 },
     xAxis: { type: "value", name: label, max: 100, axisLabel, splitLine }, yAxis: { type: "category", data: rows.map(r => String(r.patent_number)), axisLabel: { ...axisLabel, fontFamily: "monospace" }, axisLine },
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params: unknown) => { const p = (Array.isArray(params) ? params[0] : params) as { dataIndex: number }; const row = rows[p.dataIndex] || {}; const interval = Array.isArray(row.score_interval) ? row.score_interval : []; return `${row.patent_number}<br/>${label}：<b>${Number(row.score || 0).toFixed(1)}</b>${interval.length === 2 ? `<br/>不确定区间：${Number(interval[0]).toFixed(1)}–${Number(interval[1]).toFixed(1)}` : ""}<br/>同族规模：${row.family_size ?? "缺失"} · IPC小类广度：${row.ipc_breadth ?? "缺失"}<br/>专利年龄：${row.patent_age ?? "缺失"}<br/>可用权重：${(Number(row.available_weight_ratio || 0) * 100).toFixed(0)}% · 置信：${row.confidence_level ?? "未知"}`; } },
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (params: unknown) => { const p = (Array.isArray(params) ? params[0] : params) as { dataIndex: number }; const row = rows[p.dataIndex] || {}; const interval = Array.isArray(row.score_interval) ? row.score_interval : []; return `${row.patent_number}<br/>${label}：<b>${Number(row.score || 0).toFixed(1)}</b>${interval.length === 2 ? `<br/>不确定区间：${Number(interval[0]).toFixed(1)}–${Number(interval[1]).toFixed(1)}` : ""}<br/>同族规模：${row.family_size ?? "缺失"} · IPC 小类广度：${row.ipc_breadth ?? "缺失"}<br/>专利年龄：${row.patent_age ?? "缺失"}<br/>可用权重：${(Number(row.available_weight_ratio || 0) * 100).toFixed(0)}% · 置信水平：${enumLabel(String(row.confidence_level || "unknown"))}`; } },
     series: [{ type: "bar", data: rows.map(r => Number(r.score) || 0), label: { show: true, position: "right", formatter: "{c}", color: "#475569" }, barMaxWidth: 24, itemStyle: { color: "#0f766e", borderRadius: [0, 5, 5, 0] } }],
   };
   return <EChartCanvas ref={chartRef} option={option} fit={fit} height={Math.max(520, rows.length * 42 + 130)} />;
@@ -325,13 +329,13 @@ function CompetitorRenderer({ result, fit, chartRef }: RendererProps) {
     ...baseOption(`${String(current.applicant)} · IPC 画像演化`), legend: { top: 48, textStyle: axisLabel }, grid: { left: 76, right: 55, top: 92, bottom: 58 },
     xAxis: { type: "category", data: years, axisLine, axisLabel }, yAxis: { type: "value", axisLabel, splitLine }, tooltip: { trigger: "axis" },
     series: [
-      { name: "IPC entropy", type: "line", data: numbers(current.ipc_entropy), smooth: true, symbolSize: 7 },
-      { name: "dominant IPC share", type: "line", data: numbers(current.dominant_ipc_share), smooth: true, symbolSize: 7 },
-      { name: "IPC cosine shift", type: "line", data: numbers(current.ipc_profile_cosine_shift), smooth: true, symbolSize: 7 },
+      { name: "IPC 熵（分类多样性）", type: "line", data: numbers(current.ipc_entropy), smooth: true, symbolSize: 7 },
+      { name: "主导 IPC 占比", type: "line", data: numbers(current.dominant_ipc_share), smooth: true, symbolSize: 7 },
+      { name: "IPC 余弦偏移（技术画像变化）", type: "line", data: numbers(current.ipc_profile_cosine_shift), smooth: true, symbolSize: 7 },
     ],
   };
   const topIpc = Array.isArray(current.top_ipc) ? current.top_ipc as unknown[][] : [];
-  return <div><div className="p-3 flex flex-wrap gap-2 items-center"><label className="text-xs text-slate-500">申请人</label><select value={selected} onChange={e => setSelected(Number(e.target.value))} className="max-w-md border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">{evolution.map((e, i) => <option key={i} value={i}>{String(e.applicant)}（{Number(e.total_patents).toLocaleString()} 件）</option>)}</select><span className="text-xs text-slate-500">{String(current.trend_summary || "")}</span></div><EChartCanvas ref={chartRef} option={option} fit={fit}/><div className="px-5 pb-4 flex gap-3 overflow-x-auto">{years.map((year, i) => <div key={year} className="shrink-0 text-xs border border-slate-200 rounded-lg p-2"><b>{year}</b><div className="mt-1 flex gap-1">{strings(topIpc[i]).map(code => <span key={code} className="bg-blue-50 text-blue-700 px-1.5 rounded">{code}</span>)}</div></div>)}</div></div>;
+  return <div><div className="p-3 flex flex-wrap gap-2 items-center"><label className="text-xs text-slate-500">申请人</label><select value={selected} onChange={e => setSelected(Number(e.target.value))} className="max-w-md border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white">{evolution.map((e, i) => <option key={i} value={i}>{String(e.applicant)}（{Number(e.total_patents).toLocaleString()} 件）</option>)}</select><span className="text-xs text-slate-500">{String(current.trend_summary || "")}</span></div><p className="px-5 text-[11px] text-slate-500">IPC 熵表示技术分类的多样性；主导 IPC 占比表示集中程度；IPC 余弦偏移越大，表示年度技术画像变化越明显。</p><EChartCanvas ref={chartRef} option={option} fit={fit}/><div className="px-5 pb-4 flex gap-3 overflow-x-auto">{years.map((year, i) => <div key={year} className="shrink-0 text-xs border border-slate-200 rounded-lg p-2"><b>{year}</b><div className="mt-1 flex gap-1">{strings(topIpc[i]).map(code => <span key={code} className="bg-blue-50 text-blue-700 px-1.5 rounded">{code}</span>)}</div></div>)}</div></div>;
 }
 
 function GenericStructuredRenderer({ result }: RendererProps) {
@@ -347,7 +351,7 @@ function GenericStructuredRenderer({ result }: RendererProps) {
     {rows.length ? <SimpleTable rows={rows.slice(0, 200)}/> : <EmptyState title="暂无结果记录" text="当前作用域内没有满足条件的分析记录。"/>}
     <details className="rounded-xl border border-slate-200 bg-white">
       <summary className="cursor-pointer px-4 py-3 text-xs font-semibold text-slate-700">口径、覆盖与审计元数据</summary>
-      <pre className="border-t border-slate-100 p-4 max-h-72 overflow-auto text-xs leading-5 text-slate-600">{JSON.stringify(metadata, null, 2)}</pre>
+      <pre className="border-t border-slate-100 p-4 max-h-72 overflow-auto text-xs leading-5 text-slate-600">{formatDisplayJson(metadata)}</pre>
     </details>
   </div>;
 }
@@ -359,19 +363,19 @@ function ClaimReviewRenderer({ result }: RendererProps) {
   return <div className="p-5 space-y-4">
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
       <div className="text-sm font-semibold text-amber-950">人工复核草稿</div>
-      <p className="mt-1 text-xs leading-5 text-amber-800">要素拆分和产品特征映射仅按规则与词面匹配生成，不构成侵权、等同、无效或 FTO 结论。下列勾选只记录当前界面的复核进度，导出 JSON 后应进入正式法律审阅流程。</p>
+      <p className="mt-1 text-xs leading-5 text-amber-800">要素拆分和产品特征映射仅按规则与词面匹配生成，不构成侵权、等同、无效或自由实施（FTO）结论。下列勾选只记录当前界面的复核进度，导出 JSON 后应进入正式法律审阅流程。</p>
     </div>
     {patents.map((patent, patentIndex) => <section key={patentIndex} className="rounded-xl border border-slate-200 overflow-hidden">
       <header className="px-4 py-3 bg-slate-50 text-sm font-semibold text-slate-800">
         <span className="font-mono text-blue-700 mr-2">{String(patent.patent_number || "")}</span>
-        {String(patent.kind_code || "版本未知")} · {String(patent.legal_status || "状态未知")}
+        {String(patent.kind_code || "文献版本未知")} · {enumLabel(String(patent.legal_status || "状态未知"))}
       </header>
       <div className="divide-y divide-slate-100">{list(patent.claims).map((claim, claimIndex) => {
         const key = `${patent.patent_number}:${claim.claim_number}`;
         return <div key={key} className="p-4">
           <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
             <input type="checkbox" checked={Boolean(reviewed[key])} onChange={() => toggle(key)} />
-            权利要求 {String(claim.claim_number)} · {claim.is_independent ? "独立" : "从属"} · {String(claim.language || "und")}
+            权利要求 {String(claim.claim_number)} · {claim.is_independent ? "独立" : "从属"} · {languageLabel(claim.language || "und")}
           </label>
           <div className="mt-3 space-y-2">{list(claim.elements).map((element, elementIndex) => <div key={elementIndex} className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs leading-5 text-slate-700"><b className="mr-2">要素 {String(element.element_number)}</b>{String(element.text || "")}</div>)}</div>
           <div className="mt-3"><SimpleTable rows={list(claim.product_feature_mapping_draft)} labels={{ feature: "产品特征", matched_element_numbers: "词面匹配要素", match_method: "匹配方法" }}/></div>
@@ -440,12 +444,12 @@ export function VisualizationPanel({ result, chartHtml, toolName }: { result?: R
       </div>
       <div className="flex items-center gap-1">
         {view === "visual" && hasStructured && <ToolbarButton active={fit} onClick={() => setFit(v => !v)} icon={fit ? <Shrink className="w-3.5 h-3.5"/> : <MoveHorizontal className="w-3.5 h-3.5"/>}>{fit ? "原始尺寸" : "适应窗格"}</ToolbarButton>}
-        <ToolbarButton onClick={download} icon={<Download className="w-3.5 h-3.5"/>}>{view === "visual" ? "导出 PNG" : "导出 JSON"}</ToolbarButton>
-        <ToolbarButton onClick={() => setFullscreen(v => !v)} icon={fullscreen ? <Minimize2 className="w-3.5 h-3.5"/> : <Expand className="w-3.5 h-3.5"/>}>{fullscreen ? "退出全屏" : "全屏"}</ToolbarButton>
+        <ToolbarButton onClick={download} icon={<Download className="w-3.5 h-3.5"/>}>{view === "visual" ? "导出图片（PNG）" : "导出数据（JSON）"}</ToolbarButton>
+        <ToolbarButton onClick={() => setFullscreen(v => !v)} icon={fullscreen ? <Minimize2 className="w-3.5 h-3.5"/> : <Expand className="w-3.5 h-3.5"/>}>{fullscreen ? "退出全屏" : "全屏查看"}</ToolbarButton>
       </div>
     </div>
     <div className={fullscreen ? "flex-1 overflow-auto p-4" : "overflow-hidden"}>
-      {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef}/> : <EmptyState title="旧版 HTML 图表已禁用" text="为防止数据集内脚本执行，请切换到数据视图查看结构化结果。"/>}
+      {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef}/> : <EmptyState title="旧版网页图表（HTML）已禁用" text="为防止数据集内脚本执行，请切换到数据视图查看结构化结果。"/>}
     </div>
   </div>;
 }
@@ -458,7 +462,7 @@ function ResultDataView({ result }: { result: ResultRecord }) {
     return [];
   }, [result]);
   if (rows.length) return <div className="p-4"><SimpleTable rows={rows.slice(0, 200)}/>{rows.length > 200 && <p className="mt-2 text-xs text-slate-500">仅显示前 200 行，共 {rows.length} 行；导出 JSON 可查看完整结果。</p>}</div>;
-  return <pre className="m-4 p-4 max-h-[620px] overflow-auto rounded-xl bg-slate-950 text-slate-100 text-xs leading-5">{JSON.stringify(result, null, 2)}</pre>;
+  return <pre className="m-4 p-4 max-h-[620px] overflow-auto rounded-xl bg-slate-950 text-slate-100 text-xs leading-5">{formatDisplayJson(result)}</pre>;
 }
 
 function SimpleTable({ rows, labels = {} }: { rows: ResultRecord[]; labels?: Record<string, string> }) {
@@ -470,17 +474,15 @@ function SimpleTable({ rows, labels = {} }: { rows: ResultRecord[]; labels?: Rec
   const start = virtual ? Math.max(0, Math.floor(scrollTop / rowHeight) - 8) : 0;
   const end = virtual ? Math.min(rows.length, start + Math.ceil(560 / rowHeight) + 16) : rows.length;
   const visibleRows = rows.slice(start, end);
-  return <div onScroll={event => setScrollTop(event.currentTarget.scrollTop)} className="overflow-auto max-h-[560px] border border-slate-200 rounded-xl"><table className="min-w-full text-xs"><thead className="sticky top-0 bg-slate-100 z-10"><tr>{columns.map(c => <th key={c} className="text-left px-3 py-2 font-semibold text-slate-600 whitespace-nowrap">{labels[c] || c}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">
+  return <div onScroll={event => setScrollTop(event.currentTarget.scrollTop)} className="overflow-auto max-h-[560px] border border-slate-200 rounded-xl"><table className="min-w-full text-xs"><thead className="sticky top-0 bg-slate-100 z-10"><tr>{columns.map(c => <th key={c} className="text-left px-3 py-2 font-semibold text-slate-600 whitespace-nowrap">{labels[c] || fieldLabel(c)}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">
     {virtual && start > 0 && <tr aria-hidden="true"><td colSpan={columns.length} style={{ height: start * rowHeight, padding: 0 }}/></tr>}
-    {visibleRows.map((row, offset) => <tr key={start + offset} style={{ height: rowHeight }} className="hover:bg-blue-50/40">{columns.map(c => <td key={c} className="px-3 py-2 text-slate-600 max-w-72 truncate" title={formatCell(row[c])}>{formatCell(row[c])}</td>)}</tr>)}
+    {visibleRows.map((row, offset) => <tr key={start + offset} style={{ height: rowHeight }} className="hover:bg-blue-50/40">{columns.map(c => <td key={c} className="px-3 py-2 text-slate-600 max-w-72 truncate" title={formatCell(row[c], c)}>{formatCell(row[c], c)}</td>)}</tr>)}
     {virtual && end < rows.length && <tr aria-hidden="true"><td colSpan={columns.length} style={{ height: (rows.length - end) * rowHeight, padding: 0 }}/></tr>}
   </tbody></table></div>;
 }
 
-function formatCell(value: unknown): string {
-  if (value == null || value === "") return "—";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
+function formatCell(value: unknown, key?: string): string {
+  return formatDisplayValue(value, key);
 }
 
 function ToolbarButton({ children, icon, active = false, onClick }: { children: React.ReactNode; icon?: React.ReactNode; active?: boolean; onClick: () => void }) {

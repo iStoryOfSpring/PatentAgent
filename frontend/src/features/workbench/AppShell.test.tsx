@@ -15,6 +15,8 @@ it("navigates between the five workbench areas and exposes status", () => {
   expect(screen.getByText("演示数据")).toBeTruthy();
   expect(screen.getByText("DeepSeek")).toBeTruthy();
   expect(screen.getByText("会话列表")).toBeTruthy();
+  expect(screen.getByRole("link", { name: /GitHub 仓库/ }).getAttribute("href"))
+    .toBe("https://github.com/iStoryOfSpring/PatentAgent");
   fireEvent.click(screen.getByRole("button", { name: "数据集" }));
   expect(navigate).toHaveBeenCalledWith("datasets");
   fireEvent.click(screen.getByRole("button", { name: "报告" }));

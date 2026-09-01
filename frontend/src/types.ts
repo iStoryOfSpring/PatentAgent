@@ -199,13 +199,15 @@ export interface SearchCapabilityStatus {
 }
 
 export interface ToolParameter {
-  type: "string" | "integer" | "array";
+  type: "string" | "integer" | "array" | "boolean" | "object";
   description?: string;
   required?: boolean;
   enum?: string[];
+  default?: unknown;
   minimum?: number;
   maximum?: number;
-  items?: { type: string };
+  maxItems?: number;
+  items?: { type: string; properties?: Record<string, unknown> };
 }
 
 export interface Tool {

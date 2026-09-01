@@ -45,7 +45,7 @@ describe("LLMAdvancedSettings", () => {
 
   it("never refills an in-memory API key into the browser", () => {
     render(<LLMAdvancedSettings open profiles={[profile]} isStreaming={false} onClose={vi.fn()} onRefresh={async () => [profile]} onConnected={vi.fn()} />);
-    const key = screen.getByLabelText("API Key") as HTMLInputElement;
+    const key = screen.getByLabelText("接口密钥（API Key）") as HTMLInputElement;
     expect(key.value).toBe("");
     expect(key.placeholder).toContain("已在内存中加载");
   });
@@ -70,7 +70,7 @@ describe("LLMAdvancedSettings", () => {
     });
     render(<LLMAdvancedSettings open profiles={[]} isStreaming={false} onClose={vi.fn()} onRefresh={async () => [saved]} onConnected={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "vLLM" }));
-    fireEvent.click(screen.getByRole("button", { name: /获取模型/ }));
+    fireEvent.click(screen.getByRole("button", { name: /获取可用模型/ }));
     await waitFor(() => expect(discoverProviderModels).toHaveBeenCalledWith(
       "provider-vllm", { api_key: "", sensitive_headers: {} },
     ));

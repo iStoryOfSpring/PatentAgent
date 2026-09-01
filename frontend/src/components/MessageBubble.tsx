@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { ToolStepCard } from "./ToolStepCard";
 import type { Message, ToolStep } from "../types";
 import { normalizeAssistantContent } from "../finalAnswer";
+import { intentLabel, localizeErrorMessage, recommendationCategoryLabel, toolOrTextLabel } from "../uiLabels";
 
 export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: {
   message: Message;
@@ -28,10 +29,10 @@ export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: 
       </div>
       <div className="flex-1 overflow-hidden">
         <div className="font-semibold text-sm text-slate-800 mb-1 flex items-center gap-2">
-          {isUser ? "用户" : isSystem ? "系统" : "Agent"}
+          {isUser ? "用户" : isSystem ? "系统" : "智能助手"}
           {message.intent && (
             <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 font-normal">
-              {message.intent}
+              {intentLabel(message.intent)}
             </span>
           )}
         </div>
@@ -46,12 +47,12 @@ export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: 
           <div className="mb-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3">
             <div className="mb-2 flex items-center justify-between text-xs font-semibold text-blue-800">
               <span className="flex items-center gap-1.5"><ListChecks className="h-3.5 w-3.5" />分析计划</span>
-              {typeof message.plan.costWeight === "number" && <span className="font-normal text-blue-500">成本权重 {message.plan.costWeight}</span>}
+              {typeof message.plan.costWeight === "number" && <span className="font-normal text-blue-500" title="数值越大，表示预计需要调用的分析工具和计算量越多">计划成本权重 {message.plan.costWeight}</span>}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {message.plan.steps.map((step, index) => (
                 <span key={index} className="rounded-full border border-blue-100 bg-white px-2.5 py-1 text-[11px] text-slate-600">
-                  {index + 1}. {String(step.tool || step.name || step.description || "分析步骤")}
+                  {index + 1}. {toolOrTextLabel(step.tool || step.name || step.description || "分析步骤")}
                 </span>
               ))}
             </div>
@@ -80,7 +81,7 @@ export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: 
         {message.error && (
           <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>{message.error}</span>
+            <span>{localizeErrorMessage(message.error)}</span>
           </div>
         )}
 
@@ -114,7 +115,7 @@ export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: 
             {message.recommendations.map((rec, i) => (
               <div key={i} className="bg-amber-50 border border-amber-100 p-3 rounded-lg flex items-start gap-3">
                 <span className="bg-amber-200 text-amber-800 text-[10px] px-2 py-1 rounded font-medium mt-0.5 whitespace-nowrap">
-                  {rec.category}
+                  {recommendationCategoryLabel(rec.category)}
                 </span>
                 <p className="text-sm text-amber-900 m-0">
                   {rec.recommendation}

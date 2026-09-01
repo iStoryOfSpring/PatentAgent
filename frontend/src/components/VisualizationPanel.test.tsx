@@ -61,7 +61,7 @@ describe("VisualizationPanel registry", () => {
       <VisualizationPanel toolName="legacy" result={{ result_type: "unknown" }} chartHtml="<div>legacy</div>" />,
     );
     expect(container.querySelector("iframe")).toBeNull();
-    expect(screen.getByText("旧版 HTML 图表已禁用")).toBeTruthy();
+    expect(screen.getByText("旧版网页图表（HTML）已禁用")).toBeTruthy();
   });
 
   it("marks claim analysis as a human-review draft", () => {

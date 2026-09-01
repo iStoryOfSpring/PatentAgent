@@ -1,4 +1,5 @@
 import type { FollowupSuggestion } from "./types";
+import { fieldLabel, formatDisplayValue } from "./uiLabels";
 
 export interface NormalizedAssistantContent {
   content: string;
@@ -28,13 +29,11 @@ const sectionOrder = [
 ];
 
 function labelFor(key: string): string {
-  return labels[key] || key.replaceAll("_", " ").replace(/\b\w/g, char => char.toUpperCase());
+  return labels[key] || fieldLabel(key);
 }
 
-function scalar(value: unknown): string {
-  if (value === null || value === undefined) return "—";
-  if (typeof value === "boolean") return value ? "是" : "否";
-  return String(value).trim();
+function scalar(value: unknown, key?: string): string {
+  return formatDisplayValue(value, key).trim();
 }
 
 function renderMapping(input: Record<string, unknown>, level = 3): string {
@@ -44,7 +43,7 @@ function renderMapping(input: Record<string, unknown>, level = 3): string {
     const value = values[identity];
     if (value !== undefined && value !== null && value !== "") {
       delete values[identity];
-      const headingText = identity === "year" ? `${scalar(value)} 年` : scalar(value);
+      const headingText = identity === "year" ? `${scalar(value, identity)} 年` : scalar(value, identity);
       heading = `${"#".repeat(level)} ${headingText}`;
       break;
     }
@@ -60,14 +59,14 @@ function renderMapping(input: Record<string, unknown>, level = 3): string {
         lines.push(
           item && typeof item === "object" && !Array.isArray(item)
             ? renderMapping(item as Record<string, unknown>, Math.min(level + 1, 6))
-            : `- ${scalar(item)}`,
+            : `- ${scalar(item, key)}`,
         );
       }
     } else if (typeof value === "object") {
       lines.push(`**${label}：**`);
       lines.push(renderMapping(value as Record<string, unknown>, Math.min(level + 1, 6)));
     } else {
-      lines.push(`**${label}：** ${scalar(value)}`);
+      lines.push(`**${label}：** ${scalar(value, key)}`);
     }
   }
   return lines.filter(Boolean).join("\n\n");
@@ -80,14 +79,14 @@ function renderSection(key: string, value: unknown): string {
     const body = value.map(item => (
       item && typeof item === "object" && !Array.isArray(item)
         ? renderMapping(item as Record<string, unknown>)
-        : `- ${scalar(item)}`
+        : `- ${scalar(item, key)}`
     )).filter(Boolean).join("\n\n");
     return body ? `${heading}\n\n${body}` : "";
   }
   if (value && typeof value === "object") {
     return `${heading}\n\n${renderMapping(value as Record<string, unknown>)}`;
   }
-  return value === null || value === undefined ? "" : `${heading}\n\n${scalar(value)}`;
+  return value === null || value === undefined ? "" : `${heading}\n\n${scalar(value, key)}`;
 }
 
 function followupDefaults(text: string): Pick<FollowupSuggestion, "kind" | "requires_new_tools"> {

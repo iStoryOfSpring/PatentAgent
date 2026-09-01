@@ -41,9 +41,9 @@ describe("QuickToolsPanel MiniLM visibility", () => {
       className="flex"
     />);
 
-    expect(screen.getByText("MiniLM 多语言检索 Beta")).toBeTruthy();
+    expect(screen.getByText("MiniLM 多语言语义检索（测试版）")).toBeTruthy();
     expect(screen.getByText("模型已缓存 · 2 个数据集索引")).toBeTruthy();
-    expect(screen.getByText("多语言向量检索（Beta）")).toBeTruthy();
+    expect(screen.getByText("多语言向量检索（测试版）")).toBeTruthy();
   });
 
   it("passes the explicit beta mode only when selected", () => {
@@ -58,7 +58,7 @@ describe("QuickToolsPanel MiniLM visibility", () => {
     />);
 
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.change(screen.getByLabelText(/query/), { target: { value: "碳捕集膜" } });
+    fireEvent.change(screen.getByLabelText(/检索词/), { target: { value: "碳捕集膜" } });
     fireEvent.click(screen.getByRole("button", { name: "执行" }));
     expect(run).toHaveBeenCalledWith("search_patents", {
       query: "碳捕集膜",

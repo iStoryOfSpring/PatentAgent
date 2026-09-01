@@ -15,11 +15,11 @@ export function ChartFrame({ html, height }: { html: string; height?: number }) 
           srcDoc={documentHtml}
           style={{ width: `${naturalWidth}px`, minWidth: `${naturalWidth}px`, height: naturalHeight, border: "none" }}
           sandbox=""
-          title="PatentAgent 旧版分析图表"
+          title="PatentAgent 旧版网页分析图表"
           className="block bg-white"
         />
       </div>
-      <p className="mt-1 text-[10px] text-slate-400">旧版 HTML 仅以无脚本沙箱显示。</p>
+      <p className="mt-1 text-[10px] text-slate-400">旧版网页图表（HTML）仅以无脚本隔离沙箱显示。</p>
     </div>
   );
 }
