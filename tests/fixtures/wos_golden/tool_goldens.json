@@ -3,7 +3,7 @@
   "tools": {
     "analyze_burst_terms": {
       "result_type": "burst_terms",
-      "sha256": "ca01f094d40d4c448e37a356483b403fdfdc93c2ace5f67a8e9ce24bf608944c",
+      "sha256": "52fbd4b5f79d258a6a380fa71103b644471b0de8d6263683a4efd476e20de577",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "recent_document_frequency_growth",
@@ -20,6 +20,13 @@
             "late_freq": 170.0,
             "support": 50,
             "term": "catalyst"
+          },
+          {
+            "burst": 1.05,
+            "early_freq": 165.0,
+            "late_freq": 170.0,
+            "support": 50,
+            "term": "coating"
           },
           {
             "burst": 1.05,
@@ -82,7 +89,28 @@
             "early_freq": 165.0,
             "late_freq": 170.0,
             "support": 50,
+            "term": "robotic"
+          },
+          {
+            "burst": 1.05,
+            "early_freq": 165.0,
+            "late_freq": 170.0,
+            "support": 50,
             "term": "sensor"
+          },
+          {
+            "burst": 1.05,
+            "early_freq": 165.0,
+            "late_freq": 170.0,
+            "support": 50,
+            "term": "solar"
+          },
+          {
+            "burst": 1.05,
+            "early_freq": 165.0,
+            "late_freq": 170.0,
+            "support": 50,
+            "term": "thermal"
           },
           {
             "burst": 1.05,
@@ -124,35 +152,7 @@
             "early_freq": 1000.0,
             "late_freq": 1000.0,
             "support": 300,
-            "term": "loss"
-          },
-          {
-            "burst": 0.96,
-            "early_freq": 170.0,
-            "late_freq": 160.0,
-            "support": 50,
-            "term": "battery"
-          },
-          {
-            "burst": 0.96,
-            "early_freq": 170.0,
-            "late_freq": 160.0,
-            "support": 50,
-            "term": "capture"
-          },
-          {
-            "burst": 0.96,
-            "early_freq": 170.0,
-            "late_freq": 160.0,
-            "support": 50,
-            "term": "carbon"
-          },
-          {
-            "burst": 0.96,
-            "early_freq": 170.0,
-            "late_freq": 160.0,
-            "support": 50,
-            "term": "electrolyte"
+            "term": "improved"
           }
         ],
         "data_as_of": "",
@@ -317,7 +317,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -358,7 +357,7 @@
     },
     "analyze_clustering": {
       "result_type": "clustering",
-      "sha256": "c2b2dd3a254b60c6fbc70142343d9ce9d71cb122b13337b23a22c876eb96e4cd",
+      "sha256": "63d3a9fc2c2bd73588b8e86fca13e053c3ec1a72c5bc43cd3ac1e0bdbb924af4",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
@@ -1749,7 +1748,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -1798,7 +1796,7 @@
     },
     "analyze_co_network": {
       "result_type": "co_occurrence",
-      "sha256": "7b29e09f8ea4d23db3a9687789bfb774ae813d10f2639881c5a3a7f8b69002de",
+      "sha256": "20e9ec47863fd4beea156191652575028d130994960c78afeef3a012b7e4567d",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "co_applicant_network",
@@ -2260,7 +2258,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -2301,7 +2298,7 @@
     },
     "analyze_competitor_evolution": {
       "result_type": "competitor_evolution",
-      "sha256": "619f5bc3152da96a65471e0ce349ed1883ba79c18034880535434fc2baaf8220",
+      "sha256": "01872d71914ef45ec8772e7be181d630fb1a24ec91de9a1690414d613387313c",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "ipc_profile_evolution",
@@ -2772,7 +2769,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -2813,7 +2809,7 @@
     },
     "analyze_country_distribution": {
       "result_type": "country_distribution",
-      "sha256": "4e0b221a2a1b920a8561e74307f5f581ad91f79d71c040bf3b1864c316372fed",
+      "sha256": "2c45074f36f6e640db5fb913f9178d37e0f70f3b51129e2920d6e4fcfe9d062b",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "primary_publication_office_count",
@@ -2979,7 +2975,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -3020,7 +3015,7 @@
     },
     "analyze_ipc_distribution": {
       "result_type": "ipc_matrix",
-      "sha256": "6d7d72888bd59fad1813609a7885ba3d4f87fd441fdcffd277fcdc8c8bb01e3c",
+      "sha256": "9a638de31184d3cdb40a83623764e047fb1109aad987a539fe1fed37e6138b1f",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "ipc_publication_matrix_assignment_count",
@@ -3230,7 +3225,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -3296,7 +3290,7 @@
     },
     "analyze_lifecycle": {
       "result_type": "s_curve",
-      "sha256": "eec6e520c6b0391eb2063ac2f59f3f2eeccbeeecfab9d732ec82de58b83fa615",
+      "sha256": "365b6ad02a638af31850b0b5882f2d3d110ce3fd58e0065ef718c1803bf1e43b",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "publication_growth_summary",
@@ -3482,7 +3476,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -3620,7 +3613,7 @@
     },
     "analyze_patent_trend": {
       "result_type": "yearly_trend",
-      "sha256": "49152f010ea859e5756f9f772098f20058bcd7a1b010c98479bfdd17328d3adc",
+      "sha256": "874af9ce5f6f23d4640bf8f03913be5981e5c801125823c51ded86b03411476f",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "publication_count_trend",
@@ -3818,7 +3811,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -3940,7 +3932,7 @@
     },
     "analyze_patent_valuation": {
       "result_type": "value_indicators",
-      "sha256": "ac5f7b70d52cad72265c1b51300525112b775fa98e6649091867b7c2db5e8169",
+      "sha256": "243c862448c809d95c7b241db5884d589296883a7487863bb8a3fe2a231e1b8b",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "patent_family_citation_screening",
@@ -4567,7 +4559,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -4678,7 +4669,7 @@
     },
     "analyze_tech_matrix": {
       "result_type": "tech_effect_matrix",
-      "sha256": "b168c0e9082fbae85e40f9d8d18962608a212adb200c809afba010016dd474b1",
+      "sha256": "3a478d05aa3b5f3ec407bf9a278c0c2ffe8c4d8e0fd0a049480607b86a9a6025",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "derwent_abstract_proxy_te_matrix",
@@ -4785,16 +4776,16 @@
           "efficiency",
           "energy",
           "loss",
-          "conversion",
-          "electrolysis"
+          "reduced",
+          "stable"
         ],
         "evidence_level": "engineering_screening",
         "functions": [
           "generation",
+          "improved",
           "battery",
           "capture",
-          "carbon",
-          "catalyst"
+          "carbon"
         ],
         "gap_recommendations": [
           {
@@ -4958,6 +4949,28 @@
               "expand_with_synonyms": true,
               "query_terms_all": [
                 "battery",
+                "solar"
+              ]
+            },
+            "effect": "solar",
+            "effect_support": 50,
+            "expected_count": 8.3333,
+            "function": "battery",
+            "interpretation": "低共现复核候选，不等同于蓝海",
+            "lift": 0.0,
+            "patent_count": 0,
+            "pearson_residual": -2.8868,
+            "representative_patent_numbers": [],
+            "requires_patent_review": true,
+            "technology_support": 50
+          },
+          {
+            "adjacent_search_strategy": {
+              "citation_and_family_snowball": true,
+              "expand_with_ipc_cpc": true,
+              "expand_with_synonyms": true,
+              "query_terms_all": [
+                "battery",
                 "transfer"
               ]
             },
@@ -4994,28 +5007,6 @@
             "representative_patent_numbers": [],
             "requires_patent_review": true,
             "technology_support": 50
-          },
-          {
-            "adjacent_search_strategy": {
-              "citation_and_family_snowball": true,
-              "expand_with_ipc_cpc": true,
-              "expand_with_synonyms": true,
-              "query_terms_all": [
-                "capture",
-                "conversion"
-              ]
-            },
-            "effect": "conversion",
-            "effect_support": 50,
-            "expected_count": 8.3333,
-            "function": "capture",
-            "interpretation": "低共现复核候选，不等同于蓝海",
-            "lift": 0.0,
-            "patent_count": 0,
-            "pearson_residual": -2.8868,
-            "representative_patent_numbers": [],
-            "requires_patent_review": true,
-            "technology_support": 50
           }
         ],
         "matrix": [
@@ -5023,6 +5014,20 @@
             300,
             300,
             300,
+            300,
+            300
+          ],
+          [
+            300,
+            300,
+            300,
+            300,
+            300
+          ],
+          [
+            50,
+            50,
+            50,
             50,
             50
           ],
@@ -5030,28 +5035,14 @@
             50,
             50,
             50,
-            0,
-            0
+            50,
+            50
           ],
           [
             50,
             50,
             50,
-            0,
-            0
-          ],
-          [
             50,
-            50,
-            50,
-            0,
-            0
-          ],
-          [
-            50,
-            50,
-            50,
-            0,
             50
           ]
         ],
@@ -5125,7 +5116,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -5177,7 +5167,7 @@
     },
     "analyze_tech_roadmap": {
       "result_type": "roadmap",
-      "sha256": "6726af200f6054dad2ef44adaf29739da2e9de421d361682fb8f766caeeeeee7",
+      "sha256": "014632d40c5db653c66728006c449217e0964123ffffa6045d2e6955600e35b2",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "annual_theme_timeline",
@@ -5528,7 +5518,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -5571,7 +5560,7 @@
     },
     "analyze_yearly_keywords": {
       "result_type": "yearly_keywords",
-      "sha256": "59a1dc440f8e77c5c9d03596dea2e4a9ba81b990caff22d973d5d2de722247ff",
+      "sha256": "c3449d1e8878f6a8ac9f3a20a775bc917630358ec4f965404b65e2b0a2667d30",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "yearly_phrase_frequency",
@@ -5622,8 +5611,8 @@
               9
             ],
             [
-              "catalyst",
-              8
+              "solid",
+              9
             ]
           ],
           "2020": [
@@ -5633,6 +5622,10 @@
             ],
             [
               "catalyst",
+              9
+            ],
+            [
+              "coating",
               9
             ],
             [
@@ -5648,6 +5641,10 @@
               9
             ],
             [
+              "photovoltaic_coating",
+              9
+            ],
+            [
               "battery",
               8
             ],
@@ -5657,14 +5654,6 @@
             ],
             [
               "capture_membrane",
-              8
-            ],
-            [
-              "carbon",
-              8
-            ],
-            [
-              "carbon_capture",
               8
             ]
           ],
@@ -5678,7 +5667,23 @@
               9
             ],
             [
+              "robotic",
+              9
+            ],
+            [
+              "robotic_sensor",
+              9
+            ],
+            [
               "sensor",
+              9
+            ],
+            [
+              "thermal",
+              9
+            ],
+            [
+              "thermal_management",
               9
             ],
             [
@@ -5691,22 +5696,6 @@
             ],
             [
               "capture_membrane",
-              8
-            ],
-            [
-              "carbon",
-              8
-            ],
-            [
-              "carbon_capture",
-              8
-            ],
-            [
-              "catalyst",
-              8
-            ],
-            [
-              "electrolyte",
               8
             ]
           ],
@@ -5748,8 +5737,8 @@
               9
             ],
             [
-              "catalyst",
-              8
+              "solid",
+              9
             ]
           ],
           "2023": [
@@ -5759,6 +5748,10 @@
             ],
             [
               "catalyst",
+              9
+            ],
+            [
+              "coating",
               9
             ],
             [
@@ -5774,6 +5767,10 @@
               9
             ],
             [
+              "photovoltaic_coating",
+              9
+            ],
+            [
               "battery",
               8
             ],
@@ -5783,14 +5780,6 @@
             ],
             [
               "capture_membrane",
-              8
-            ],
-            [
-              "carbon",
-              8
-            ],
-            [
-              "carbon_capture",
               8
             ]
           ],
@@ -5804,7 +5793,23 @@
               9
             ],
             [
+              "robotic",
+              9
+            ],
+            [
+              "robotic_sensor",
+              9
+            ],
+            [
               "sensor",
+              9
+            ],
+            [
+              "thermal",
+              9
+            ],
+            [
+              "thermal_management",
               9
             ],
             [
@@ -5817,22 +5822,6 @@
             ],
             [
               "capture_membrane",
-              8
-            ],
-            [
-              "carbon",
-              8
-            ],
-            [
-              "carbon_capture",
-              8
-            ],
-            [
-              "catalyst",
-              8
-            ],
-            [
-              "electrolyte",
               8
             ]
           ]
@@ -6002,7 +5991,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -6043,7 +6031,7 @@
     },
     "generate_wordcloud": {
       "result_type": "word_freq",
-      "sha256": "785281e205fef60729e3888119c118f4394f0bc0a832c03b18ba05f146a54eb5",
+      "sha256": "8da75c491e94c37a04c4c8b7979cf64f3cf65df972db9dc6b8a0439ed3c1e77e",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "derwent_phrase_frequency",
@@ -6120,6 +6108,14 @@
             "document_ratio": 0.166667,
             "term_frequency": 50,
             "term_type": "unigram",
+            "word": "coating"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
             "word": "electrolyte"
           },
           {
@@ -6176,9 +6172,69 @@
             "count": 50,
             "document_frequency": 50,
             "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "photovoltaic_coating"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "robotic"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "robotic_sensor"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
             "term_frequency": 50,
             "term_type": "unigram",
             "word": "sensor"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "solid"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "solid_electrolyte"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "term_frequency": 50,
+            "term_type": "unigram",
+            "word": "thermal"
+          },
+          {
+            "count": 50,
+            "document_frequency": 50,
+            "document_ratio": 0.166667,
+            "stickiness": 1.0,
+            "term_frequency": 50,
+            "term_type": "phrase",
+            "word": "thermal_management"
           }
         ],
         "data_as_of": "",
@@ -6340,7 +6396,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -6366,7 +6421,7 @@
         },
         "result_type": "word_freq",
         "source_capabilities": {},
-        "summary": "word_freq 已生成，共 15 项结构化结果。",
+        "summary": "word_freq 已生成，共 23 项结构化结果。",
         "unsupported_conclusions": [
           "正式专利价值或交易价格结论",
           "权利要求范围判断",
@@ -6381,7 +6436,7 @@
     },
     "get_dataset_summary": {
       "result_type": "dataset_summary",
-      "sha256": "afacfdd131232de7a0539c75780df42670532a8f866eeba3946571c250008daa",
+      "sha256": "b776d3c662f1792d30a0fd4ee3cff40886f11cefd7307101ae8e86c7f1f72476",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "dataset_field_audit",
@@ -6538,7 +6593,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -6627,7 +6681,7 @@
     },
     "read_patent_details": {
       "result_type": "patent_details",
-      "sha256": "cdbad8dedfd924f555e1678c527e2de3b3afbfb3fbaf6d3de9b2d3ba1142fc5e",
+      "sha256": "3a5ff867b362b2a401873c8f7f18b20841453c2488bf371241e9154fdc40823d",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "structured_record_lookup",
@@ -6869,7 +6923,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024
@@ -6914,7 +6967,7 @@
     },
     "search_patents": {
       "result_type": "patent_search",
-      "sha256": "0e1fab959b13f104163dc778139405c715f28ccb2b7265cfbecf69fcf9910e5e",
+      "sha256": "5e64326f7231e2222260a6da49cbb81be43ce1c1d0a9663142bdef556104f56f",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "tfidf_cosine_retrieval",
@@ -7133,7 +7186,6 @@
               "after_execute"
             ],
             "cpu_offloaded": true,
-            "estimated_input_mb": 1.0,
             "max_execution_seconds": 120.0,
             "max_input_records": 1000000,
             "memory_budget_mb": 1024

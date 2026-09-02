@@ -10,7 +10,7 @@
 > 暂时以AGPL的形式开源。以后也许（但不保证）会转换为更宽松的模式。Contact: 2507380208@wtu.edu.cn 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3.11%20-%203.13-blue" alt="Python 3.11-3.13">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
   <img src="https://img.shields.io/badge/Tools-24-orange" alt="Tools">
@@ -19,8 +19,8 @@
 
 ## 快速开始
 
-后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。要求 Python 3.10+，
-推荐使用 Python 3.13 或 3.14；CI 覆盖 3.10–3.14：
+后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。当前支持 Python
+`>=3.11,<3.14`（即 3.11、3.12、3.13），推荐使用 Python 3.13；CI 后端矩阵覆盖这三个版本：
 
 ```bash
 uv sync --frozen --extra mcp --group dev
@@ -351,9 +351,13 @@ cd frontend && npm test -- --run && npm run build
 ```
 
 `tests/fixtures/wos_golden/` 是固定的五年以上合成 WoS 数据集；核心工具均校验统一的
-`ToolExecutionEnvelope`、数据版本、字段覆盖、算法参数和执行指标。更新金样必须显式运行
-`python scripts/generate_golden_wos_fixture.py` 并审查差异。GitHub Actions 在 Python
-3.10/3.11/3.12/3.13/3.14、Node 20、MCP、迁移、锁文件和金样回归全部通过后才满足合并门禁；`V*`
+`ToolExecutionEnvelope`、数据版本、字段覆盖、算法参数和执行指标。更新合成数据集运行
+`python scripts/generate_golden_wos_fixture.py`；更新工具金样必须显式运行
+`uv run python scripts/generate_tool_goldens.py` 并审查差异。GitHub Actions 的后端矩阵在
+Python 3.11/3.12/3.13 上运行完整测试；`contracts-lock-migrations-mcp` 在 Python 3.12
+执行锁文件检查、requirements 导出一致性、官方样例/契约/方法学校验及 MCP/供应商/可复现性回归；
+`performance-100k-baseline` 在 Python 3.13 执行 10 万条检索与工具基线；`frontend-node-20`
+在 Node 20 上执行 `npm ci`、前端测试和生产构建。上述检查全部通过后才满足合并门禁；`V*`
 标签只生成源码、前端产物与 SHA-256 校验和，不发布 PyPI。
 
 本轮前端国际化与算法审计的验证结果（2026-09-02）：前端测试 12 个文件、61 项通过；

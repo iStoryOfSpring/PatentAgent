@@ -19,9 +19,12 @@ PatentAgent 适合降低专利全景、公开趋势、主题聚类、IPC 分布�
 ## 工程基线与模块边界
 
 项目采用模块化单体，不引入微服务或外部任务队列。`pyproject.toml` 是依赖声明源，
-`uv.lock` 固定 Python 3.10+ 的解析结果，推荐本地使用 3.13 或 3.14，`requirements.txt`
-仅为自动导出的 pip 兼容清单。GitHub Actions 对 Python 3.10–3.14、Node 20、MCP、SQLite 幂等迁移、前端
-测试/构建和固定合成 WoS 金样执行持续门禁；标签发布只生成源码、前端产物和校验和。
+当前 `requires-python` 为 `>=3.11,<3.14`，即支持 Python 3.11、3.12、3.13；`.python-version`
+固定本地默认版本为 3.13。`uv.lock` 固定该范围内的解析结果，`requirements.txt` 仅为自动导出的
+pip 兼容清单。GitHub Actions 的后端矩阵覆盖 3.11/3.12/3.13；3.12 的
+`contracts-lock-migrations-mcp` 负责锁文件、requirements 导出一致性、官方样例、契约、方法学及
+MCP/供应商/可复现性回归；3.13 的 `performance-100k-baseline` 负责十万条检索与工具基线；
+`frontend-node-20` 负责 Node 20 下的前端测试和生产构建。分支保护要求这些检查全部通过；标签发布只生成源码、前端产物和校验和。
 
 新增的 `patent_agent` 包按 application、domain、security、infrastructure 和 api 划定
 用例、契约及运行边界，现有 engine/tools/agent 算法包保持原位渐进迁移。FastAPI lifespan
@@ -102,3 +105,13 @@ von Wartburg 原文的实证边界尤其重要：节点是专利族，网络包�
 10,000 件去重样例全工具冒烟。计数和标识符精确比较，浮点指标使用显式容差；随机算法固定
 种子和线程配置。更新金样必须执行显式生成脚本并接受代码审查。抽样工具必须公开总体、
 样本量、随机种子或抽样标记。
+
+## 本次 CI 与可复现性修复（2026-09-03）
+
+本次修复不改变主程序运行时逻辑，范围限于支持元数据、CI 配置、回归生成器、测试和文档：
+
+- Python 元数据、CI 矩阵和分支保护统一为 3.11–3.13；固定 uv 0.11.30 重新生成并锁定 `uv.lock`，再导出 `requirements.txt`。
+- `scripts/generate_tool_goldens.py` 与 `tests/test_reproducibility.py` 使用 `hermetic_nltk_fallback`，将 NLTK 数据路径置空，确保本机是否安装词性模型不会改变黄金结果；上下文退出后恢复原路径。
+- `estimated_input_mb` 是 DataFrame/运行环境相关的内存遥测，不作为黄金投影或指纹的一部分；回归测试仍明确检查该值为非负数且不超过 `memory_budget_mb`。
+- 当前工具金样仍覆盖 16 个核心工具。与旧 fixture 对比并排除该遥测字段后，只有 `analyze_burst_terms`、`analyze_tech_matrix`、`analyze_yearly_keywords` 和 `generate_wordcloud` 的文本投影因统一回退而变化，其余 12 个工具投影未变化；生成脚本重复执行产生相同文件哈希。
+- 本地已通过 `uv lock --check`、工具金样生成、`pytest tests/test_reproducibility.py -q`（18 passed）。完整 Python 矩阵、契约门禁和十万条性能基线仍以 GitHub Actions 为最终验收依据。

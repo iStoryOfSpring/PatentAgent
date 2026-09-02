@@ -7,6 +7,7 @@ Run only for a reviewed algorithm/contract change:
 from __future__ import annotations
 
 import asyncio
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
@@ -42,7 +43,32 @@ PARAMETERS = {
 # test validates separately before comparing the golden projection.
 VOLATILE_KEYS = {
     "chart_html", "elapsed_ms", "query_embedding_time_ms", "imported_at", "dataset_id",
+    # DataFrame memory accounting is runtime/interpreter dependent telemetry,
+    # not an algorithm result.  The test asserts its safety bounds separately.
+    "estimated_input_mb",
 }
+
+
+@contextmanager
+def hermetic_nltk_fallback():
+    """Make golden generation independent of locally installed NLTK models.
+
+    The runtime already has a deterministic rule-based fallback when the POS
+    tagger is unavailable.  Golden fixtures use that fallback explicitly so a
+    developer's local NLTK corpus cannot change committed algorithm output.
+    """
+    try:
+        import nltk
+    except ImportError:
+        yield
+        return
+
+    original_path = nltk.data.path
+    nltk.data.path = []
+    try:
+        yield
+    finally:
+        nltk.data.path = original_path
 
 
 def canonical(value: Any) -> Any:
@@ -72,14 +98,15 @@ async def main() -> None:
     store.load_dataframe(frame)
     store._adapter_name = "wos_derwent"
     goldens = {"schema_version": 1, "tools": {}}
-    for name in sorted(PARAMETERS):
-        result = await tool_registry.get_tool(name).run(store, **PARAMETERS[name])
-        payload = result.model_dump(mode="json")
-        goldens["tools"][name] = {
-            "result_type": result.result_type,
-            "sha256": fingerprint(payload),
-            "projection": canonical(payload),
-        }
+    with hermetic_nltk_fallback():
+        for name in sorted(PARAMETERS):
+            result = await tool_registry.get_tool(name).run(store, **PARAMETERS[name])
+            payload = result.model_dump(mode="json")
+            goldens["tools"][name] = {
+                "result_type": result.result_type,
+                "sha256": fingerprint(payload),
+                "projection": canonical(payload),
+            }
     destination = FIXTURE_DIR / "tool_goldens.json"
     destination.write_text(
         json.dumps(goldens, ensure_ascii=False, indent=2) + "\n", encoding="utf-8",

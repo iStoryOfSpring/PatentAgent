@@ -12,7 +12,7 @@ from engine.adapters.wos_adapter import WoSAdapter
 from models.analysis_results import AnalysisResult
 from storage.datastore import PatentDataStore
 from tools import tool_registry
-from scripts.generate_tool_goldens import canonical, fingerprint
+from scripts.generate_tool_goldens import canonical, fingerprint, hermetic_nltk_fallback
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "wos_golden"
@@ -34,6 +34,13 @@ PARAMETERS = {
     "analyze_patent_valuation": {"top_n": 10, "citation_mode": "screening"},
     "analyze_competitor_evolution": {"top_n": 5},
 }
+
+
+@pytest.fixture(scope="module", autouse=True)
+def hermetic_nlp_environment():
+    """Keep the committed algorithm baseline independent of local NLTK data."""
+    with hermetic_nltk_fallback():
+        yield
 
 
 def assert_golden_projection(actual, expected, path: str = "result") -> None:
@@ -93,6 +100,10 @@ def test_all_core_tools_emit_traceable_contract(tool_name, golden_store):
     assert result.provenance.algorithm_id
     assert result.provenance.algorithm_version
     assert result.metrics.elapsed_ms >= 0
+    runtime_limits = result.result_metadata["runtime_limits"]
+    assert isinstance(runtime_limits["estimated_input_mb"], (int, float))
+    assert runtime_limits["estimated_input_mb"] >= 0
+    assert runtime_limits["estimated_input_mb"] <= runtime_limits["memory_budget_mb"]
     assert result.evidence_level
     assert isinstance(result.source_capabilities, dict)
     assert isinstance(result.unsupported_conclusions, list)

@@ -1,5 +1,13 @@
 # PatentAgent 更新日志
 
+## Unreleased — CI 与可复现性修复（2026-09-03）
+
+- 当前 Python 支持范围收敛为 `>=3.11,<3.14`（3.11、3.12、3.13），并同步 CI 矩阵与默认分支保护检查项；不再将 Python 3.10 或 3.14 列为当前支持版本。
+- 使用固定的 uv 0.11.30 重新生成 `uv.lock` 与 `requirements.txt`；CI 的锁文件和导出一致性检查继续以 frozen 模式执行。
+- 工具黄金生成与回归测试显式禁用本机 NLTK 数据路径，统一使用代码已有的确定性词性回退；运行时 `estimated_input_mb` 属于环境相关遥测，不参与黄金指纹，但测试继续校验其非负且不超过内存预算。
+- 重新生成并审查五年以上合成 WoS 工具金样：去除遥测字段后，只有依赖词性/文本词组的四个工具投影发生预期变化，其余工具投影保持不变；生成结果可重复。
+- CI 门禁明确分工：3.11/3.12/3.13 后端完整测试，3.12 锁文件/导出/契约/MCP 回归，3.13 十万条性能基线，以及 Node 20 前端测试与构建。
+
 ## Unreleased — 前端国际化与算法审计（2026-09-02）
 
 - 前端新增 zh-CN/en-US 运行时切换；首次访问按有效 localStorage、浏览器语言和中文默认值顺序选择语言，并同步 HTML `lang` 属性。
@@ -36,7 +44,7 @@
 - 新增 `AppContainer`、版本化 `DatasetSnapshot`、`ToolExecutionEnvelope` 和可拆分的 Agent 六段流水线。
 - 新增数据集版本、任务事件、审批、报告和工具 provenance/metrics 的 SQLite 持久化。
 - 新增任务查询、取消、恢复接口，以及贯穿 HTTP、SSE、任务、工具和 LLM 调用的 `trace_id`。
-- 新增 `uv.lock`、Python 3.10+ 声明与 3.10–3.14 兼容矩阵、GitHub Actions、合成 WoS fixture 和 16 个工具的黄金回归结果。
+- 新增 `uv.lock`、Python 兼容声明、GitHub Actions、合成 WoS fixture 和 16 个工具的黄金回归结果。
 - 前端引入 TanStack Query，并按应用壳、数据集、Agent、工具、供应商和报告逐步拆分 feature 模块。
 - 新增 Google Patents Public Data JSONL、USPTO grant XML 和 Patent File Wrapper JSON 文件适配器，以及可校验的 `patentagent-import.json`。
 - 新增 PatentRecord v3 的多语言文本、规范号码、法律/审查事件、字段级来源与冲突记录。
