@@ -6,9 +6,22 @@ import type {
   AgentTask, DatasetVersion, SearchCapabilityStatus, TaskEvent,
   CapabilityDefinition, DatasetImportStatus, DatasetRecord, ReportSummary,
 } from "./types";
-import { httpStatusLabel, localizeErrorMessage } from "./uiLabels";
-
 const BASE = "/api";
+
+// Client-created failures use stable semantic identifiers rather than a
+// localized sentence. The UI resolves these identifiers with the active
+// locale at render time, so a language switch also updates an error that is
+// already visible.
+export const CLIENT_ERROR_CODES = {
+  network: "client.network",
+  invalidSse: "client.sse.invalidEvent",
+  incompleteSse: "client.sse.incomplete",
+} as const;
+
+function clientHttpErrorCode(status: number, statusText?: string): string {
+  const suffix = statusText && !/^[A-Za-z ]+$/.test(statusText) ? `:${statusText}` : "";
+  return `client.http.${status}${suffix}`;
+}
 
 export interface ApiErrorDetail {
   message?: string;
@@ -33,14 +46,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       headers: { "Content-Type": "application/json" },
       ...options,
     });
-  } catch (error) {
-    throw new ApiError(localizeErrorMessage((error as Error).message));
+  } catch {
+    throw new ApiError(CLIENT_ERROR_CODES.network);
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const raw = (body as { detail?: string | ApiErrorDetail }).detail;
     const detail = typeof raw === "object" && raw ? raw : undefined;
-    const message = localizeErrorMessage(typeof raw === "string" ? raw : detail?.message || httpStatusLabel(res.status, res.statusText));
+    const message = typeof raw === "string"
+      ? raw
+      : detail?.message || clientHttpErrorCode(res.status, res.statusText);
     throw new ApiError(message, detail);
   }
   return res.json();
@@ -82,12 +97,12 @@ export async function uploadDataset(
   let response: Response;
   try {
     response = await fetch(`${BASE}/datasets/imports`, { method: "POST", body: form });
-  } catch (error) {
-    throw new ApiError(localizeErrorMessage((error as Error).message));
+  } catch {
+    throw new ApiError(CLIENT_ERROR_CODES.network);
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new ApiError(localizeErrorMessage((body as { detail?: string }).detail || httpStatusLabel(response.status, response.statusText)));
+    throw new ApiError((body as { detail?: string }).detail || clientHttpErrorCode(response.status, response.statusText));
   }
   return response.json();
 }
@@ -265,7 +280,7 @@ export function streamTaskEvents(
       headers: afterEventId ? { "Last-Event-ID": String(afterEventId) } : undefined,
       signal: controller.signal,
     });
-    if (!response.ok || !response.body) throw new Error(httpStatusLabel(response.status, response.statusText));
+    if (!response.ok || !response.body) throw new Error(clientHttpErrorCode(response.status, response.statusText));
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -317,10 +332,11 @@ export function streamChat(
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
-        throw new Error(localizeErrorMessage((body as { detail?: string }).detail || httpStatusLabel(response.status, response.statusText)));
+        throw new Error((body as { detail?: string }).detail || clientHttpErrorCode(response.status, response.statusText));
       }
 
-      const reader = response.body!.getReader();
+      if (!response.body) throw new Error(CLIENT_ERROR_CODES.incompleteSse);
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let sawDone = false;
@@ -330,7 +346,7 @@ export function streamChat(
         try {
           event = JSON.parse(raw) as SSEEvent;
         } catch {
-          throw new Error("服务器返回了无法解析的 SSE 事件");
+          throw new Error(CLIENT_ERROR_CODES.invalidSse);
         }
         if (event.type === "done") sawDone = true;
         onEvent(event);
@@ -357,11 +373,11 @@ export function streamChat(
         emit(dataLine.slice(6));
       }
 
-      if (!sawDone) throw new Error("对话流在最终完成事件之前中断");
+      if (!sawDone) throw new Error(CLIENT_ERROR_CODES.incompleteSse);
       onDone();
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
-        onError(new Error(localizeErrorMessage((err as Error).message)));
+        onError(err instanceof Error ? err : new Error(String(err)));
       }
     }
   })();

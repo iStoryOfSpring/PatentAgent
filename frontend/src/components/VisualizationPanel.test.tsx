@@ -10,7 +10,7 @@ vi.mock("./EChartCanvas", () => ({
   }),
 }));
 
-import { VisualizationPanel } from "./VisualizationPanel";
+import { escapeTooltipHtml, VisualizationPanel } from "./VisualizationPanel";
 
 const cases: Record<string, Record<string, unknown>> = {
   monthly_trend: { data: [{ year_month: "2024-01", count: 3 }] },
@@ -41,6 +41,12 @@ const cases: Record<string, Record<string, unknown>> = {
 };
 
 describe("VisualizationPanel registry", () => {
+  it("escapes untrusted tooltip values before inserting HTML", () => {
+    expect(escapeTooltipHtml('<img src=x onerror="alert(1)">')).toBe(
+      "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;",
+    );
+  });
+
   for (const [resultType, payload] of Object.entries(cases)) {
     it(`renders ${resultType} from structured data without an iframe`, () => {
       const { container, unmount } = render(

@@ -8,6 +8,7 @@ import {
   VisualMapComponent,
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
+import { useI18n } from "../i18n";
 
 echarts.use([
   AriaComponent, BarChart, CanvasRenderer, DataZoomComponent, GraphChart,
@@ -30,6 +31,7 @@ interface EChartCanvasProps {
 
 export const EChartCanvas = forwardRef<EChartCanvasHandle, EChartCanvasProps>(
   function EChartCanvas({ option, width = 960, height = 520, fit = false, className = "" }, ref) {
+    const { t } = useI18n();
     const elementRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<ECharts | null>(null);
 
@@ -74,7 +76,7 @@ export const EChartCanvas = forwardRef<EChartCanvasHandle, EChartCanvasProps>(
         <div
           ref={elementRef}
           role="img"
-          aria-label="PatentAgent 数据可视化图表"
+          aria-label={t("visual.chartAria")}
           style={{
             width: fit ? "100%" : `${width}px`,
             minWidth: fit ? 0 : `${width}px`,

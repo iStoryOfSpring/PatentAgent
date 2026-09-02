@@ -41,11 +41,14 @@ export function messagesFromSession(detail: SessionDetail): Message[] {
     return {
       id: `stored-${stored.id}`,
       role: stored.role,
-      content: normalizedContent.content,
+      // Keep the stored assistant payload intact. MessageBubble performs the
+      // client-side wrapper normalization with the active locale on render,
+      // so switching languages also updates restored structured answers.
+      content: stored.content,
       turnId,
       steps: stored.role === "assistant" && turnId ? byTurn.get(turnId) : undefined,
       finalStatus: status,
-      followupQuestions: awaiting ? ["按默认条件继续"] : (
+      followupQuestions: awaiting ? [] : (
         (metadata.followup_questions || (
           structuredSuggestions.length
             ? structuredSuggestions.map(item => item.text).filter(Boolean)
@@ -53,6 +56,7 @@ export function messagesFromSession(detail: SessionDetail): Message[] {
         )) as string[]
       ),
       followupSuggestions: structuredSuggestions as Message["followupSuggestions"],
+      defaultFollowup: awaiting && Boolean(pendingQuestion.allow_defaults),
       clarification: awaiting && turnId ? {
         turnId,
         missingFields: (pendingQuestion.missing_fields || []) as string[],

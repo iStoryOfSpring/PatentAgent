@@ -42,7 +42,7 @@ describe("streamChat protocol guard", () => {
         throw new Error("must not complete");
       }, resolve);
     });
-    expect(error.message).toContain("无法解析");
+    expect(error.message).toBe("client.sse.invalidEvent");
   });
 
   it("reports EOF before done", async () => {
@@ -54,6 +54,6 @@ describe("streamChat protocol guard", () => {
         throw new Error("must not complete");
       }, resolve);
     });
-    expect(error.message).toContain("最终完成事件之前中断");
+    expect(error.message).toBe("client.sse.incomplete");
   });
 });

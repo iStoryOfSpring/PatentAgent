@@ -2,12 +2,19 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { I18nProvider, useI18n } from "../../i18n";
 import { QuickToolsPanel } from "./QuickToolsPanel";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  document.documentElement.lang = "zh-CN";
 });
+
+function EnglishLocaleSwitch() {
+  const { setLocale } = useI18n();
+  return <button type="button" onClick={() => setLocale("en-US")}>switch to English</button>;
+}
 
 const searchTool = {
   name: "search_patents",
@@ -64,5 +71,20 @@ describe("QuickToolsPanel MiniLM visibility", () => {
       query: "碳捕集膜",
       retrieval_mode: "multilingual_hybrid_beta",
     });
+  });
+
+  it("uses the localized tool label instead of backend description for available titles", () => {
+    render(<I18nProvider><><EnglishLocaleSwitch /><QuickToolsPanel
+        tools={[{ ...searchTool, description: "后端静态中文描述" }]}
+        isStreaming={false}
+        loadingTool={null}
+        onRun={vi.fn()}
+        className="flex"
+      /></></I18nProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "switch to English" }));
+
+    const button = screen.getByRole("button", { name: /Related patent search/ });
+    expect(button.getAttribute("title")).toBe("Related patent search");
+    expect(button.getAttribute("title")).not.toContain("后端静态中文描述");
   });
 });

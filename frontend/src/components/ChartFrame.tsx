@@ -1,5 +1,8 @@
 // Deprecated compatibility renderer. Scripts and external-window execution are disabled.
+import { useI18n } from "../i18n";
+
 export function ChartFrame({ html, height }: { html: string; height?: number }) {
+  const { t } = useI18n();
   const widths = [...html.matchAll(/width:\s*(\d+)px/gi)].map(match => Number(match[1]));
   const heights = [...html.matchAll(/height:\s*(\d+)px/gi)].map(match => Number(match[1]));
   const naturalWidth = Math.max(720, ...widths, 0);
@@ -15,11 +18,11 @@ export function ChartFrame({ html, height }: { html: string; height?: number }) 
           srcDoc={documentHtml}
           style={{ width: `${naturalWidth}px`, minWidth: `${naturalWidth}px`, height: naturalHeight, border: "none" }}
           sandbox=""
-          title="PatentAgent 旧版网页分析图表"
+          title={t("visual.oldChartTitle")}
           className="block bg-white"
         />
       </div>
-      <p className="mt-1 text-[10px] text-slate-400">旧版网页图表（HTML）仅以无脚本隔离沙箱显示。</p>
+      <p className="mt-1 text-[10px] text-slate-400">{t("visual.oldChartDescription")}</p>
     </div>
   );
 }

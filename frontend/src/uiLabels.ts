@@ -1,6 +1,7 @@
 import type {
   ProviderAuthMode, ProviderProtocol, ReasoningEffort, ThinkingMode, ToolParameter,
 } from "./types";
+import type { Locale } from "./i18n";
 
 /**
  * User-facing vocabulary for backend identifiers. Keep the identifiers in
@@ -31,6 +32,33 @@ export const TOOL_LABELS: Record<string, string> = {
   analyze_legal_status: "法律状态分析",
   monitor_patent_changes: "专利变更监测",
   analyze_claim_elements: "权利要求要素分析",
+};
+
+const TOOL_LABELS_EN: Record<string, string> = {
+  get_dataset_summary: "Dataset overview",
+  analyze_patent_trend: "Publication trend",
+  analyze_lifecycle: "Lifecycle stage",
+  analyze_ipc_distribution: "IPC distribution",
+  generate_wordcloud: "Technical word cloud",
+  analyze_burst_terms: "Recently growing terms",
+  analyze_yearly_keywords: "Yearly keywords",
+  analyze_country_distribution: "First publication office distribution",
+  analyze_co_network: "Applicant collaboration network",
+  analyze_tech_roadmap: "Annual technology timeline",
+  analyze_tech_matrix: "Technology-means/effect matrix",
+  analyze_clustering: "Technology topic clustering",
+  analyze_patent_valuation: "Patent value screening",
+  analyze_competitor_evolution: "Competitor IPC evolution",
+  search_patents: "Related patent search",
+  read_patent_details: "Patent details",
+  analyze_entity_portfolio: "Entity patent portfolio",
+  analyze_concentration: "Competitive concentration",
+  analyze_citation_network: "Patent citation network",
+  analyze_family_geography: "Patent family geography",
+  audit_search_strategy: "Search strategy audit",
+  analyze_legal_status: "Legal status analysis",
+  monitor_patent_changes: "Patent change monitoring",
+  analyze_claim_elements: "Claim element analysis",
 };
 
 const PARAMETER_LABELS: Record<string, string> = {
@@ -339,66 +367,207 @@ const PROBE_STAGE_LABELS: Record<string, string> = {
   response: "检查响应",
 };
 
-export function toolLabel(name?: string): string {
-  if (!name) return "分析工具";
-  return TOOL_LABELS[name] || `分析工具（${name}）`;
+const PARAMETER_LABELS_EN: Record<string, string> = {
+  query: "Query", top_k: "Results", top_n: "Displayed items", n_clusters: "Clusters",
+  year_start: "Start year", year_end: "End year", ipc_filter: "IPC filter",
+  applicant_filter: "Applicant filter", jurisdiction_filter: "Jurisdiction filter",
+  patent_numbers: "Patent numbers", product_features: "Product features",
+  retrieval_mode: "Retrieval mode", chart_type: "Chart granularity", text_source: "Text source",
+  vectorization_mode: "Vectorization", count_mode: "Counting mode", citation_mode: "Citation mode",
+  entity_type: "Entity type", metric: "Metric", group_by_parent: "Group by parent company",
+  reviewed_parent_map: "Reviewed parent mapping", dimension: "Dimension", bootstrap_samples: "Bootstrap samples",
+  strategies: "Search strategies", known_patent_numbers: "Known patent numbers", review_labels: "Review labels",
+  random_audit_sample_size: "Random audit sample size", strategy_id: "Strategy ID",
+  strategy_version: "Strategy version", update_baseline: "Update baseline", notification_policy: "Notification policy",
+  minimum_event_count: "Minimum event count", scope: "Analysis scope",
+};
+
+const PARAMETER_HELP_EN: Record<string, string> = {
+  query: "Enter a technical topic, product name, or qualifier; multiple conditions may be written in one query.",
+  top_k: "Maximum related patents to return. Larger values are more comprehensive but may take longer.",
+  top_n: "Number of top items shown in a chart or list.",
+  n_clusters: "Number of technology topics to infer from patent text; 3–12 is a useful starting range.",
+  year_start: "Analyze records from this year onward; leave blank for no lower bound.",
+  year_end: "Analyze records through this year; leave blank for no upper bound.",
+  ipc_filter: "Filter by an IPC code such as H01M; leave blank for all classifications.",
+  applicant_filter: "Filter by an applicant name fragment; leave blank for all applicants.",
+  jurisdiction_filter: "Filter by country/region or first publication office, such as CN or US.",
+  patent_numbers: "One publication or patent number per line or separated by commas.",
+  product_features: "One product feature per line or separated by commas.",
+  retrieval_mode: "Lexical search matches literal keywords; multilingual hybrid search combines a local semantic model with lexical ranking.",
+  chart_type: "Summarize publications by month or year.",
+  text_source: "Extract technical keywords from titles or abstracts.",
+  vectorization_mode: "Use character fragments or tokenized TF-IDF representations.",
+  count_mode: "A patent may have multiple IPC labels; choose labeled assignments, unique patents, or family-normalized counts.",
+  citation_mode: "Automatic mode selects fields available in the current data; other modes support screening or reproducibility.",
+  entity_type: "Choose applicant, assignee, current owner, or inventor as the statistical entity.",
+  metric: "Rank by publications, patent families, grants, or forward citations.",
+  group_by_parent: "Merge entities confirmed to belong to the same parent company.",
+  reviewed_parent_map: "Enter manually confirmed entity mappings; the system will not infer parent-company relationships.",
+  dimension: "Calculate concentration by applicant, IPC classification, or first publication office.",
+  bootstrap_samples: "Repeated samples used to estimate a stable concentration interval.",
+  strategies: "Each strategy includes a query, filters, and version information for comparing recall and precision.",
+  known_patent_numbers: "Known related patent numbers used to check whether a query retrieves them.",
+  review_labels: "Mark samples as relevant, borderline, or irrelevant after manual review.",
+  random_audit_sample_size: "Number of search results to sample for manual audit.",
+  strategy_id: "Search strategy to monitor.", strategy_version: "Strategy version to monitor; blank uses the current version.",
+  update_baseline: "Save this result as the comparison baseline for future change detection.",
+  notification_policy: "Notify on all changes or only after an event threshold is reached.",
+  minimum_event_count: "Number of change events required before a threshold notification.",
+  scope: "Limit by year, IPC, applicant, country/region, and text fields; blank uses the current dataset.",
+};
+
+const ENUM_LABELS_EN: Record<string, string> = {
+  lexical: "Lexical search", multilingual_hybrid_beta: "Multilingual hybrid (Beta)", monthly: "Monthly", yearly: "Yearly",
+  title: "Title", abstract: "Abstract", char_ngram_tfidf: "Character n-gram TF-IDF", segmented_word_tfidf: "Segmented-word TF-IDF",
+  assignment_count: "IPC assignments", unique_patents: "Unique patents", family_normalized: "Family-normalized",
+  auto: "Automatic", screening: "Screening", replication: "Reproducibility", applicant: "Applicant", assignee: "Assignee",
+  owner: "Current owner", inventor: "Inventor", publications: "Publications", families: "Patent families", grants: "Grants",
+  citations: "Forward citations", publication_office: "First publication office", all_changes: "All changes", threshold: "At threshold",
+  active: "Active", pending: "Pending", granted: "Granted", expired: "Expired", abandoned: "Abandoned",
+  new_publication: "New publication", removed_record: "Removed record", updated_record: "Updated record", literal_substring: "Literal substring",
+  en: "English", zh: "Chinese", und: "Unknown language", high: "High", medium: "Medium", low: "Low", max: "Maximum", default: "Default",
+  enabled: "Enabled", disabled: "Disabled", not_tested: "Not tested", passed: "Passed", connected: "Connected", failed: "Failed",
+  running: "Running", completed: "Completed", skipped: "Skipped", queued: "Queued", parsing: "Parsing", interrupted: "Interrupted",
+  ready: "Ready", archived: "Archived", partial: "Partial", cancelled: "Cancelled", awaiting_clarification: "Awaiting clarification",
+  unknown: "Unknown", priority_origin: "Priority origin", first_publication_office: "First publication office",
+  family_publication_offices: "Family publication offices", designated_states: "Designated states",
+  current_active_rights_jurisdictions: "Jurisdictions with current active rights", manifest: "Manifest declaration",
+  user_selected: "User selected", content_signature: "File content signature",
+};
+
+const FIELD_LABELS_EN: Record<string, string> = {
+  answer: "Key conclusion", answer_markdown: "Key conclusion", conclusion: "Key conclusion", summary: "Summary", details: "Analysis by dimension",
+  findings: "Key findings", key_findings: "Key findings", key_points: "Key points", trend_summary: "Trend assessment", methodology: "Methodology",
+  limitations: "Method and data limitations", warnings: "Data warnings", recommendations: "Recommendations", rank: "Rank", id: "ID", name: "Name",
+  label: "Name", title: "Title", description: "Description", total_patents: "Total patents", year: "Year", year_month: "Year-month",
+  year_start: "Start year", year_end: "End year", publication_date: "Publication date", publication_office: "First publication office",
+  country: "Country/region", section: "IPC classification", sections: "IPC classification", ipc: "IPC classification", ipc_sections: "IPC sections",
+  ipc_codes: "IPC codes", applicant: "Applicant", applicants: "Applicants", assignee: "Assignee", owner: "Current owner", inventor: "Inventor",
+  canonical_name: "Canonical name", original_name: "Original name", record_count: "Record count", total_hits: "Total hits",
+  total_hits_exact: "Total hits exact", returned_count: "Returned count", query_embedding_time_ms: "Semantic search time (ms)",
+  relevance_score: "Relevance score", score: "Score", score_label: "Score label", score_interval: "Score interval", family_size: "Family size",
+  family_members: "Family members", backward_citations: "Backward citations", forward_citations: "Forward citations", citation_count: "Citation count",
+  pagerank: "PageRank importance", dimension: "Dimension", metric: "Metric", metric_label: "Metric", count: "Count", count_mode: "Counting mode",
+  hhi: "HHI concentration", hhi_bootstrap_95pct: "HHI 95% stable interval", gini: "Gini concentration", shannon_entropy: "Shannon entropy",
+  effective_entity_count: "Effective entity count", effective_entities: "Effective entities", metric_value: "Metric value", family_count: "Family count",
+  grant_count: "Grant count", forward_citation_count: "Forward citation count", yearly_publications: "Yearly publications", top_ipc_subclasses: "Top IPC subclasses",
+  resolution_confidence: "Entity resolution confidence", parent_group: "Parent-company group", reviewed_parent_mapping_count: "Reviewed parent mappings",
+  unresolved_record_count: "Unresolved records", low_confidence_mapping_count: "Low-confidence mappings", cr3: "Top-three share", cr5: "Top-five share", cr10: "Top-ten share",
+  silhouette_score: "Silhouette score", cluster_titles: "Cluster titles", cluster_keywords: "Cluster keywords", patents_per_cluster: "Patents per cluster",
+  ipc_entropy: "IPC entropy (classification diversity)", dominant_ipc_share: "Dominant IPC share", ipc_profile_cosine_shift: "IPC cosine shift",
+  ipc_breadth: "IPC breadth", patent_age: "Patent age", available_weight_ratio: "Available data weight", confidence_level: "Confidence level",
+  source_format: "Source format", method: "Recognition method", matched: "Matched", error_category: "Error category", formulas: "Formulas",
+  analyzed_record_count: "Analyzed records", current_status_authoritative: "Current legal status authoritative", legal_status_as_of_coverage: "Legal-status-as-of coverage",
+  jurisdiction_coverage: "Jurisdiction coverage", event_type: "Event type", strategy_id: "Strategy ID", strategy_version: "Strategy version",
+  notification_policy: "Notification policy", minimum_event_count: "Minimum event count", kind_code: "Document kind code", legal_status: "Legal status",
+  claims: "Claims", claim_number: "Claim number", is_independent: "Independent claim", language: "Text language", elements: "Claim elements",
+  element_number: "Element number", feature: "Product feature", matched_element_numbers: "Matched element numbers", match_method: "Matching method",
+  coverage: "Coverage", field_coverage: "Field coverage", data_as_of: "Data as of", adapter: "Data adapter", version: "Version", status: "Status",
+  patent_number: "Patent number", patent_numbers: "Patent numbers", source_evidence_path: "Evidence source path", source_text_sha256: "Source text SHA-256",
+  function: "Technology means", effect: "Technical effect", patent_count: "Related patents", source: "Source node", target: "Target node", weight: "Connection weight",
+  term: "Term", burst: "Burst score", early_freq: "Historical frequency", late_freq: "Recent frequency", text: "Text", data: "Data", result_type: "Result type",
+  result_metadata: "Result metadata", latency_ms: "Latency (ms)", model_id: "Model ID", index_count: "Index count", download_size_mb: "Download size (MB)",
+};
+
+const ADAPTER_LABELS_EN: Record<string, string> = {
+  wos_dii: "WoS / Derwent tagged text (TXT)", google_patents_jsonl: "Google Patents JSONL", uspto_grant_xml: "USPTO grant XML",
+  uspto_file_wrapper_json: "USPTO File Wrapper JSON (prosecution file)", unknown: "Unknown source",
+};
+
+const PROBE_STAGE_LABELS_EN: Record<string, string> = {
+  resolve: "Resolve service address", connect: "Establish connection", authenticate: "Authenticate", models: "Get model list",
+  chat: "Test chat request", response: "Check response",
+};
+
+const choose = (locale: Locale, zh: string, en?: string): string => locale === "en-US" ? (en || zh) : zh;
+
+export function toolLabel(name?: string, locale: Locale = "zh-CN"): string {
+  if (!name) return choose(locale, "分析工具", "Analysis tool");
+  const labels = locale === "en-US" ? TOOL_LABELS_EN : TOOL_LABELS;
+  return labels[name] || choose(locale, `分析工具（${name}）`, `Analysis tool (${name})`);
 }
 
-export function toolOrTextLabel(value: unknown): string {
-  if (typeof value !== "string") return "分析步骤";
-  return TOOL_LABELS[value] ? toolLabel(value) : value;
+export function toolOrTextLabel(value: unknown, locale: Locale = "zh-CN"): string {
+  if (typeof value !== "string") return choose(locale, "分析步骤", "Analysis step");
+  const labels = locale === "en-US" ? TOOL_LABELS_EN : TOOL_LABELS;
+  return labels[value] ? toolLabel(value, locale) : value;
 }
 
-export function parameterLabel(name: string): string {
-  return PARAMETER_LABELS[name] || `其他参数（${name}）`;
+export function parameterLabel(name: string, locale: Locale = "zh-CN"): string {
+  const labels = locale === "en-US" ? PARAMETER_LABELS_EN : PARAMETER_LABELS;
+  return labels[name] || choose(locale, `其他参数（${name}）`, `Other parameter (${name})`);
 }
 
-export function parameterHelp(name: string, schema?: ToolParameter): string {
-  const help = PARAMETER_HELP[name] || schema?.description || "用于限定本次分析范围或计算方式。";
+export function parameterHelp(name: string, schema?: ToolParameter, locale: Locale = "zh-CN"): string {
+  const helpMap = locale === "en-US" ? PARAMETER_HELP_EN : PARAMETER_HELP;
+  const help = helpMap[name] || schema?.description || choose(locale, "用于限定本次分析范围或计算方式。", "Limits the scope or calculation for this analysis.");
   const range = schema && (schema.minimum != null || schema.maximum != null)
-    ? `取值范围：${schema.minimum ?? "不限"}–${schema.maximum ?? "不限"}。` : "";
-  const defaultValue = schema?.default !== undefined ? `默认：${formatDisplayValue(schema.default)}。` : "";
+    ? choose(locale, `取值范围：${schema.minimum ?? "不限"}–${schema.maximum ?? "不限"}。`, `Range: ${schema.minimum ?? "unlimited"}–${schema.maximum ?? "unlimited"}.`) : "";
+  const defaultValue = schema?.default !== undefined ? choose(locale, `默认：${formatDisplayValue(schema.default, undefined, locale)}。`, `Default: ${formatDisplayValue(schema.default, undefined, locale)}.`) : "";
   return `${help}${range}${defaultValue}`;
 }
 
-export function enumLabel(value: string): string {
-  if (ENUM_LABELS[value]) return ENUM_LABELS[value];
-  return /[\u3400-\u9fff]/.test(value) ? value : `其他选项（${value}）`;
+export function enumLabel(value: string, locale: Locale = "zh-CN"): string {
+  const labels = locale === "en-US" ? ENUM_LABELS_EN : ENUM_LABELS;
+  if (labels[value]) return labels[value];
+  return /[\u3400-\u9fff]/.test(value) ? value : choose(locale, `其他选项（${value}）`, `Other option (${value})`);
 }
 
-export function fieldLabel(key: string): string {
-  return FIELD_LABELS[key] || `数据字段（${key}）`;
+const METRIC_LABEL_KEYS: Record<string, string> = {
+  "IPC 标注次数": "assignment_count",
+  "含该 IPC 部级的去重专利数": "unique_patents",
+  "含该 IPC 部级的去重同族数": "family_normalized",
+};
+
+/** Localize the known IPC metric labels emitted by the backend. */
+export function metricLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  if (typeof value !== "string" || !value) return choose(locale, "统计指标", "Metric");
+  const key = METRIC_LABEL_KEYS[value] || value;
+  const known = key === "assignment_count" || key === "unique_patents" || key === "family_normalized";
+  return known ? enumLabel(key, locale) : value;
 }
 
-export function statusLabel(value?: unknown): string {
-  if (typeof value !== "string") return "未知状态";
-  return ENUM_LABELS[value] || `状态（${value}）`;
+export function fieldLabel(key: string, locale: Locale = "zh-CN"): string {
+  const labels = locale === "en-US" ? FIELD_LABELS_EN : FIELD_LABELS;
+  return labels[key] || choose(locale, `数据字段（${key}）`, `Data field (${key})`);
 }
 
-export function importStatusLabel(value?: unknown): string {
-  return statusLabel(value);
+export function statusLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  if (typeof value !== "string") return choose(locale, "未知状态", "Unknown status");
+  const labels = locale === "en-US" ? ENUM_LABELS_EN : ENUM_LABELS;
+  return labels[value] || choose(locale, `状态（${value}）`, `Status (${value})`);
 }
 
-export function adapterLabel(value?: unknown): string {
-  if (typeof value !== "string" || !value) return ADAPTER_LABELS.unknown;
-  return ADAPTER_LABELS[value] || `数据适配器（${value}）`;
+export function importStatusLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  return statusLabel(value, locale);
 }
 
-export function jurisdictionLabel(value?: unknown): string {
-  if (typeof value !== "string") return "未知国家/地区";
+export function adapterLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  const labels = locale === "en-US" ? ADAPTER_LABELS_EN : ADAPTER_LABELS;
+  if (typeof value !== "string" || !value) return labels.unknown;
+  return labels[value] || choose(locale, `数据适配器（${value}）`, `Data adapter (${value})`);
+}
+
+export function jurisdictionLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  if (typeof value !== "string") return choose(locale, "未知国家/地区", "Unknown country/region");
   const labels: Record<string, string> = {
     CN: "中国（CN）", US: "美国（US）", EP: "欧洲专利局（EP）", WO: "世界知识产权组织（WO）",
     JP: "日本（JP）", KR: "韩国（KR）", DE: "德国（DE）", GB: "英国（GB）",
   };
-  return labels[value] || value;
+  const labelsEn: Record<string, string> = {
+    CN: "China (CN)", US: "United States (US)", EP: "European Patent Office (EP)", WO: "World Intellectual Property Organization (WO)",
+    JP: "Japan (JP)", KR: "South Korea (KR)", DE: "Germany (DE)", GB: "United Kingdom (GB)",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[value] || value;
 }
 
-export function languageLabel(value?: unknown): string {
-  return typeof value === "string" ? enumLabel(value) : "未知语言";
+export function languageLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  return typeof value === "string" ? enumLabel(value, locale) : choose(locale, "未知语言", "Unknown language");
 }
 
-export function recommendationCategoryLabel(value?: unknown): string {
-  if (typeof value !== "string") return "建议";
+export function recommendationCategoryLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  if (typeof value !== "string") return choose(locale, "建议", "Recommendation");
   const labels: Record<string, string> = {
     recall: "查全率",
     precision: "查准率",
@@ -406,10 +575,13 @@ export function recommendationCategoryLabel(value?: unknown): string {
     validation: "结果验证",
     legal: "法律风险",
   };
-  return labels[value] || value;
+  const labelsEn: Record<string, string> = {
+    recall: "Recall", precision: "Precision", coverage: "Coverage", validation: "Validation", legal: "Legal risk",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[value] || value;
 }
 
-export function intentLabel(value?: unknown): string {
+export function intentLabel(value?: unknown, locale: Locale = "zh-CN"): string {
   if (typeof value !== "string" || !value) return "";
   const labels: Record<string, string> = {
     trend: "趋势分析",
@@ -420,47 +592,58 @@ export function intentLabel(value?: unknown): string {
     monitoring: "变化监测",
     compliance: "合规分析",
   };
-  return labels[value] || value;
+  const labelsEn: Record<string, string> = {
+    trend: "Trend analysis", landscape: "Technology landscape", search: "Patent search", detail: "Patent details",
+    valuation: "Value assessment", monitoring: "Change monitoring", compliance: "Compliance analysis",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[value] || value;
 }
 
-export function originLabel(value?: unknown): string {
-  if (value === "reused") return "复用已有证据";
-  if (value === "new") return "本轮新执行";
-  return typeof value === "string" && value ? `来源（${value}）` : "";
+export function originLabel(value?: unknown, locale: Locale = "zh-CN"): string {
+  if (value === "reused") return choose(locale, "复用已有证据", "Reused evidence");
+  if (value === "new") return choose(locale, "本轮新执行", "New execution");
+  return typeof value === "string" && value ? choose(locale, `来源（${value}）`, `Source (${value})`) : "";
 }
 
-export function protocolLabel(protocol?: ProviderProtocol | string): string {
+export function protocolLabel(protocol?: ProviderProtocol | string, locale: Locale = "zh-CN"): string {
   const labels: Record<string, string> = {
     openai_chat: "OpenAI 对话接口",
     anthropic_messages: "Anthropic 消息接口",
     deepseek_chat: "DeepSeek 对话接口",
   };
-  return labels[protocol || ""] || `接口协议（${protocol || "未指定"}）`;
+  const labelsEn: Record<string, string> = {
+    openai_chat: "OpenAI chat API", anthropic_messages: "Anthropic messages API", deepseek_chat: "DeepSeek chat API",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[protocol || ""] || choose(locale, `接口协议（${protocol || "未指定"}）`, `Protocol (${protocol || "not specified"})`);
 }
 
-export function authModeLabel(mode?: ProviderAuthMode | string): string {
+export function authModeLabel(mode?: ProviderAuthMode | string, locale: Locale = "zh-CN"): string {
   const labels: Record<string, string> = {
     bearer: "Bearer 令牌（Token）",
     x_api_key: "x-api-key 请求头",
     custom_header: "自定义请求头（Header）",
     none: "无鉴权",
   };
-  return labels[mode || ""] || `鉴权方式（${mode || "未指定"}）`;
+  const labelsEn: Record<string, string> = {
+    bearer: "Bearer token", x_api_key: "x-api-key header", custom_header: "Custom header", none: "No authentication",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[mode || ""] || choose(locale, `鉴权方式（${mode || "未指定"}）`, `Authentication (${mode || "not specified"})`);
 }
 
-export function reasoningEffortLabel(value?: ReasoningEffort | string): string {
-  return value === "default" ? "默认" : enumLabel(value || "default");
+export function reasoningEffortLabel(value?: ReasoningEffort | string, locale: Locale = "zh-CN"): string {
+  return value === "default" ? choose(locale, "默认", "Default") : enumLabel(value || "default", locale);
 }
 
-export function thinkingModeLabel(value?: ThinkingMode | string): string {
-  return enumLabel(value || "auto");
+export function thinkingModeLabel(value?: ThinkingMode | string, locale: Locale = "zh-CN"): string {
+  return enumLabel(value || "auto", locale);
 }
 
-export function probeStageLabel(value?: string): string {
-  return PROBE_STAGE_LABELS[value || ""] || (value ? `阶段（${value}）` : "测试阶段");
+export function probeStageLabel(value?: string, locale: Locale = "zh-CN"): string {
+  const labels = locale === "en-US" ? PROBE_STAGE_LABELS_EN : PROBE_STAGE_LABELS;
+  return labels[value || ""] || (value ? choose(locale, `阶段（${value}）`, `Stage (${value})`) : choose(locale, "测试阶段", "Test stage"));
 }
 
-export function errorCategoryLabel(value?: unknown): string {
+export function errorCategoryLabel(value?: unknown, locale: Locale = "zh-CN"): string {
   if (typeof value !== "string" || !value) return "";
   const labels: Record<string, string> = {
     authentication: "鉴权失败",
@@ -477,10 +660,16 @@ export function errorCategoryLabel(value?: unknown): string {
     synthesis_failure: "总结生成失败",
     system_failure: "系统错误",
   };
-  return labels[value] || `错误类型（${value}）`;
+  const labelsEn: Record<string, string> = {
+    authentication: "Authentication failure", model: "Model unavailable", address: "Address or network error", capability: "Incompatible capability",
+    protocol: "Protocol or parameter error", provider: "Provider error", import_failed: "Import failed", data_insufficient: "Insufficient data",
+    input_validation: "Input validation failed", algorithm_failure: "Algorithm failed", provider_failure: "Provider call failed",
+    synthesis_failure: "Summary generation failed", system_failure: "System error",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[value] || choose(locale, `错误类型（${value}）`, `Error category (${value})`);
 }
 
-export function httpStatusLabel(status: number, statusText?: string): string {
+export function httpStatusLabel(status: number, statusText?: string, locale: Locale = "zh-CN"): string {
   const labels: Record<number, string> = {
     400: "请求无效",
     401: "未授权，请检查接口密钥",
@@ -494,11 +683,21 @@ export function httpStatusLabel(status: number, statusText?: string): string {
     503: "服务暂时不可用",
     504: "服务响应超时",
   };
-  return labels[status] || `请求失败（HTTP ${status}${statusText && !/^[A-Za-z ]+$/.test(statusText) ? `：${statusText}` : ""}）`;
+  const labelsEn: Record<number, string> = {
+    400: "Invalid request", 401: "Unauthorized; check the API key", 403: "You do not have access to this resource", 404: "Resource not found",
+    409: "Request conflict", 422: "Request validation failed", 429: "Too many requests; try again later", 500: "Internal server error",
+    502: "Upstream service error", 503: "Service temporarily unavailable", 504: "Service response timed out",
+  };
+  return (locale === "en-US" ? labelsEn : labels)[status] || choose(locale,
+    `请求失败（HTTP ${status}${statusText && !/^[A-Za-z ]+$/.test(statusText) ? `：${statusText}` : ""}）`,
+    `Request failed (HTTP ${status}${statusText && !/^[A-Za-z ]+$/.test(statusText) ? `: ${statusText}` : ""})`);
 }
 
-export function localizeErrorMessage(message: string): string {
+export function localizeErrorMessage(message: string, locale: Locale = "zh-CN"): string {
   const labels: Record<string, string> = {
+    "client.network": "无法连接后端服务，请检查后端是否已启动。",
+    "client.sse.invalidEvent": "服务器返回了无法解析的 SSE 事件",
+    "client.sse.incomplete": "对话流在最终完成事件之前中断",
     "Internal Server Error": "服务器内部错误",
     "Bad Request": "请求无效",
     Unauthorized: "未授权，请检查接口密钥",
@@ -507,31 +706,79 @@ export function localizeErrorMessage(message: string): string {
     "Failed to fetch": "无法连接后端服务，请检查后端是否已启动。",
     "NetworkError when attempting to fetch resource.": "无法连接后端服务，请检查后端是否已启动。",
   };
-  return labels[message] || message;
+  const labelsEn: Record<string, string> = {
+    "client.network": "Cannot connect to the backend; check that it is running.",
+    "client.sse.invalidEvent": "The server returned an unparseable SSE event",
+    "client.sse.incomplete": "The conversation stream stopped before the final completion event",
+    "Internal Server Error": "Internal server error",
+    "Bad Request": "Invalid request",
+    Unauthorized: "Unauthorized; check the API key",
+    Forbidden: "You do not have access to this resource",
+    "Not Found": "Resource not found",
+    "Failed to fetch": "Cannot connect to the backend; check that it is running.",
+    "NetworkError when attempting to fetch resource.": "Cannot connect to the backend; check that it is running.",
+    "服务器内部错误": "Internal server error",
+    "请求无效": "Invalid request",
+    "未授权，请检查接口密钥": "Unauthorized; check the API key",
+    "没有权限访问该资源": "You do not have access to this resource",
+    "请求的资源不存在": "Resource not found",
+    "请求发生冲突": "Request conflict",
+    "请求参数校验失败": "Request validation failed",
+    "请求过于频繁，请稍后再试": "Too many requests; try again later",
+    "上游服务响应异常": "Upstream service error",
+    "服务暂时不可用": "Service temporarily unavailable",
+    "服务响应超时": "Service response timed out",
+    "无法连接后端服务，请检查后端是否已启动。": "Cannot connect to the backend; check that it is running.",
+    "服务器返回了无法解析的 SSE 事件": "The server returned an unparseable SSE event",
+    "对话流在最终完成事件之前中断": "The conversation stream stopped before the final completion event",
+  };
+  const stableHttpStatus = message.match(/^client\.http\.(\d+)(?::([\s\S]*))?$/);
+  if (stableHttpStatus) {
+    return httpStatusLabel(Number(stableHttpStatus[1]), stableHttpStatus[2], locale);
+  }
+  if (locale === "en-US") {
+    // httpStatusLabel() is intentionally locale-neutral at the API boundary
+    // and historically produced this Chinese client-side wrapper. Normalize
+    // only that exact shape; arbitrary backend details must remain unchanged.
+    const unknownHttpStatus = message.match(/^请求失败（HTTP (\d+)(?:：(.+))?）$/);
+    if (unknownHttpStatus) {
+      return `Request failed (HTTP ${unknownHttpStatus[1]}${unknownHttpStatus[2] ? `: ${unknownHttpStatus[2]}` : ""})`;
+    }
+  }
+  return (locale === "en-US" ? labelsEn : labels)[message] || message;
 }
 
-export function formatDisplayValue(value: unknown, key?: string): string {
+export function formatDisplayValue(
+  value: unknown, key?: string, locale: Locale = "zh-CN", translateValues = true,
+): string {
   if (value == null || value === "") return "—";
-  if (typeof value === "boolean") return value ? "是" : "否";
-  if (Array.isArray(value)) return value.map(item => formatDisplayValue(item, key)).join("、") || "—";
-  if (typeof value === "object") return formatDisplayJson(value);
-  if (key === "country" || key === "publication_office" || key === "jurisdiction") return jurisdictionLabel(value);
-  if (key === "language") return languageLabel(value);
-  if (key === "adapter" || key === "source_format") return adapterLabel(value);
-  if (key === "error_category") return errorCategoryLabel(value);
-  if (key === "metric_label") return ENUM_LABELS[String(value)] || String(value);
-  if (["status", "legal_status", "event_type", "match_method", "count_mode", "metric", "dimension", "notification_policy", "method", "probe_status"].includes(key || "")) return enumLabel(String(value));
+  if (!translateValues) {
+    if (Array.isArray(value)) {
+      return value.map(item => formatDisplayValue(item, undefined, locale, false)).join(", ") || "—";
+    }
+    if (typeof value === "object") return formatDisplayJson(value, locale, false);
+    return String(value);
+  }
+  if (typeof value === "boolean") return value ? choose(locale, "是", "Yes") : choose(locale, "否", "No");
+  if (Array.isArray(value)) return value.map(item => formatDisplayValue(item, key, locale)).join(locale === "en-US" ? ", " : "、") || "—";
+  if (typeof value === "object") return formatDisplayJson(value, locale);
+  if (key === "country" || key === "publication_office" || key === "jurisdiction") return jurisdictionLabel(value, locale);
+  if (key === "language") return languageLabel(value, locale);
+  if (key === "adapter" || key === "source_format") return adapterLabel(value, locale);
+  if (key === "error_category") return errorCategoryLabel(value, locale);
+  if (key === "metric_label") return metricLabel(value, locale);
+  if (["status", "legal_status", "event_type", "match_method", "count_mode", "metric", "dimension", "notification_policy", "method", "probe_status"].includes(key || "")) return enumLabel(String(value), locale);
   return String(value);
 }
 
-function displayJsonValue(value: unknown, key?: string): unknown {
-  if (Array.isArray(value)) return value.map(item => displayJsonValue(item, key));
+function displayJsonValue(value: unknown, key?: string, locale: Locale = "zh-CN", translateValues = true): unknown {
+  if (Array.isArray(value)) return value.map(item => displayJsonValue(item, key, locale, translateValues));
   if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [fieldLabel(childKey), displayJsonValue(childValue, childKey)]));
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [fieldLabel(childKey, locale), displayJsonValue(childValue, childKey, locale, translateValues)]));
   }
-  return value == null || value === "" ? "—" : typeof value === "boolean" ? (value ? "是" : "否") : formatDisplayValue(value, key);
+  return value == null || value === "" ? "—" : formatDisplayValue(value, key, locale, translateValues);
 }
 
-export function formatDisplayJson(value: unknown): string {
-  return JSON.stringify(displayJsonValue(value), null, 2);
+export function formatDisplayJson(value: unknown, locale: Locale = "zh-CN", translateValues = true): string {
+  return JSON.stringify(displayJsonValue(value, undefined, locale, translateValues), null, 2);
 }

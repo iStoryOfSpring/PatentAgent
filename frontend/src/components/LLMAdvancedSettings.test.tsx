@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ProviderProfile } from "../types";
 import { createProviderProfile, discoverProviderModels } from "../api";
+import { I18nProvider, useI18n } from "../i18n";
 import { LLMAdvancedSettings } from "./LLMAdvancedSettings";
 
 vi.mock("../api", () => ({
@@ -25,6 +26,11 @@ const profile: ProviderProfile = {
   connected: false, needs_reconnect: false, created_at: "", updated_at: "",
   probe_status: "not_tested", probe_error_category: "", last_probe_at: "",
 };
+
+function LocaleSwitcher() {
+  const { setLocale } = useI18n();
+  return <button onClick={() => setLocale("en-US")}>English UI</button>;
+}
 
 describe("LLMAdvancedSettings", () => {
   beforeEach(() => {
@@ -76,5 +82,32 @@ describe("LLMAdvancedSettings", () => {
     ));
     expect(screen.getByRole("combobox", { name: "已发现模型" })).toBeTruthy();
     expect(screen.getByText("Qwen/Qwen3-32B")).toBeTruthy();
+  });
+
+  it("uses the active locale for new local and custom preset names", () => {
+    render(
+      <I18nProvider>
+        <LocaleSwitcher />
+        <LLMAdvancedSettings open profiles={[]} isStreaming={false} onClose={vi.fn()} onRefresh={async () => []} onConnected={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "English UI" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ollama" }));
+    expect(screen.getByDisplayValue("Local Ollama")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Custom" }));
+    expect(screen.getByDisplayValue("Custom provider")).toBeTruthy();
+  });
+
+  it("does not rewrite a saved provider name when the locale changes", () => {
+    render(
+      <I18nProvider>
+        <LocaleSwitcher />
+        <LLMAdvancedSettings open profiles={[profile]} isStreaming={false} onClose={vi.fn()} onRefresh={async () => [profile]} onConnected={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "English UI" }));
+    expect(screen.getByDisplayValue("学校网关")).toBeTruthy();
   });
 });

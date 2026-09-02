@@ -1,5 +1,7 @@
 // ── API response types ──
 
+import type { TranslationKey, TranslationParams } from "./i18n";
+
 export interface HealthResponse {
   status: string;
   patents_loaded: number;
@@ -492,8 +494,15 @@ export interface Message {
   turnId?: string;
   finalStatus?: "completed" | "partial" | "failed" | "awaiting_clarification" | "cancelled";
   streamStatus?: string;
+  streamStatusKey?: TranslationKey;
+  streamStatusParams?: TranslationParams;
   error?: string;
+  errorKey?: TranslationKey;
+  errorParams?: TranslationParams;
+  contentKey?: TranslationKey;
+  contentParams?: TranslationParams;
   followupQuestions?: string[];
+  defaultFollowup?: boolean;
   followupSuggestions?: FollowupSuggestion[];
   clarification?: { turnId: string; missingFields: string[]; allowDefaults: boolean };
   canResynthesize?: boolean;

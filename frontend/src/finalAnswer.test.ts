@@ -31,4 +31,17 @@ describe("user-facing final answer normalization", () => {
     expect(result.content).toContain("无法识别的结构化结果");
     expect(result.content).not.toBe("{}");
   });
+
+  it("localizes client-generated report wrappers without translating model values", () => {
+    const result = normalizeAssistantContent(JSON.stringify({
+      answer: "模型原文结论",
+      details: [{ year: 2020, theme: "用户提供的技术主题", representative_patents: ["CN-USER-1"] }],
+    }), "en-US");
+    expect(result.content).toContain("## Key conclusion");
+    expect(result.content).toContain("### 2020 Year");
+    expect(result.content).toContain("模型原文结论");
+    expect(result.content).toContain("用户提供的技术主题");
+    expect(result.content).toContain("CN-USER-1");
+    expect(result.content).not.toContain("## 核心结论");
+  });
 });

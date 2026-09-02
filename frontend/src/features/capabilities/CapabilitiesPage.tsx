@@ -1,6 +1,7 @@
 import type { CapabilityDefinition, SearchCapabilityStatus, Tool } from "../../types";
 import { CapabilityCards } from "./CapabilityCards";
 import { QuickToolsPanel } from "../tools/QuickToolsPanel";
+import { useI18n } from "../../i18n";
 
 export function CapabilitiesPage({ capabilities, tools, searchStatus, loadingTool, isStreaming, onPrompt, onRun }: {
   capabilities: CapabilityDefinition[];
@@ -11,12 +12,13 @@ export function CapabilitiesPage({ capabilities, tools, searchStatus, loadingToo
   onPrompt: (prompt: string) => void;
   onRun: (tool: string, params?: Record<string, unknown>) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-7xl px-5 pt-5 md:px-8 md:pt-8">
         <div>
-          <h1 className="text-2xl font-bold">能力与工具</h1>
-          <p className="mt-1 text-sm text-slate-500">能力卡用于组织问题，底层工具仍由总调度助手按数据门槛动态选择；右侧快捷工具可直接运行单项分析。</p>
+          <h1 className="text-2xl font-bold">{t("capabilities.title")}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t("capabilities.subtitle")}</p>
         </div>
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start">
           <div className="order-last min-w-0 lg:order-first">
