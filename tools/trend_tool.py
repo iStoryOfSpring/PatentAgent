@@ -13,6 +13,8 @@ class TrendTool(Tool):
         "适用于用户询问'趋势'、'增长'、'变化'、'申请量'等关键词。"
     )
     parameters = {
+        "date_basis": {"type":"string","enum":["publication","filing","priority","grant"],"default":"publication"},
+        "count_unit": {"type":"string","enum":["publications","applications","families"],"default":"publications"},
         "chart_type": {
             "type": "string",
             "enum": ["monthly", "yearly"],
@@ -37,7 +39,7 @@ class TrendTool(Tool):
             "description": "申请人名称关键词过滤",
         },
     }
-    required_fields = ("publication_date",)
+    required_fields = ("patent_number",)
     optional_fields = ("ipc", "applicants")
     methodology = "按 WoS PD 公开日期聚合；尾年月份不完整时不解释为技术衰退。"
     evidence_level = "descriptive_statistics"
@@ -47,22 +49,26 @@ class TrendTool(Tool):
                       year_start: int = None,
                       year_end: int = None,
                       ipc_filter: list[str] = None,
-                      applicant_filter: str = None) -> MonthlyTrendResult:
-        df = storage.query(year_start=year_start, year_end=year_end,
-                           ipc_filter=ipc_filter,
-                           applicant_filter=applicant_filter)
+                      applicant_filter: str = None,
+                      date_basis: str = "publication", count_unit: str = "publications") -> MonthlyTrendResult:
+        df, _members, semantics = trend.select_trend_population(storage, date_basis=date_basis, count_unit=count_unit,
+            year_start=year_start, year_end=year_end, ipc_filter=ipc_filter,
+            applicant_filter=applicant_filter, chart_type=chart_type)
         if chart_type == "yearly":
             result = trend.compute_yearly_trend(df)
         else:
             result = trend.compute_monthly_trend(df)
         result.summary = (
-            f"按专利公开日期生成 {chart_type} 趋势，共 {len(result.data)} 个时间点，"
+            f"按 {date_basis} 日期、{count_unit} 单位生成 {chart_type} 趋势，共 {len(result.data)} 个时间点，"
             f"筛选后 {len(df):,} 件记录。"
         )
         result.result_metadata.update({
             "population_after_filters": len(df),
-            "date_semantics": "publication_date",
+            **semantics,
         })
+        if date_basis != "publication":
+            result.warnings.append("非公开日期趋势按所选日期过滤；缺少真实分组 ID 或日期的单位已排除。")
+            return result
         time_audit, warnings = trend.audit_publication_time_coverage(
             df, storage.audit().get("data_as_of", ""),
         )

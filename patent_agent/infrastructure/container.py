@@ -38,6 +38,7 @@ class AppContainer:
     report_service: ReportService | None = None
     search_index_service: SearchIndexService | None = None
     task_service: TaskService | None = None
+    acquisition_service: Any | None = None
     dataset_runtime: DatasetRuntimeManager | None = None
     sessions: dict[str, Session] = field(default_factory=dict)
     credential_vault: CredentialVault = field(default_factory=CredentialVault)

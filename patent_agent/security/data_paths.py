@@ -22,6 +22,10 @@ def dataset_inventory(root: Path) -> list[dict]:
     for name in ("patentagent-import.json", "manifest.json"):
         for path in sorted(root.rglob(name)):
             try:
+                path.resolve().relative_to(root.resolve())
+            except ValueError:
+                continue
+            try:
                 payload = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, ValueError):
                 payload = {"status": "invalid_manifest"}

@@ -62,3 +62,27 @@ class TestGrowthRate:
         df = pd.DataFrame({'year': []})
         result = compute_growth_rate(df)
         assert len(result.data) == 0
+
+
+@pytest.mark.parametrize("cutoff",["","invalid","2026-99-99"])
+def test_missing_source_cutoff_is_never_invented_from_observed_or_today(cutoff):
+    from engine.trend import audit_publication_time_coverage
+    frame=pd.DataFrame({"year":[2024,2024],"month":[1,3],"publication_date":["2024-01-01","2024-03-10"]})
+    audit,warnings=audit_publication_time_coverage(frame,cutoff)
+    assert audit["data_as_of"]==""
+    assert audit["coverage_reference_date"]=="2024-03-10"
+    assert audit["reference_basis"]=="observed_publication_max"
+    assert audit["latest_year_missing_expected_months"]==[2]
+    assert any("截止日期未知" in warning for warning in warnings)
+    assert not any("截至" in warning for warning in warnings)
+
+
+def test_cutoff_reference_without_dates_remains_unknown_and_real_cutoff_is_retained():
+    from engine.trend import audit_publication_time_coverage
+    frame=pd.DataFrame({"year":[2024],"month":[1]})
+    unknown,warnings=audit_publication_time_coverage(frame)
+    assert unknown["data_as_of"]==unknown["coverage_reference_date"]==""
+    assert unknown["reference_basis"]=="unknown"
+    provided,_=audit_publication_time_coverage(frame,"2024-03-31")
+    assert provided["data_as_of"]==provided["coverage_reference_date"]=="2024-03-31"
+    assert provided["reference_basis"]=="source_data_as_of"

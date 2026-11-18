@@ -12,8 +12,8 @@ from tools import tool_registry
 
 def _store() -> PatentDataStore:
     claims = json.dumps([
-        {"number": 1, "text": "A battery comprising a cell; an electrolyte.", "is_independent": True, "depends_on": [], "language": "en"},
-        {"number": 2, "text": "The battery of claim 1, wherein the electrolyte is solid.", "is_independent": False, "depends_on": [1], "language": "en"},
+        {"number": 1, "text": "A battery comprising a cell; an electrolyte.", "is_independent": True, "depends_on": [], "language": "en", "structure_source": "synthetic-official", "structure_status": "source_structured"},
+        {"number": 2, "text": "The battery of claim 1, wherein the electrolyte is solid.", "is_independent": False, "depends_on": [1], "language": "en", "structure_source": "synthetic-official", "structure_status": "source_structured"},
     ])
     frame = pd.DataFrame({
         "patent_number": ["US1A1", "EP2A1", "JP3A"],
@@ -109,12 +109,16 @@ def test_monitor_persists_versioned_baseline_and_deduplicates(monkeypatch, tmp_p
     }
     store = _store()
     store._adapter_name = "wos"
-    first = asyncio.run(tool.run(store, **params))
-    second = asyncio.run(tool.run(store, **params))
+    from patent_agent.application.monitoring import approved_calls, baseline_identity
+    def approved_run():
+        with approved_calls([{"name":tool.name,"arguments":params}],store,{"0":baseline_identity(params,store)}):
+            return asyncio.run(tool.run(store,**params))
+    first = approved_run()
+    second = approved_run()
     assert first.result_metadata["baseline_existed"] is False
     assert second.result_metadata["baseline_existed"] is True
     assert second.data == []
-    assert first.result_metadata["run_id"] == second.result_metadata["run_id"]
+    assert first.result_metadata["run_id"] != second.result_metadata["run_id"]  # transition identity includes before and after
     assert first.result_metadata["should_notify"] is False
     assert second.result_metadata["should_notify"] is False
 
@@ -158,8 +162,9 @@ def test_monitor_and_claim_tools_enforce_launch_gates():
     store = _store()
     store.get_all().loc[:, "legal_status"] = ""
     claim_tool = tool_registry.get_tool("analyze_claim_elements")
+    assert claim_tool.availability(store)["available"] is True  # technical reading is independent of legal judgments
+    store.get_all().loc[:, "claims_json"] = json.dumps([{"number":1,"text":"blob","is_independent":True,"depends_on":[],"language":"en"}])
     assert claim_tool.availability(store)["available"] is False
-    assert any("法律状态" in item for item in claim_tool.availability(store)["gate_failures"])
 
 
 def test_search_audit_exposes_label_feedback_without_claiming_recall():

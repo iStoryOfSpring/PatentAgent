@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "registry_version": "2026.09.01",
+  "registry_version": "2026.10.16",
   "evidence_types": {
     "descriptive_statistic": "Direct descriptive statistic with no paper-method claim",
     "paper_exact": "Formula and data conditions reproduced and independently tested",
@@ -9,14 +9,26 @@
   },
   "tools": {
     "analyze_patent_trend": {
-      "algorithm_id": "publication_count_trend", "version": "2.0", "evidence_type": "descriptive_statistic",
-      "formula": "count(records) grouped by publication year/month",
-      "fields": {"publication_date": 0.9}, "sources": [],
-      "conditions": ["PD is interpreted as publication date", "incomplete tail years are flagged"],
-      "prohibited_claims": ["application trend", "technology decline", "technology lifecycle"]
+      "algorithm_id": "publication_count_trend",
+      "version": "3.0.1",
+      "evidence_type": "descriptive_statistic",
+      "formula": "count real publication/application/family units at their earliest selected date, grouped by selected year/month",
+      "fields": {
+        "patent_number": 1.0
+      },
+      "sources": [],
+      "conditions": [
+        "date_basis and count_unit are explicit; defaults publication/publications",
+        "missing identities/dates excluded and reported",
+        "exact execution evidence selectors bind dataset hash and counted unit membership"
+      ],
+      "prohibited_claims": [
+        "technology decline",
+        "technology lifecycle"
+      ]
     },
     "analyze_lifecycle": {
-      "algorithm_id": "publication_growth_summary", "version": "2.0", "evidence_type": "engineering_screening",
+      "algorithm_id": "publication_growth_summary", "version": "2.0.1", "evidence_type": "engineering_screening",
       "formula": "annual publication count, cumulative count, year-over-year change",
       "fields": {"publication_date": 0.9}, "sources": [],
       "conditions": ["describes publication growth only"],
@@ -180,18 +192,46 @@
       "prohibited_claims": ["freedom to operate", "non-infringement", "validity opinion"]
     },
     "monitor_patent_changes": {
-      "algorithm_id": "versioned_patent_change_monitor", "version": "1.1", "evidence_type": "engineering_screening",
+      "algorithm_id": "versioned_patent_change_monitor",
+      "version": "2.0",
+      "evidence_type": "engineering_screening",
       "formula": "persisted strategy baseline set and selected record-field hashes compared to the current content fingerprint",
-      "fields": {"patent_number": 0.9, "title": 0.8, "abstract": 0.8}, "sources": [],
-      "conditions": ["content fingerprint and versioned search strategy are stored", "notifications are deduplicated by deterministic run id"],
-      "prohibited_claims": ["infringement alert", "legal risk event", "complete external change coverage"]
+      "fields": {
+        "patent_number": 0.9,
+        "title": 0.8,
+        "abstract": 0.8
+      },
+      "sources": [],
+      "conditions": [
+        "content fingerprint and versioned search strategy are stored",
+        "notifications are deduplicated by deterministic run id"
+      ],
+      "prohibited_claims": [
+        "infringement alert",
+        "legal risk event",
+        "complete external change coverage"
+      ]
     },
     "analyze_claim_elements": {
-      "algorithm_id": "reversible_claim_element_draft", "version": "1.1", "evidence_type": "engineering_screening",
+      "algorithm_id": "reversible_claim_element_draft",
+      "version": "2.0",
+      "evidence_type": "engineering_screening",
       "formula": "source claim dependency tree plus reversible punctuation/conjunction split and literal product-feature matching",
-      "fields": {"claims_json": 0.8, "legal_status": 0.8}, "sources": [],
-      "conditions": ["claim text, language and dependency are source fields", "publication/grant version and legal status are recognizable", "human patent-professional review is mandatory"],
-      "prohibited_claims": ["infringement", "doctrine of equivalents", "invalidity", "FTO opinion"]
+      "fields": {
+        "claims_json": 0.8
+      },
+      "sources": [],
+      "conditions": [
+        "claim text and structure are source fields; unknown dependency remains unknown",
+        "publication version is identifiable; legal status is a separate unavailable judgment gate",
+        "human patent-professional review is mandatory"
+      ],
+      "prohibited_claims": [
+        "infringement",
+        "doctrine of equivalents",
+        "invalidity",
+        "FTO opinion"
+      ]
     }
   }
 }

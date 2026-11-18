@@ -1,5 +1,6 @@
+import { quickToolStep } from "./features/tools/quickToolStep";
 import { useState, useEffect, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Database, Download, Send,
   Loader2,
@@ -12,7 +13,6 @@ import {
   fetchHealth, runTool, streamChat,
   createSession, fetchSessions, fetchSession, renameSession, deleteSession,
   resynthesizeTurn, fetchProviderProfiles, disconnectLLM,
-  fetchCapabilities,
   fetchTask, streamTaskEvents,
 } from "./api";
 import type { Message, ToolStep, SessionSummary, ProviderProfile } from "./types";
@@ -22,7 +22,7 @@ import { datasetKeys, useDataSummaryQuery, useDatasetsQuery } from "./features/d
 import { providerKeys, useHealthQuery, useProviderProfilesQuery } from "./features/providers/queries";
 import { sessionKeys, useSessionsQuery } from "./features/sessions/queries";
 import { messagesFromSession } from "./features/sessions/restoreMessages";
-import { toolKeys, useSearchStatusQuery, useToolsQuery } from "./features/tools/queries";
+import { toolKeys, useCapabilitiesQuery, useSearchStatusQuery, useToolsQuery } from "./features/tools/queries";
 import { AppShell, type WorkbenchRoute } from "./features/workbench/AppShell";
 import { CapabilityCards } from "./features/capabilities/CapabilityCards";
 import { CapabilitiesPage } from "./features/capabilities/CapabilitiesPage";
@@ -57,24 +57,23 @@ function routeFromPath(pathname: string): WorkbenchRoute {
 export default function App() {
   const { locale, t } = useI18n();
   const queryClient = useQueryClient();
+  const [activeSessionId, setActiveSessionId] = useState("");
   const healthQuery = useHealthQuery();
-  const toolsQuery = useToolsQuery(healthQuery.isSuccess);
+  const sessionQueriesEnabled = healthQuery.isSuccess && Boolean(activeSessionId);
+  const toolsQuery = useToolsQuery(sessionQueriesEnabled, activeSessionId || undefined);
   const searchStatusQuery = useSearchStatusQuery(healthQuery.isSuccess);
   const profilesQuery = useProviderProfilesQuery(healthQuery.isSuccess);
-  const summaryQuery = useDataSummaryQuery((healthQuery.data?.patents_loaded || 0) > 0);
+  const summaryQuery = useDataSummaryQuery(sessionQueriesEnabled, activeSessionId || undefined);
   const sessionsQuery = useSessionsQuery();
   const datasetsQuery = useDatasetsQuery();
-  const capabilitiesQuery = useQuery({
-    queryKey: ["capabilities"], queryFn: fetchCapabilities,
-    enabled: healthQuery.isSuccess,
-  });
+  const capabilitiesQuery = useCapabilitiesQuery(sessionQueriesEnabled, activeSessionId || undefined);
 
-  const dataSummary = summaryQuery.data || null;
-  const availableTools = toolsQuery.data?.tools || [];
+  const dataSummary = !summaryQuery.isError && !summaryQuery.isFetching ? summaryQuery.data || null : null;
+  const availableTools = !toolsQuery.isError && !toolsQuery.isFetching ? toolsQuery.data?.tools || [] : [];
   const providerProfiles = profilesQuery.data?.profiles || [];
   const sessions = sessionsQuery.data?.sessions || [];
   const datasets = datasetsQuery.data?.datasets || [];
-  const capabilities = capabilitiesQuery.data?.capabilities || [];
+  const capabilities = !capabilitiesQuery.isError && !capabilitiesQuery.isFetching ? capabilitiesQuery.data?.capabilities || [] : [];
   const backendOnline = healthQuery.isError ? false : healthQuery.data ? true : null;
   const llmConfigured = Boolean(healthQuery.data?.agent_configured);
   const connectedProfileId = healthQuery.data?.connected_profile?.id || "";
@@ -91,7 +90,7 @@ export default function App() {
     }
   });
   const [error, setError] = useState<AppError | null>(null);
-  const [activeSessionId, setActiveSessionId] = useState("");
+  const sessionSwitchRequestRef = useRef(0);
   const [route, setRoute] = useState<WorkbenchRoute>(() => routeFromPath(window.location.pathname));
 
   // LLM
@@ -132,8 +131,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (summaryQuery.isError) setError({ key: "errors.dataSummary", params: { message: (summaryQuery.error as Error).message } });
-  }, [summaryQuery.error, summaryQuery.isError, t]);
+    const queryError = summaryQuery.error || toolsQuery.error || capabilitiesQuery.error;
+    if (queryError) setError({ key: "errors.dataSummary", params: { message: (queryError as Error).message } });
+  }, [summaryQuery.error, toolsQuery.error, capabilitiesQuery.error, t]);
+
 
   useEffect(() => {
     if (sessionInitializationStartedRef.current) return;
@@ -191,9 +192,11 @@ export default function App() {
   };
 
   const handleSwitchSession = async (sessionId: string) => {
-    if (isStreaming || sessionId === activeSessionId) return;
-    const detail = await fetchSession(sessionId);
+    if (isStreaming || quickToolLoading || sessionId === activeSessionId) return;
+    const requestId = ++sessionSwitchRequestRef.current;
     setActiveSessionId(sessionId);
+    const detail = await fetchSession(sessionId);
+    if (requestId !== sessionSwitchRequestRef.current) return;
     localStorage.setItem("patentagent_session_id", sessionId);
     if (route === "chat") window.history.replaceState({}, "", `/chat/${sessionId}`);
     const restored = messagesFromSession(detail);
@@ -211,6 +214,7 @@ export default function App() {
   };
 
   const handleNewSession = async () => {
+    if (isStreaming || quickToolLoading) return;
     const currentVersion = healthQuery.data?.dataset_snapshot?.version_id;
     const created = await createSession(t("session.newNumber", { number: sessions.length + 1 }), currentVersion);
     await refreshSessionList();
@@ -270,18 +274,7 @@ export default function App() {
       const result = await runTool(toolName, params, activeSessionId || undefined);
       console.log("[PatentAgent] Tool result:", toolName, result.result_type);
       const stepId = "qt-" + Date.now();
-      const step: ToolStep = {
-        id: stepId,
-        tool: toolName,
-        status: "completed",
-        chart_html: result.chart_html,
-        summary: result.summary,
-        methodology: result.methodology,
-        data_quality: result.data_quality,
-        warnings: result.warnings,
-        parameters: (result.result_metadata?.parameters || params) as Record<string, unknown>,
-        result: result as Record<string, unknown>,
-      };
+      const step: ToolStep = quickToolStep(result, toolName, params, stepId);
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: "system",
@@ -606,7 +599,7 @@ export default function App() {
   };
 
   const activeSession = sessions.find(session => session.id === activeSessionId);
-  const activeVersionId = activeSession?.dataset_version_id || healthQuery.data?.dataset_snapshot?.version_id || "";
+  const activeVersionId = activeSessionId ? activeSession?.dataset_version_id || "" : healthQuery.data?.dataset_snapshot?.version_id || "";
   const activeDataset = datasets.find(dataset => {
     const version = dataset.latest_version.id || dataset.latest_version.version_id;
     return version === activeVersionId;
@@ -637,7 +630,7 @@ export default function App() {
     <div className="flex h-full flex-col">
       <div className="border-b border-slate-100 p-4">
         <div className="mb-3 flex items-center justify-between"><h2 className="flex items-center gap-2 text-sm font-bold text-slate-800"><MessageSquare className="h-4 w-4 text-blue-500" />{t("chat.session")}</h2><button onClick={handleNewSession} disabled={isStreaming} className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:text-blue-600" aria-label={t("session.new")}><Plus className="h-4 w-4" /></button></div>
-        <div className="space-y-1">{sessions.map(session => <div key={session.id} className={`group flex items-center gap-1 rounded-xl border px-2 py-2.5 ${session.id === activeSessionId ? "border-blue-200 bg-blue-50" : "border-transparent hover:bg-slate-50"}`}><button onClick={() => handleSwitchSession(session.id)} disabled={isStreaming} className="min-w-0 flex-1 text-left"><div className="truncate text-xs font-medium text-slate-700">{session.name}</div><div className="mt-0.5 text-[10px] text-slate-400">{t("session.turns", { count: session.turn_count || 0 })} · {session.dataset_version_id ? t("session.bound") : t("session.unbound")}</div></button><button onClick={() => handleRenameSession(session)} className="p-1 text-slate-400 opacity-0 group-hover:opacity-100" aria-label={t("settings.edit")}><Pencil className="h-3 w-3" /></button><button onClick={() => handleDeleteSession(session)} className="p-1 text-slate-400 opacity-0 hover:text-rose-600 group-hover:opacity-100" aria-label={t("tool.delete")}><Trash2 className="h-3 w-3" /></button></div>)}</div>
+        <div className="space-y-1">{sessions.map(session => <div key={session.id} className={`group flex items-center gap-1 rounded-xl border px-2 py-2.5 ${session.id === activeSessionId ? "border-blue-200 bg-blue-50" : "border-transparent hover:bg-slate-50"}`}><button onClick={() => handleSwitchSession(session.id)} disabled={isStreaming || Boolean(quickToolLoading)} className="min-w-0 flex-1 text-left"><div className="truncate text-xs font-medium text-slate-700">{session.name}</div><div className="mt-0.5 text-[10px] text-slate-400">{t("session.turns", { count: session.turn_count || 0 })} · {session.dataset_version_id ? t("session.bound") : t("session.unbound")}</div></button><button onClick={() => handleRenameSession(session)} className="p-1 text-slate-400 opacity-0 group-hover:opacity-100" aria-label={t("settings.edit")}><Pencil className="h-3 w-3" /></button><button onClick={() => handleDeleteSession(session)} className="p-1 text-slate-400 opacity-0 hover:text-rose-600 group-hover:opacity-100" aria-label={t("tool.delete")}><Trash2 className="h-3 w-3" /></button></div>)}</div>
       </div>
       <div className="p-4"><div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="flex items-center gap-2 text-xs font-semibold text-slate-700"><Database className="h-4 w-4 text-blue-500" />{t("chat.currentData")}</div><div className="mt-2 truncate text-sm font-semibold text-slate-800">{activeDataset?.name || t("chat.defaultDataset")}</div><div className="mt-1 text-[11px] text-slate-500">{dataSummary ? t("chat.dataSummary", { count: dataSummary.total_patents.toLocaleString(), start: dataSummary.year_range[0], end: dataSummary.year_range[1] }) : t("chat.dataNotLoaded")}</div><button onClick={() => navigate("datasets")} className="mt-3 w-full rounded-lg border border-slate-200 bg-white py-2 text-xs text-blue-700">{t("chat.manageDatasets")}</button></div></div>
     </div>

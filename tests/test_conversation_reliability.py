@@ -135,6 +135,7 @@ def test_persisted_approval_bypasses_repeated_budget_prompt():
         events = [event async for event in orchestrator.stream_query(
             "执行完整分析", session, PatentDataStore(), turn_id="approved-turn",
             approval_granted=True,
+            approved_plan={"tool_calls":[],"dataset_version_id":PatentDataStore().snapshot().version_id},
         )]
         plan = next(event for event in events if event["type"] == "plan")
         assert plan["requires_confirmation"] is False
@@ -146,7 +147,8 @@ def test_persisted_approval_bypasses_repeated_budget_prompt():
 
 class _HistoryLLM:
     async def chat(self, messages, **_kwargs):
-        assert "历史工具证据" in messages[0]["content"]
+        assert "历史工具证据" not in messages[0]["content"]
+        assert any("UNTRUSTED_DATA" in item["content"] for item in messages if item["role"] == "user")
         return ChatResponse("峰值来自已保存数据。[历史轮次:analyze_patent_trend:data]")
 
 

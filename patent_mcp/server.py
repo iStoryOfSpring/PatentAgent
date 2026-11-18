@@ -72,7 +72,7 @@ def create_server(config):
     # ═════════════════════════════════════════════════════════════
     @server.call_tool(validate_input=False)
     async def handle_call_tool(name: str, arguments: dict):
-        logger.info("tools/call: name=%s args=%s", name, json.dumps(arguments, ensure_ascii=False))
+        logger.info("tools/call: name=%s", name)
 
         # Resolve tool
         try:
@@ -91,7 +91,7 @@ def create_server(config):
         try:
             store = await store_manager.get_store()
         except Exception as exc:
-            logger.error("Failed to load data store: %s", exc)
+            logger.error("Failed to load data store: %s", type(exc).__name__)
             return [TextContent(
                 type="text",
                 text=f"Error: Cannot load patent data. {exc}\n"
@@ -105,7 +105,7 @@ def create_server(config):
         try:
             result = await tool.run(store, **params)
         except Exception as exc:
-            logger.error("Tool %s failed: %s", name, exc, exc_info=True)
+            logger.error("Tool %s failed: %s", name, type(exc).__name__)
             return [TextContent(
                 type="text",
                 text=f"Error executing '{name}': {exc}",

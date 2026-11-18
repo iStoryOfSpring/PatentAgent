@@ -43,10 +43,16 @@ class DatasetRuntimeManager:
         adapter = record.get("adapter") or "auto"
         if adapter not in {
             "auto", "wos_dii", "google_patents_jsonl", "uspto_grant_xml",
-            "uspto_file_wrapper_json",
+            "uspto_file_wrapper_json", "canonical_jsonl",
         }:
             adapter = "auto"
         store = self.importer.load(source, adapter)
+        actual = store.snapshot()
+        if record.get("fingerprint_scheme") != actual.fingerprint_scheme or record.get("content_hash") != actual.content_hash:
+            raise ValueError("requires_reimport: 数据集内容或指纹规范已改变，历史版本不能重新绑定")
+        persisted_report = record.get("import_report") or {}
+        if persisted_report:
+            store._import_report.update(persisted_report)
         store._dataset_id_override = record["dataset_id"]
         store._version_id_override = record["id"]
         return self.register(store)
@@ -54,9 +60,11 @@ class DatasetRuntimeManager:
     async def for_session(
         self, session_id: str | None, fallback: PatentDataStore | None,
     ) -> PatentDataStore | None:
-        if not session_id:
+        if session_id is None:
             return fallback
         session = await self.repository.get_session(session_id, required=False)
-        if not session or not session.get("dataset_version_id"):
-            return fallback
+        if session is None:
+            raise KeyError(session_id)
+        if not session.get("dataset_version_id"):
+            return None
         return await self.get(session["dataset_version_id"])

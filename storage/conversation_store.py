@@ -58,7 +58,7 @@ def execution_cache_key(
 class ConversationStore:
     """Small aiosqlite repository with explicit, versioned schema."""
 
-    SCHEMA_VERSION = 7
+    SCHEMA_VERSION = 8
 
     def __init__(self, db_path: str | Path):
         self.db_path = Path(db_path)
@@ -70,6 +70,13 @@ class ConversationStore:
             await db.execute("PRAGMA foreign_keys=ON")
             await db.executescript(
                 """
+                CREATE TABLE IF NOT EXISTS acquisitions (
+                    id TEXT PRIMARY KEY, state TEXT NOT NULL, request_hash TEXT NOT NULL,
+                    token_hash TEXT NOT NULL, expires_at TEXT NOT NULL,
+                    request_json TEXT NOT NULL, result_json TEXT NOT NULL DEFAULT '{}',
+                    cancel_requested INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS sessions (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -677,6 +684,29 @@ class ConversationStore:
             await db.commit()
         return cache_key
 
+    async def interrupt_turn_if_running(self, turn_id: str) -> bool:
+        """A closed transport cannot overwrite completed or approval-waiting work."""
+        active = ("created", "queued", "planning", "planned", "running", "executing",
+                  "validating", "synthesizing", "cancelling")
+        placeholders = ",".join("?" for _ in active)
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                f"UPDATE turns SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE 'interrupted' END,"
+                f"error_category=CASE WHEN cancel_requested=1 THEN '' ELSE 'system_failure' END,"
+                f"updated_at=?,state_version=state_version+1 WHERE id=? "
+                f"AND status IN ({placeholders})",
+                (_now(), turn_id, *active),
+            )
+            if cursor.rowcount:
+                await db.execute(
+                    "UPDATE sessions SET status=(SELECT status FROM turns WHERE id=?),updated_at=? "
+                    "WHERE id=(SELECT session_id FROM turns WHERE id=?) "
+                    "AND status IN ('executing','running','planning','synthesizing')",
+                    (turn_id, _now(), turn_id),
+                )
+            await db.commit()
+            return bool(cursor.rowcount)
+
     async def mark_inflight_interrupted(self) -> int:
         """Make process crashes explicit without replaying an LLM request."""
         inflight = (
@@ -684,6 +714,7 @@ class ConversationStore:
             "validating", "synthesizing", "cancelling",
         )
         async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("UPDATE acquisitions SET state='interrupted',updated_at=? WHERE state IN ('queued','running','publishing')", (_now(),))
             placeholders = ",".join("?" for _ in inflight)
             cursor = await db.execute(
                 f"UPDATE turns SET status='interrupted',error_category='system_failure',"
@@ -935,6 +966,13 @@ class ConversationStore:
                 (session_id, limit),
             )
         return [self._decode_row(row) for row in rows]
+
+    async def get_execution_evidence(self, execution_id: str):
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute("SELECT e.*,s.result_json,s.stale FROM tool_executions e JOIN evidence_snapshots s ON s.execution_id=e.id WHERE e.id=?", (execution_id,))
+            row = await cursor.fetchone()
+        return self._decode_row(row) if row else None
 
     async def find_reusable(
         self, session_id: str, cache_key: str,

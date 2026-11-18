@@ -10,7 +10,8 @@ import os
 import sys
 import asyncio
 import re
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, aclosing
+import anyio
 from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator
@@ -74,14 +75,14 @@ from patent_agent.api.routes.providers import (
     update_llm_profile as _update_llm_profile_route,
 )
 from patent_agent.api.routes.datasets import (
-    data_summary as _data_summary_route,
+    data_summary as _data_summary_route, dataset_summary_payload,
     list_datasets as _list_datasets_route,
     list_dataset_versions as _list_dataset_versions_route,
 )
 from patent_agent.api.routes.reports import report_export as _report_export_route
 from patent_agent.api.routes.sessions import get_session as _get_session_route
 from patent_agent.api.routes.tools import (
-    list_tools as _list_tools_route, run_tool as _run_tool_route,
+    list_tools as _list_tools_route, run_tool as _run_tool_route, tools_catalog,
 )
 from patent_agent.api.routes.tasks import (
     cancel_task as _cancel_task_route,
@@ -184,6 +185,8 @@ app.add_middleware(
     },
 )
 app.add_middleware(TraceMiddleware)
+from patent_agent.api.routes.acquisitions import router as acquisitions_router
+app.include_router(acquisitions_router)
 app.include_router(datasets_router)
 app.include_router(tools_router)
 app.include_router(sessions_router)
@@ -226,11 +229,11 @@ def _provider_repo() -> ProviderProfileStore:
 # Direct-call compatibility for embedded users and older unit tests.  HTTP
 # routing lives in patent_agent.api.routes; these wrappers do not own logic.
 def data_summary():
-    return _data_summary_route(_runtime())
+    return dataset_summary_payload(_runtime(), _runtime().store)
 
 
 def list_tools():
-    return _list_tools_route(_runtime())
+    return tools_catalog(_runtime().store)
 
 
 async def run_tool(tool_name: str, req: ToolRequest = ToolRequest()):
@@ -378,6 +381,7 @@ async def _probe_profile(profile: dict, supplied: ProviderCredentials):
 @app.post("/api/agent/chat")
 async def agent_chat(req: ChatRequest):
     """Streaming agent chat via Server-Sent Events."""
+    runtime = _runtime()
     if not _runtime().agent:
         raise HTTPException(400, "Agent not configured. Call /api/agent/config first.")
     # Freeze the Agent/profile pair for the whole turn. Provider mutations are
@@ -389,12 +393,8 @@ async def agent_chat(req: ChatRequest):
         raise HTTPException(422, "response_mode 必须是 detailed 或 concise")
     repo = _conversation_repo()
     session_id = req.session_id or f"api_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
-    turn_store = _runtime().store
-    if _runtime().dataset_runtime:
-        try:
-            turn_store = await _runtime().dataset_runtime.for_session(session_id, turn_store)
-        except (KeyError, ValueError) as exc:
-            raise HTTPException(409, f"会话绑定的数据集不可用: {exc}") from exc
+    from patent_agent.api.dependencies import resolve_dataset
+    turn_store = await resolve_dataset(_runtime(), req.session_id)
     if not turn_store or turn_store.is_empty:
         raise HTTPException(400, "No patent data. Import or activate a dataset first.")
     turn_fingerprint = turn_store.dataset_fingerprint()
@@ -407,11 +407,13 @@ async def agent_chat(req: ChatRequest):
     )
     effective_message = req.message
     approval_granted = False
+    approved_plan = None
     if req.reply_to_turn_id:
         pending_turn = await repo.get_turn(req.reply_to_turn_id)
         if not pending_turn or pending_turn.get("session_id") != session_id:
             raise HTTPException(404, "待回复的澄清轮次不存在")
         pending_plan = pending_turn.get("plan", {})
+        approved_plan = pending_plan
         was_budget_approval = bool(pending_plan.get("requires_confirmation"))
         normalized_reply = req.message.strip().lower().replace(" ", "")
         approval_granted = was_budget_approval and normalized_reply in {
@@ -475,18 +477,21 @@ async def agent_chat(req: ChatRequest):
         terminal_sent = False
         step_summaries: list[str] = []
         final_metadata: dict = {}
-        _runtime().active_generation_turns.add(turn_id)
+        runtime.active_generation_turns.add(turn_id)
+        agent_events = None
         try:
             yield await _persist_sse(repo, turn_id, {
                 "type": "task_status", "status": "queued", "turn_id": turn_id,
             })
-            async for event in turn_agent.stream_query(
+            agent_events = turn_agent.stream_query(
                 effective_message, session, turn_store, req.response_mode,
                 historical_evidence=historical_evidence,
                 turn_id=turn_id,
                 reuse_lookup=reuse_lookup,
                 approval_granted=approval_granted,
-            ):
+                approved_plan=approved_plan,
+            )
+            async for event in agent_events:
                 event.setdefault("turn_id", turn_id)
                 event.setdefault("dataset_version_id", turn_version_id)
                 current_task = await repo.get_turn(turn_id)
@@ -545,6 +550,8 @@ async def agent_chat(req: ChatRequest):
                             "validation_status": event.get("validation_status", ""),
                             "cost_weight": event.get("cost_weight", 0),
                             "requires_confirmation": event.get("requires_confirmation", False),
+                            "dataset_version_id": event.get("dataset_version_id", ""),
+                            "monitor_baselines": event.get("monitor_baselines", {}),
                             "provider": event.get("provider", ""),
                             "model": event.get("model", ""),
                             "request_id": event.get("request_id", ""),
@@ -640,24 +647,23 @@ async def agent_chat(req: ChatRequest):
             if not terminal_sent:
                 raise RuntimeError("SSE_STREAM_ENDED_WITHOUT_DONE")
         except asyncio.CancelledError:
-            cancelled_task = await repo.get_turn(turn_id)
-            cancellation_requested = bool(
-                cancelled_task and cancelled_task.get("cancel_requested")
-            )
-            cancelled_text = (
-                _server_fallback_summary(step_summaries, "用户取消了本轮分析")
-                if step_summaries else "本轮分析已由用户取消。"
-            )
-            await repo.finish_turn(
-                session_id, turn_id, cancelled_text, "cancelled", "用户取消",
-                metadata={"cancelled": True},
-            )
+            with anyio.CancelScope(shield=True):
+                cancelled_task = await repo.get_turn(turn_id)
+                cancellation_requested = bool(cancelled_task and cancelled_task.get("cancel_requested"))
+                if cancellation_requested:
+                    cancelled_text = (
+                        _server_fallback_summary(step_summaries, "用户取消了本轮分析")
+                        if step_summaries else "本轮分析已由用户取消。"
+                    )
+                    await repo.finish_turn(
+                        session_id, turn_id, cancelled_text, "cancelled", "用户取消",
+                        metadata={"cancelled": True},
+                    )
             if cancellation_requested:
                 yield await _persist_sse(repo, turn_id, {
                     "type": "done", "session_id": session_id,
                     "turn_id": turn_id, "final_status": "cancelled",
-                    "answer_present": bool(cancelled_text),
-                    "coverage_complete": False,
+                    "answer_present": bool(cancelled_text), "coverage_complete": False,
                 })
                 return
             raise
@@ -684,10 +690,20 @@ async def agent_chat(req: ChatRequest):
                 "answer_format": "markdown", "normalization_mode": "fallback",
             })
         finally:
-            _runtime().active_generation_turns.discard(turn_id)
+            try:
+                if agent_events is not None:
+                    with anyio.CancelScope(shield=True):
+                        async with aclosing(agent_events):
+                            pass
+            finally:
+                runtime.active_generation_turns.discard(turn_id)
 
-    return StreamingResponse(
-        event_stream(), media_type="text/event-stream",
+    async def finalize_stream():
+        await repo.interrupt_turn_if_running(turn_id)
+
+    from patent_agent.api.streaming import AgentStreamingResponse
+    return AgentStreamingResponse(
+        event_stream(), container=runtime, turn_id=turn_id, finalize=finalize_stream, media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 

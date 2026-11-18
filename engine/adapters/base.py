@@ -155,6 +155,7 @@ class PatentAdapter(ABC):
     def _files_hash(self, input_dir: str, files: list[str]) -> str:
         h = hashlib.sha256()
         h.update(self.version.encode())
+        h.update(b"canonical-frame-v4")
         for f in sorted(files):
             fpath = os.path.join(input_dir, f)
             h.update(f.encode())
@@ -216,7 +217,13 @@ class PatentAdapter(ABC):
                 'grant_date': p.grant_date,
                 'priority_date': p.priority_date,
                 'priority_numbers': ';'.join(p.priority_numbers),
+                'schema_version': p.schema_version,
+                'record_type': p.record_type,
                 'claims_json': _serialize_claims(p.claims),
+                'raw_claims_json': _json_dump(p.raw_claims),
+                'claims_structure_status': p.claims_structure_status,
+                'claims_source': p.claims_source,
+                'canonical_record_json': p.model_dump_json(),
                 'description': p.description,
                 'forward_citations': ';'.join(p.forward_citations),
                 'backward_citations': ';'.join(p.backward_citations),

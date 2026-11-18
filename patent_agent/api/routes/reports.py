@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from html import escape
+import json
 
 from patent_agent.api.dependencies import get_container
 from patent_agent.api.schemas import CreateReportRequest, ExportRequest
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/api", tags=["reports"])
 def _structured_preview(result: dict) -> str | None:
     """Render a small, escaped table from persisted structured tool output."""
     rows = None
-    for key in ("data", "top_patents", "items", "results", "yearly_data"):
+    for key in ("patents", "data", "top_patents", "items", "results", "yearly_data"):
         candidate = result.get(key)
         if isinstance(candidate, list) and candidate and isinstance(candidate[0], dict):
             rows = candidate[:12]
@@ -36,8 +37,16 @@ def _structured_preview(result: dict) -> str | None:
             f"<td>{escape(str(row.get(column, '')))}</td>" for column in columns
         ) + "</tr>" for row in rows
     )
+    raw_claims = ""
+    for row in rows:
+        claims = row.get("raw_claims") or row.get("claims") or []
+        if claims:
+            raw_claims += "<details><summary>" + escape(str(row.get("patent_number", ""))) + " · " + escape(str(row.get("claims_structure_status", "unknown"))) + " · " + escape(str(row.get("claims_source", "unknown"))) + "</summary>"
+            for claim in claims:
+                raw_claims += "<p>" + escape(str(claim.get("language", "und"))) + " · " + escape(str(claim.get("text", ""))) + "</p>"
+            raw_claims += "</details>"
     return (
-        '<div class="structured-preview"><table><thead><tr>' + header +
+        raw_claims + '<div class="structured-preview"><table><thead><tr>' + header +
         "</tr></thead><tbody>" + body + "</tbody></table></div>"
     )
 
@@ -113,6 +122,14 @@ async def create_report(
                 f"参数: {execution.get('parameters', {})}",
                 f"耗时: {execution.get('duration_ms', 0)} ms",
             ]
+            metadata=result.get("result_metadata") or {}
+            for key in ("date_basis","count_unit","missing_date_records","missing_identity_records","evidence_selector_version","evidence_bins","field_status"):
+                if key in metadata:lines.append(f"{key}: {json.dumps(metadata[key],ensure_ascii=False)}")
+            algorithm=result.get("algorithm_execution") or {}
+            if algorithm:lines.append("算法与版本: "+json.dumps(algorithm,ensure_ascii=False))
+            lines.append("执行证据: "+str(execution.get("id","")))
+            if version:
+                lines.append("来源/许可/缺口: "+json.dumps(version.get("import_report") or {},ensure_ascii=False))
             if result.get("summary"):
                 lines.append(f"摘要: {result['summary']}")
             if result.get("methodology"):

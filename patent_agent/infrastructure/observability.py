@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextvars
 import json
+import ipaddress
 import logging
 import re
 import time
@@ -69,6 +70,14 @@ class RequestGuardMiddleware:
             await self.app(scope, receive, send)
             return
         headers = {key.lower(): value for key, value in scope.get("headers", [])}
+        peer = (scope.get("client") or ("", 0))[0]
+        host = headers.get(b"host", b"localhost").decode("ascii", errors="ignore").lower()
+        hostname = host.split("]", 1)[0].lstrip("[") if host.startswith("[") else host.split(":", 1)[0]
+        try: local_peer = ipaddress.ip_address(peer).is_loopback
+        except ValueError: local_peer = peer == "testclient"
+        if hostname not in {"127.0.0.1", "localhost", "::1", "testserver"} or not local_peer:
+            await JSONResponse({"detail":"local_access_required"}, status_code=403)(scope, receive, send)
+            return
         path = scope.get("path", "")
         streaming_limit = self.streaming_path_limits.get(path)
         raw_length = headers.get(b"content-length")
@@ -104,7 +113,7 @@ class RequestGuardMiddleware:
         async def replay_receive():
             if buffered:
                 return buffered.pop(0)
-            return {"type": "http.request", "body": b"", "more_body": False}
+            return await receive()
 
         await self.app(scope, replay_receive, send)
 
