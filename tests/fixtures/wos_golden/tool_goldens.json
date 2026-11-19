@@ -3623,7 +3623,7 @@
     },
     "analyze_patent_trend": {
       "result_type": "yearly_trend",
-      "sha256": "b27f75f610292e48fb2ac5ecade3266af1e440837f38c9d68100cbe6b37bccf1",
+      "sha256": "c848e309b543cf15853d0d59bf1d9a7f3f41c653a844429cdda5db08df266434",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "publication_count_trend",
@@ -3758,7 +3758,7 @@
           ]
         },
         "evidence_level": "descriptive_statistic",
-        "methodology": "按 WoS PD 公开日期聚合；尾年月份不完整时不解释为技术衰退。",
+        "methodology": "按指定日期和计数单位聚合；尾年月份不完整时不解释为技术衰退。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,

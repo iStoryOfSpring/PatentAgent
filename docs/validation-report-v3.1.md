@@ -67,4 +67,3 @@ python -m scripts.benchmark_retrieval --records 100000
 `npm run build` 通过；在 zh-CN/en-US 和 1440×900、768×1024、390×844、360×800
 视口下检查五个页面，语言切换、持久化、`document.documentElement.lang` 和窄屏布局均通过。
 后端未运行时不进行真实 API 联调。
-

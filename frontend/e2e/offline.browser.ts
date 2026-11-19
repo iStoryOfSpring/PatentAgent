@@ -33,7 +33,7 @@ test("offline upload, session binding and filing-year application evidence", asy
   if (await bind.isVisible()) await bind.click();
   await expect(dataset.getByRole("button", {name:"已绑定", exact:true})).toBeDisabled();
   await page.goto("/capabilities");
-  await page.getByRole("button", {name:/公开趋势/}).last().click();
+  await page.locator("aside").getByTitle("公开趋势", {exact:true}).click();
   await page.getByLabel(/^统计日期/).selectOption("filing");
   await page.getByLabel(/^计数单位/).selectOption("applications");
   await page.getByLabel(/^图表粒度/).selectOption("yearly");
