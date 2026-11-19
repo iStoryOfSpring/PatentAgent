@@ -223,27 +223,14 @@ async def _process_upload(
             issues = report.get("issues", [])
             detail = issues[0].get("message") if issues else "没有解析出专利记录"
             raise ValueError(detail)
-        from patent_agent.application.acquisitions import publish_dataset
-        content_version_id, actual_dataset_id, deduplicated = await publish_dataset(
-            container, store, source_root, dataset_id, name, import_id)
-        snapshot = store.snapshot().model_dump(mode="json")
-        import_report = store.audit().get("import_report", {})
-        metrics.update({
-            "progress": 100, "stage": "completed", "deduplicated": deduplicated,
-            "dataset_id": actual_dataset_id, "dataset_version_id": content_version_id,
-            "record_count": snapshot["record_count"],
-            "application_evidence_count": import_report.get("application_evidence_count", 0),
-            "file_detections": import_report.get("file_detections", []),
-            "warnings": import_report.get("warnings", []),
-        })
-        await repo.update_import(
-            import_id, status="completed", dataset_version_id=content_version_id,
-            metrics_json=metrics,
-        )
+        from patent_agent.application.dataset_publication import publish_dataset
+        await publish_dataset(container, store, source_root, dataset_id, name, import_id)
         shutil.rmtree(stage_root, ignore_errors=True)
     except Exception as exc:
         shutil.rmtree(stage_root, ignore_errors=True)
         try:
+            if (await repo.get_import(import_id) or {}).get("status") == "completed":
+                return
             await repo.update_import(
                 import_id, status="failed", error_category="import_failed",
                 error=str(exc)[:500], metrics_json={"progress": 100, "stage": "failed"},

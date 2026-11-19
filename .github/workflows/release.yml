@@ -29,13 +29,32 @@ jobs:
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
-      - name: Build reproducible application archive
+      - name: Build candidate application archive
         run: |
           mkdir -p release/PatentAgent
           git archive --format=tar HEAD | tar -x -C release/PatentAgent
           cp -R frontend/dist release/PatentAgent/frontend/dist
           tar -czf "release/PatentAgent-${GITHUB_REF_NAME}.tar.gz" -C release PatentAgent
           shasum -a 256 "release/PatentAgent-${GITHUB_REF_NAME}.tar.gz" > "release/PatentAgent-${GITHUB_REF_NAME}.sha256"
+      - name: Verify the archive that will be attached
+        run: |
+          shasum -a 256 -c "release/PatentAgent-${GITHUB_REF_NAME}.sha256"
+          mkdir -p "$RUNNER_TEMP/release-smoke"
+          tar -xzf "release/PatentAgent-${GITHUB_REF_NAME}.tar.gz" -C "$RUNNER_TEMP/release-smoke"
+          cd "$RUNNER_TEMP/release-smoke/PatentAgent"
+          python3 scripts/check_doc_links.py
+          uv sync --frozen --extra mcp --group dev
+          (cd frontend && npm ci && npx --no-install playwright install --with-deps chromium)
+          python3 scripts/smoke_offline.py
+          printf 'Candidate commit %s\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          shasum -a 256 "$GITHUB_WORKSPACE/release/PatentAgent-${GITHUB_REF_NAME}.tar.gz" >> "$GITHUB_STEP_SUMMARY"
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-smoke-diagnostics
+          path: |
+            ${{ runner.temp }}/release-smoke/PatentAgent/frontend/offline-service.log
+            ${{ runner.temp }}/release-smoke/PatentAgent/frontend/test-results/
       - uses: softprops/action-gh-release@v2
         with:
           files: |

@@ -139,6 +139,8 @@ async def lifespan(fastapi_app: FastAPI):
         runtime.settings.dataset_cache_size,
     )
     runtime.dataset_runtime.register(runtime.store)
+    from patent_agent.application.dataset_publication import recover_imports
+    await recover_imports(runtime)
     await runtime.conversation_store.mark_inflight_interrupted()
     runtime.task_service = TaskService(runtime.conversation_store, resynthesize_turn)
     try:
@@ -347,6 +349,7 @@ async def health():
     ds = _runtime().store.get_summary() if _runtime().store else None
     selected = await _provider_repo().selected_profile() if _runtime().provider_store else None
     return {
+        "application": "PatentAgent",
         "status": "ok",
         "patents_loaded": ds.total_patents if ds else 0,
         "year_range": list(ds.year_range) if ds and ds.year_range != (0, 0) else None,

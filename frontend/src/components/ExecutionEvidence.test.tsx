@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup,fireEvent,render,screen } from "@testing-library/react";
+import { act,cleanup,fireEvent,render,screen } from "@testing-library/react";
 import { afterEach,beforeEach,describe,expect,it,vi } from "vitest";
 import { ExecutionEvidence } from "./ExecutionEvidence";
 import * as api from "../api";
@@ -23,4 +23,44 @@ describe("persisted execution evidence",()=>{
     expect((await screen.findByRole("alert")).textContent).toContain("证据或数据版本已失效，请重新分析。");
     expect(api.fetchExecutionRecords).toHaveBeenCalledTimes(1);
   });
+});
+
+it.each(["resolve", "reject"])("ignores a late %s after selecting another year", async outcome => {
+  let finish!: () => void;
+  vi.mocked(api.fetchExecutionRecords).mockImplementationOnce(() => new Promise((resolve, reject) => {
+    finish = () => outcome === "resolve" ? resolve(page) : reject(new Error("stale"));
+  }));
+  render(<ExecutionEvidence executionId="exec1" bins={["2018", "2019"]}/>);
+  fireEvent.click(screen.getByText("查看此分组证据"));
+  fireEvent.change(screen.getByLabelText("Evidence bin"), {target: {value: "2019"}});
+  await act(async () => finish());
+  expect(screen.queryByText(/USAPP1/)).toBeNull();
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect((screen.getByText("查看此分组证据") as HTMLButtonElement).disabled).toBe(false);
+});
+
+it("invalidates pending work on execution change and disables empty bins", async () => {
+  let finish!: () => void;
+  vi.mocked(api.fetchExecutionRecords).mockImplementationOnce(() => new Promise(resolve => {
+    finish = () => resolve(page);
+  }));
+  const view = render(<ExecutionEvidence executionId="exec1" bins={["2018"]}/>);
+  fireEvent.click(screen.getByText("查看此分组证据"));
+  view.rerender(<ExecutionEvidence executionId="exec2" bins={[]}/>);
+  await act(async () => finish());
+  expect(screen.queryByText(/USAPP1/)).toBeNull();
+  expect((screen.getByText("查看此分组证据") as HTMLButtonElement).disabled).toBe(true);
+});
+
+it("retains the current page on pagination failure and rejects mismatched responses", async () => {
+  vi.mocked(api.fetchExecutionRecords).mockResolvedValueOnce(page)
+    .mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce({...page, execution_id:"other"});
+  render(<ExecutionEvidence executionId="exec1" bins={["2018"]}/>);
+  fireEvent.click(screen.getByText("查看此分组证据"));
+  await screen.findByText(/USAPP1/);
+  fireEvent.click(screen.getByText("下一页"));
+  await screen.findByRole("alert");
+  expect(screen.getByText(/USAPP1/)).toBeTruthy();
+  fireEvent.click(screen.getByText("下一页"));
+  expect((await screen.findByRole("alert")).textContent).toContain("失效");
 });

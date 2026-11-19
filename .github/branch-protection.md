@@ -1,15 +1,5 @@
-# Required branch protection
+# Merge checks
 
-Protect the default branch and require these GitHub Actions checks before merge:
+On 2026-11-18 GitHub reported no classic protection on main and no required status checks in its effective rulesets. Workflow checks run independently of administrative merge enforcement.
 
-- `backend-python-3.11`
-- `backend-python-3.12`
-- `backend-python-3.13`
-- `contracts-lock-migrations-mcp`
-- `performance-100k-baseline`
-- `frontend-node-20`
-
-Also require pull requests, dismiss stale approvals after new commits, and block force pushes.
-The repository administrator must enable these settings after the workflow exists on GitHub,
-and remove any previously configured `backend-python-3.10` or `backend-python-3.14` required
-checks so that the required-check list matches the supported matrix above.
+Recommended required check names are `backend-python-3.11`, `backend-python-3.12`, `backend-python-3.13`, `contracts-lock-migrations-mcp`, `performance-100k-baseline`, `frontend-node-20`, and `offline-browser`. Keep the performance job name stable even when it records a documentation-only skip. The release job verifies the archive before attaching it to a GitHub release. See the [operator guide](../docs/development/reliability-and-release.md).

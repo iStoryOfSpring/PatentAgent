@@ -9,8 +9,8 @@ from models.analysis_results import MonthlyTrendResult
 class TrendTool(Tool):
     name = "analyze_patent_trend"
     description = (
-        "分析专利公开时间趋势，生成月度或年度公开量统计数据及可视化图表。"
-        "适用于用户询问'趋势'、'增长'、'变化'、'申请量'等关键词。"
+        "按公开日、申请日、优先权日或授权日生成月度或年度趋势。"
+        "公开文献数、申请数和专利族数是不同单位；按申请日统计申请数时选择 filing 和 applications。"
     )
     parameters = {
         "date_basis": {"type":"string","enum":["publication","filing","priority","grant"],"default":"publication"},
@@ -41,7 +41,7 @@ class TrendTool(Tool):
     }
     required_fields = ("patent_number",)
     optional_fields = ("ipc", "applicants")
-    methodology = "按 WoS PD 公开日期聚合；尾年月份不完整时不解释为技术衰退。"
+    methodology = "按指定日期和计数单位聚合；尾年月份不完整时不解释为技术衰退。"
     evidence_level = "descriptive_statistics"
 
     async def execute(self, storage: PatentDataStore,

@@ -789,31 +789,35 @@ class ConversationStore:
         return self._decode_row(row) if row else None
 
     async def upsert_dataset_snapshot(self, snapshot: dict[str, Any]) -> None:
-        now = _now()
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA foreign_keys=ON")
-            await db.execute(
-                "INSERT INTO datasets(id,name,source_root,status,created_at,updated_at) "
-                "VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
-                "name=excluded.name,source_root=excluded.source_root,status=excluded.status,"
-                "updated_at=excluded.updated_at",
-                (snapshot["dataset_id"], snapshot.get("name") or snapshot["dataset_id"],
-                 snapshot.get("source_root") or (snapshot.get("sources") or [""])[0],
-                 snapshot.get("status", "ready"), now, now),
-            )
-            await db.execute(
-                "INSERT OR IGNORE INTO dataset_versions "
-                "(id,dataset_id,content_hash,fingerprint_scheme,schema_version,adapter,record_count,"
-                "field_coverage_json,sources_json,storage_path,import_id,import_report_json,created_at) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (snapshot["version_id"], snapshot["dataset_id"], snapshot["content_hash"],
-                 snapshot.get("fingerprint_scheme", "legacy-identity-v1"),
-                 snapshot.get("schema_version", 1), snapshot.get("adapter", ""),
-                 snapshot.get("record_count", 0), _json(snapshot.get("field_coverage", {})),
-                 _json(snapshot.get("sources", [])), snapshot.get("storage_path", ""),
-                 snapshot.get("import_id", ""), _json(snapshot.get("import_report", {})), now),
-            )
+            await self.write_dataset_snapshot(db, snapshot)
             await db.commit()
+
+    async def write_dataset_snapshot(self, db, snapshot):
+        """Register a version within the caller's transaction."""
+        now = _now()
+        await db.execute(
+            "INSERT INTO datasets(id,name,source_root,status,created_at,updated_at) "
+            "VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
+            "name=excluded.name,source_root=excluded.source_root,status=excluded.status,"
+            "updated_at=excluded.updated_at",
+            (snapshot["dataset_id"], snapshot.get("name") or snapshot["dataset_id"],
+             snapshot.get("source_root") or (snapshot.get("sources") or [""])[0],
+             snapshot.get("status", "ready"), now, now),
+        )
+        await db.execute(
+            "INSERT OR IGNORE INTO dataset_versions "
+            "(id,dataset_id,content_hash,fingerprint_scheme,schema_version,adapter,record_count,"
+            "field_coverage_json,sources_json,storage_path,import_id,import_report_json,created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (snapshot["version_id"], snapshot["dataset_id"], snapshot["content_hash"],
+             snapshot.get("fingerprint_scheme", "legacy-identity-v1"),
+             snapshot.get("schema_version", 1), snapshot.get("adapter", ""),
+             snapshot.get("record_count", 0), _json(snapshot.get("field_coverage", {})),
+             _json(snapshot.get("sources", [])), snapshot.get("storage_path", ""),
+             snapshot.get("import_id", ""), _json(snapshot.get("import_report", {})), now),
+        )
 
     async def update_dataset(self, dataset_id: str, **values: Any) -> dict[str, Any]:
         allowed = {"name", "status"}

@@ -19,51 +19,31 @@
 
 ## 快速开始
 
-后端以 `pyproject.toml` 为唯一依赖声明，`uv.lock` 固定完整环境。当前支持 Python
-`>=3.11,<3.14`（即 3.11、3.12、3.13），推荐使用 Python 3.13；CI 后端矩阵覆盖这三个版本：
+从克隆目录或发布压缩包解压后的 `PatentAgent/` 根目录开始。准备 Python 3.11–3.13（推荐 3.13）、uv、Node 20.19 或更高兼容版本、npm、Bash 和 curl。首次安装依赖需要能访问软件包源，安装完成后可离线执行以下分析。
 
 ```bash
 uv sync --frozen --extra mcp --group dev
-cd frontend && npm ci && cd ..
-```
-
-`requirements.txt` 是由锁文件导出的 pip 兼容清单，不应手工编辑。MiniLM 运行库属于
-标准依赖；模型权重不会提交到仓库，只在首次显式启用 Beta 时下载约 471MB 到用户缓存目录。
-
-### 一键启动（推荐）
-
-```bash
-cd PatentAgent
+(cd frontend && npm ci)
 bash start.sh
 ```
 
-自动启动后端 (FastAPI :8000) 和前端 (React :5173)，浏览器自动打开。
+等待“PatentAgent 已启动”，打开终端显示的前端地址（默认 127.0.0.1:5173）。在“数据集”上传 [三条合成记录](samples/offline/trend.jsonl)。打开“智能分析”新建会话，回到“数据集”将此版本绑定到会话。在“能力与工具”的快捷工具中展开“公开趋势”，选申请日期、申请数和年度，执行后返回聊天，展开分组证据。2018 年有一个申请、两条公开文献；2019 年有一个申请、一条公开文献。[逐步操作和预期公开号](docs/mentor-demo-guide.md)
 
-### 分别启动
+从其他目录可以用脚本绝对路径启动。`PATENTAGENT_OPEN_BROWSER=0 bash start.sh` 适用于无桌面环境。后端使用 8000 端口；前端端口被占用或服务启动失败时，终端会指出原因。用 Ctrl+C 关闭此次启动的服务。
 
-**后端：**
-```bash
-cd PatentAgent
-MCP_INPUT_DIR=./my_patents PATENT_DATA_ROOT=./my_patents uvicorn server:app --host 127.0.0.1 --port 8000
-# API 文档: http://localhost:8000/docs
-```
+### 手动启动
 
-**前端：**
-```bash
-cd PatentAgent/frontend
-npm ci          # 首次运行，严格按 package-lock.json 安装
-npm run dev     # http://localhost:5173
-```
-
-### 可选：MCP 集成
+在根目录执行以下后端命令。在另一个终端进入同一个根目录执行前端命令。
 
 ```bash
-cd PatentAgent
-pip install mcp
-python mcp_server.py
+MCP_INPUT_DIR=./my_patents PATENT_DATA_ROOT=./my_patents uv run --frozen --extra mcp python -m uvicorn server:app --host 127.0.0.1 --port 8000
 ```
-需要从 Claude Code / VS Code / Cursor 调用分析工具时再配置 MCP。详见
-[MCP 使用指南](#mcp-使用指南)。
+
+```bash
+(cd frontend && npm run dev -- --host 127.0.0.1 --strictPort --port 5173)
+```
+
+桌面客户端连接可选的 MCP 服务时，沿用上述 uv 环境。[MCP 使用指南](#mcp-使用指南)
 
 ## 核心特性
 
@@ -77,7 +57,7 @@ python mcp_server.py
 - **报告导出** — HTML 报告（含完整中文排版），CSV 数据导出
 - **MCP 协议支持** — 标准 MCP (Model Context Protocol) stdio/HTTP 服务器，Claude Code / VS Code / Cursor 可直接调用全部工具
 - **算法证据登记表** — 24 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
-- **统一文件导入** — WoS、Google Patents JSONL、USPTO grant XML/PFW JSON 统一进入 PatentRecord v3，并返回字段覆盖、冲突与来源能力报告
+- **统一文件导入** — WoS、Google Patents JSONL、USPTO grant XML/PFW JSON 统一进入规范化 PatentRecord，并返回字段覆盖、冲突与来源能力报告
 - **多语言检索 Beta** — 单次显式启用本地 MiniLM 与词法 RRF；失败会明确回退，不替代默认 TF-IDF 基线
 - **中英文界面** — 支持简体中文（zh-CN）与英文（en-US）即时切换；语言选择保存到浏览器本地存储，专利原文、用户输入、检索结果和 AI 内容保持原样
 - **统一分析工作台** — 会话、数据集、九类能力、报告和设置采用独立页面，保持一个总调度 Agent
@@ -86,8 +66,7 @@ python mcp_server.py
 ## 数据源能力
 
 正式支持 WoS Derwent tagged text、Google Patents Public Data JSONL、USPTO grant
-full-text XML 和 Patent File Wrapper JSON。EPO OPS 与 CNIPA 仅处于格式准备阶段，
-没有账号、抓取器或生产适配器。详细字段边界和官方来源见
+full-text XML 和 Patent File Wrapper JSON。EPO OPS 已实现需凭据的题录在线采集，单次最多 1,000 条，命中集合不完整时不发布。真实账号尚待验证。CNIPA 使用官方导出文件流程，尚无在线 REST 适配器。详细字段边界和官方来源见
 [数据源能力矩阵](docs/data-source-capabilities.md)。
 固定样例的字段覆盖、代理指标和 10 万条工程压力结果见
 [V3.1 验证报告](docs/validation-report-v3.1.md)。
@@ -142,7 +121,7 @@ MCP 是一种标准化的 AI 工具通信协议。有了它，AI 客户端不再
 ### 安装 MCP 依赖
 
 ```bash
-pip install mcp
+uv sync --frozen --extra mcp --group dev
 ```
 
 ### 启动 MCP 服务器
@@ -150,7 +129,7 @@ pip install mcp
 **stdio 模式（推荐，用于 Claude Code / VS Code / Cursor）：**
 
 ```bash
-python mcp_server.py
+uv run --frozen --extra mcp python mcp_server.py
 ```
 
 服务器通过标准输入输出与客户端通信，不需要网络端口。
@@ -158,7 +137,7 @@ python mcp_server.py
 **HTTP 模式（用于远程访问）：**
 
 ```bash
-python mcp_http_server.py --port 8000 --host 127.0.0.1
+uv run --frozen --extra mcp python mcp_http_server.py --port 8001 --host 127.0.0.1
 ```
 
 HTTP 默认只允许本机。若确需绑定非回环地址，必须同时设置强随机
@@ -187,8 +166,8 @@ HTTP 默认只允许本机。若确需绑定非回环地址，必须同时设置
 {
   "mcpServers": {
     "patent-agent": {
-      "command": "python3",
-      "args": ["/绝对路径/PatentAgent/mcp_server.py"],
+      "command": "uv",
+      "args": ["run", "--directory", "/绝对路径/PatentAgent", "--frozen", "--extra", "mcp", "python", "mcp_server.py"],
       "env": {
         "MCP_INPUT_DIR": "/绝对路径/my_patents",
         "MCP_LOG_LEVEL": "WARNING"
@@ -215,8 +194,8 @@ HTTP 默认只允许本机。若确需绑定非回环地址，必须同时设置
   "servers": {
     "patent-agent": {
       "type": "stdio",
-      "command": "python3",
-      "args": ["/绝对路径/PatentAgent/mcp_server.py"],
+      "command": "uv",
+      "args": ["run", "--directory", "/绝对路径/PatentAgent", "--frozen", "--extra", "mcp", "python", "mcp_server.py"],
       "env": {
         "MCP_INPUT_DIR": "/绝对路径/my_patents",
         "MCP_LOG_LEVEL": "WARNING"
@@ -268,7 +247,7 @@ MCP 工具调用返回结构化 JSON `text` 数据，包含结果、口径、字
 可以使用 Python 脚本验证 MCP 服务器是否正常工作：
 
 ```bash
-python -m pytest tests/test_mcp_integration.py -v
+uv run --frozen --extra mcp python -m pytest tests/test_mcp_integration.py -v
 ```
 
 测试覆盖：服务器初始化、动态工具列表、工具调用、错误处理。
@@ -346,24 +325,11 @@ PatentAgent/
 
 ```bash
 uv lock --check
-uv run python -m pytest -q
-cd frontend && npm test -- --run && npm run build
+uv run --frozen --extra mcp python -m pytest -q
+(cd frontend && npm test -- --run && npm run build)
 ```
 
-`tests/fixtures/wos_golden/` 是固定的五年以上合成 WoS 数据集；核心工具均校验统一的
-`ToolExecutionEnvelope`、数据版本、字段覆盖、算法参数和执行指标。更新合成数据集运行
-`python scripts/generate_golden_wos_fixture.py`；更新工具金样必须显式运行
-`uv run python scripts/generate_tool_goldens.py` 并审查差异。GitHub Actions 的后端矩阵在
-Python 3.11/3.12/3.13 上运行完整测试；`contracts-lock-migrations-mcp` 在 Python 3.12
-执行锁文件检查、requirements 导出一致性、官方样例/契约/方法学校验及 MCP/供应商/可复现性回归；
-`performance-100k-baseline` 在 Python 3.13 执行 10 万条检索与工具基线；`frontend-node-20`
-在 Node 20 上执行 `npm ci`、前端测试和生产构建。上述检查全部通过后才满足合并门禁；`V*`
-标签只生成源码、前端产物与 SHA-256 校验和，不发布 PyPI。
-
-本轮前端国际化与算法审计的验证结果（2026-09-02）：前端测试 12 个文件、61 项通过；
-`npm run build` 通过；在 zh-CN/en-US 和 1440×900、768×1024、390×844、360×800
-视口下检查五个页面，语言切换、持久化、`document.documentElement.lang` 和窄屏布局均通过。
-后端未运行时不进行真实 API 联调。
+核心工具根据固定合成 WoS 数据检查数据版本、方法参数和指标。浏览器验收复用首页的无密钥流程。合并和发布检查、按变更触发的性能基准以及回退办法见[维护与发布说明](docs/development/reliability-and-release.md)。2026-09-02 的界面验证记录保存在[历史验证报告](docs/validation-report-v3.1.md)。
 
 ## 配置
 
@@ -418,8 +384,7 @@ Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，�
 - [项目与论文审计](docs/project-audit.md) — 数据质量、论文适用条件、优势/弱点和法律边界
 - [24 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
 - DII 基准数据状态 — 检索式、授权核验和导入审计方法（随专利数据目录提供，不包含在源码仓库中）
-- [软件说明书](软件说明书.txt) — 架构设计、功能详解、技术栈、版本历史
-- [操作指南](操作指南.txt) — 从零开始的手把手教程，含环境配置、工具使用、常见问题
+- [可靠性与发布维护说明](docs/development/reliability-and-release.md)
 - [导师演示流程](docs/mentor-demo-guide.md) — 从上传数据到生成可追溯 HTML 报告的完整演示脚本
 
 ## 作者

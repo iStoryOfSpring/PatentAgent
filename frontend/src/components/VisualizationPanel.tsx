@@ -86,7 +86,7 @@ function TrendRenderer({ result, fit, chartRef }: RendererProps) {
       ] },
     }],
   };
-  return <EChartCanvas ref={chartRef} option={option} fit={fit} />;
+  return <figure aria-label={`${dateLabel} · ${unitLabel}`}><EChartCanvas ref={chartRef} option={option} fit={fit} /></figure>;
 }
 
 function LifecycleRenderer({ result, fit, chartRef }: RendererProps) {

@@ -246,26 +246,7 @@ def parse_ops_xml(raw):
     if total>0 and not records:raise AcquisitionError("empty_page_for_nonempty_result")
     return total,records
 
-async def publish_dataset(container,store,source_root,dataset_id,name,import_id=""):
-    """One version registration path shared by uploads and acquisitions."""
-    repo=container.conversation_store
-    version=store.snapshot().version_id
-    existing=await repo.get_dataset_version(version)
-    if existing:return existing["id"],existing["dataset_id"],True
-    destination=(container.settings.data_root/".patentagent"/"datasets"/dataset_id/version/"source").resolve()
-    destination.parent.mkdir(parents=True,exist_ok=True)
-    if destination.exists():raise ValueError("dataset_destination_conflict")
-    source_root.rename(destination)
-    store._source_dir=str(destination);store._dataset_id_override=dataset_id;store._version_id_override=version
-    try:
-        await repo.upsert_dataset_snapshot({**store.snapshot().model_dump(mode="json"),"name":name,"storage_path":str(destination),"source_root":str(destination),"import_id":import_id,"import_report":store._import_report})
-    except BaseException:
-        # This exact directory was created by this publication; never remove siblings.
-        shutil.rmtree(destination)
-        raise
-    if container.dataset_runtime:container.dataset_runtime.register(store)
-    container.store=store
-    return version,dataset_id,False
+from patent_agent.application.dataset_publication import publish_dataset
 
 class AcquisitionService:
     def __init__(self,container,client_factory=OPSClient):

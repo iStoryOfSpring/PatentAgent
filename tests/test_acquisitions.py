@@ -229,8 +229,8 @@ def test_failed_database_publication_removes_only_its_created_directory(tmp_path
         (source/"records.jsonl").write_text(records[0].model_dump_json()+"\n")
         store=value.dataset_service.load(str(source),"canonical_jsonl")
         sibling=value.settings.data_root/".patentagent"/"datasets"/"dataset_preserved";sibling.mkdir(parents=True);(sibling/"keep").write_text("unrelated")
-        async def fail(_):raise RuntimeError("synthetic database failure")
-        monkeypatch.setattr(value.conversation_store,"upsert_dataset_snapshot",fail)
+        async def fail(*_):raise RuntimeError("synthetic database failure")
+        monkeypatch.setattr(value.conversation_store,"write_dataset_snapshot",fail)
         with pytest.raises(RuntimeError):await publish_dataset(value,store,source,"dataset_synthetic","test")
         assert (sibling/"keep").read_text()=="unrelated"
         assert not (value.settings.data_root/".patentagent"/"datasets"/"dataset_synthetic"/store.snapshot().version_id/"source").exists()

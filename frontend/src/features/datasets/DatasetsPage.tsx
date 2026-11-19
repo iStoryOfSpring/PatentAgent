@@ -27,22 +27,27 @@ export function DatasetsPage({ datasets, activeSessionId, activeVersionId, onCha
 
   useEffect(() => {
     if (!job || !["queued", "parsing"].includes(job.status)) return;
-    const timer = window.setInterval(async () => {
+    let active = true;
+    let timer: number;
+    const poll = async () => {
       try {
         const next = await fetchImport(job.id);
+        if (!active) return;
         setJob(next);
-        if (["completed", "failed"].includes(next.status)) {
-          window.clearInterval(timer);
+        if (["completed", "failed", "interrupted"].includes(next.status)) {
           setUploading(false);
           await onChanged();
+        } else {
+          timer = window.setTimeout(poll, 700);
         }
       } catch (error) {
-        window.clearInterval(timer);
+        if (!active) return;
         setUploading(false);
         onError((error as Error).message);
       }
-    }, 700);
-    return () => window.clearInterval(timer);
+    };
+    timer = window.setTimeout(poll, 700);
+    return () => { active = false; window.clearTimeout(timer); };
   }, [job?.id, job?.status]);
 
   const startUpload = async () => {

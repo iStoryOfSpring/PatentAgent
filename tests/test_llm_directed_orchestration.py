@@ -158,3 +158,30 @@ def test_followup_similarity_filter_does_not_repeat_previous_suggestion():
         {"text": "H01M 的年度占比是否持续上升？"},
     ], "继续分析", previous)
     assert [item["text"] for item in filtered] == ["H01M 的年度占比是否持续上升？"]
+
+
+def test_explicit_filing_question_preserves_counting_parameters():
+    class FilingModel(_ToolSelectingLLM):
+        async def chat(self, messages, tools=None, **kwargs):
+            response = await super().chat(messages, tools, **kwargs)
+            params = {"date_basis":"filing", "count_unit":"applications", "chart_type":"yearly"}
+            response.tool_calls[0]["arguments"] = params
+            response.raw_assistant_message["tool_calls"][0]["function"]["arguments"] = json.dumps(params)
+            return response
+
+    async def scenario():
+        from pathlib import Path
+        from patent_agent.application.services import DatasetImportService
+        fixture = Path(__file__).resolve().parents[1] / "samples" / "offline"
+        store = DatasetImportService().load(str(fixture), "google_patents_jsonl")
+        registry = ToolRegistry()
+        registry.register(TrendTool())
+        runner = PatentAgentOrchestrator(FilingModel(), registry, {})
+        session = Session(id="test", name="test", dataset_id="demo", created_at=pd.Timestamp.now().to_pydatetime())
+        events = [event async for event in runner.stream_query(
+            "按申请日统计申请数，按年分组", session, store, turn_id="filing-trend")]
+        step = next(event for event in events if event["type"] == "step" and event.get("result"))
+        metadata = step["result"]["result_metadata"]
+        assert (metadata["date_basis"], metadata["count_unit"]) == ("filing", "applications")
+        assert {key: value["unit_count"] for key, value in metadata["evidence_bins"].items()} == {"2018":1, "2019":1}
+    asyncio.run(scenario())

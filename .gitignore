@@ -70,3 +70,7 @@ data/chroma_db/
 
 # macOS extended attributes
 ._*
+
+# Local offline browser acceptance artifacts
+frontend/test-results/
+frontend/offline-service.log

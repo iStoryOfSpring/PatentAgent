@@ -710,6 +710,8 @@ export function httpStatusLabel(status: number, statusText?: string, locale: Loc
 }
 
 export function localizeErrorMessage(message: string, locale: Locale = "zh-CN"): string {
+  if (locale === "en-US" && message === "导入因服务重启中断，请重新上传") return "The service restarted during import. Upload the file again.";
+  if (locale === "en-US" && message === "导入记录与已保存版本不一致，请核查后重新上传") return "The import conflicts with stored version data. Review the saved files before uploading again.";
   const labels: Record<string, string> = {
     "client.network": "无法连接后端服务，请检查后端是否已启动。",
     "client.sse.invalidEvent": "服务器返回了无法解析的 SSE 事件",
