@@ -629,14 +629,27 @@ class ConversationStore:
         validation: dict[str, Any] | None = None,
         provenance: dict[str, Any] | None = None,
         metrics: dict[str, Any] | None = None,
+        review_source_id: str | None = None,
     ) -> str:
         cache_key = execution_cache_key(
             dataset_fingerprint, tool_name, parameters, algorithm_version,
         )
         clean_result = dict(result or {})
         clean_result.pop("chart_html", None)
+        from patent_agent.application.review_source import stamp
+        stamp(clean_result)
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA foreign_keys=ON")
+            if review_source_id:
+                await db.execute("BEGIN IMMEDIATE")
+                rows = await db.execute_fetchall(
+                    "SELECT 1 FROM sessions s JOIN tool_executions e ON e.session_id=s.id "
+                    "JOIN evidence_snapshots x ON x.execution_id=e.id WHERE s.id=? "
+                    "AND s.dataset_version_id=? AND e.id=? AND e.status='completed' AND x.stale=0",
+                    (session_id, (provenance or {}).get("dataset_version_id"), review_source_id),
+                )
+                if not rows:
+                    raise ValueError("source_execution_stale")
             await db.execute(
                 "INSERT OR REPLACE INTO tool_executions "
                 "(id,session_id,turn_id,tool_name,parameters_json,status,error,duration_ms,"
@@ -942,7 +955,7 @@ class ConversationStore:
             "session": session,
             "messages": [self._decode_row(row) for row in messages],
             "turns": [self._decode_row(row) for row in turns],
-            "tool_executions": [self._decode_row(row) for row in executions],
+            "tool_executions": [self._decode_review_evidence(row) for row in executions],
         }
 
     async def get_recent_messages(
@@ -971,12 +984,19 @@ class ConversationStore:
             )
         return [self._decode_row(row) for row in rows]
 
+    def _decode_review_evidence(self, row):
+        from patent_agent.application.review_source import stamp
+        record = self._decode_row(row)
+        result = record.get("result") or {}
+        stamp(result)
+        return record
+
     async def get_execution_evidence(self, execution_id: str):
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             cursor = await db.execute("SELECT e.*,s.result_json,s.stale FROM tool_executions e JOIN evidence_snapshots s ON s.execution_id=e.id WHERE e.id=?", (execution_id,))
             row = await cursor.fetchone()
-        return self._decode_row(row) if row else None
+        return self._decode_review_evidence(row) if row else None
 
     async def find_reusable(
         self, session_id: str, cache_key: str,

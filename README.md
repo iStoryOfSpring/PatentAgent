@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%20-%203.13-blue" alt="Python 3.11-3.13">
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Tools-24-orange" alt="Tools">
+  <img src="https://img.shields.io/badge/Tools-26-orange" alt="Tools">
   <img src="https://img.shields.io/badge/Version-3.1-lightgrey" alt="Version">
 </p>
 
@@ -56,7 +56,7 @@ MCP_INPUT_DIR=./my_patents PATENT_DATA_ROOT=./my_patents uv run --frozen --extra
 - **有界加载** — 受限线程并行解析 + 内容哈希校验的 Parquet 缓存；实际耗时随文件数量、记录体积和磁盘而变
 - **报告导出** — HTML 报告（含完整中文排版），CSV 数据导出
 - **MCP 协议支持** — 标准 MCP (Model Context Protocol) stdio/HTTP 服务器，Claude Code / VS Code / Cursor 可直接调用全部工具
-- **算法证据登记表** — 24 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
+- **算法证据登记表** — 26 个工具逐一登记算法 ID、版本、公式、字段门槛、论文来源与禁止结论
 - **统一文件导入** — WoS、Google Patents JSONL、USPTO grant XML/PFW JSON 统一进入规范化 PatentRecord，并返回字段覆盖、冲突与来源能力报告
 - **多语言检索 Beta** — 单次显式启用本地 MiniLM 与词法 RRF；失败会明确回退，不替代默认 TF-IDF 基线
 - **中英文界面** — 支持简体中文（zh-CN）与英文（en-US）即时切换；语言选择保存到浏览器本地存储，专利原文、用户输入、检索结果和 AI 内容保持原样
@@ -90,6 +90,8 @@ full-text XML 和 Patent File Wrapper JSON。EPO OPS 已实现需凭据的题录
 | `analyze_country_distribution` | 首个公开局分布（不等同同族市场覆盖） |
 | `analyze_co_network` | 申请人合作网络（交互式可拖拽） |
 | `analyze_tech_roadmap` | 默认年度技术主题时间轴；同族、优先权与引证覆盖门禁通过后附待复核路线 |
+| `audit_trend_robustness` | 核对同一日期轴上的年度公开文献数、申请数、专利族数与去尾年方向 |
+| `search_gap_counterevidence` | 按双轴原词、双语扩展与分类线索查找原文和公开号 |
 | `analyze_tech_matrix` | Derwent 摘要代理功效矩阵 + 低共现复核候选 |
 | `analyze_clustering` | TF-IDF 空间 K-means + silhouette 选 k + CC0.5 标题 |
 | `analyze_patent_valuation` | 当前数据集内相对工程评分；含权重敏感性与缺失影响（不是财务估值） |
@@ -271,7 +273,7 @@ Engine 层 (纯计算)
          ↕
 数据访问层 (Parquet 缓存 + 列投影)
          ↕
-知识库层 (24 工具算法证据登记表 + 决策模板)
+知识库层 (26 工具算法证据登记表 + 决策模板)
 ```
 
 ## 项目结构
@@ -305,7 +307,7 @@ PatentAgent/
 ├── storage/conversation_store.py # 会话、轮次与结构化证据（不保存 API Key/图表 HTML）
 ├── storage/provider_store.py     # 非敏感供应商配置与幂等 SQLite 迁移
 │   └── prompts.py
-├── tools/                 # Tool 层（24 个运行时注册工具）
+├── tools/                 # Tool 层（26 个运行时注册工具）
 ├── engine/                # 分析引擎层 (13个纯计算模块)
 ├── patent_mcp/            # MCP 服务器
 ├── mcp_server.py          # MCP stdio 入口
@@ -380,9 +382,9 @@ Web Agent 的正常流程由 LLM 第一轮直接选择最小必要工具集，�
 ## 文档
 
 - [V3.1 更新日志](CHANGELOG.md) — 当前版本的重要新增、变更、安全修复与兼容说明
-- [内部算法审计](docs/algorithm-audit.md) — 24 个运行时注册工具、29 个登记算法身份及其调用链、数据边界和未确认项
+- [内部算法审计](docs/algorithm-audit.md) — 历史审计覆盖的 24 个工具、29 个算法身份及其调用链、数据边界和未确认项
 - [项目与论文审计](docs/project-audit.md) — 数据质量、论文适用条件、优势/弱点和法律边界
-- [24 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
+- [26 工具算法证据矩阵](docs/tool-evidence-matrix.md) — 由 `knowledge/tool_evidence.json` 自动生成
 - DII 基准数据状态 — 检索式、授权核验和导入审计方法（随专利数据目录提供，不包含在源码仓库中）
 - [可靠性与发布维护说明](docs/development/reliability-and-release.md)
 - [导师演示流程](docs/mentor-demo-guide.md) — 从上传数据到生成可追溯 HTML 报告的完整演示脚本

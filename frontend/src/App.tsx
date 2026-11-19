@@ -645,7 +645,7 @@ export default function App() {
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="mx-auto max-w-[1120px] space-y-4 pb-8">
             {!hasUserConversation && capabilities.length > 0 && <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/70 p-5 shadow-sm"><div className="mb-4"><div className="text-xs font-semibold uppercase tracking-widest text-blue-600">{t("home.dispatcher")}</div><h1 className="mt-1 text-xl font-bold text-slate-900">{t("home.title")}</h1><p className="mt-1 text-sm text-slate-500">{t("home.subtitle")}</p></div><CapabilityCards capabilities={capabilities} onPrompt={choosePrompt} compact /></div>}
-            {messages.map(msg => <MessageBubble key={msg.id} message={msg} onRetry={step => handleQuickTool(step.tool, step.parameters || {})} onFollowup={(text, replyToTurnId) => handleSendMessage(text, replyToTurnId)} onResynthesize={handleResynthesize} />)}
+            {messages.map(msg => <MessageBubble key={msg.id} message={msg} onReview={handleQuickTool} onRetry={step => handleQuickTool(step.tool, step.parameters || {})} onFollowup={(text, replyToTurnId) => handleSendMessage(text, replyToTurnId)} onResynthesize={handleResynthesize} />)}
             <div ref={messagesEndRef} />
           </div>
         </div>

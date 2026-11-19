@@ -12,6 +12,8 @@ class LoadRequest(BaseModel):
 
 
 class ToolRequest(BaseModel):
+    source_execution_id: str | None = Field(default=None, max_length=160)
+    source_digest: str | None = Field(default=None, max_length=64)
     params: dict = Field(default_factory=dict)
     session_id: str | None = None
 

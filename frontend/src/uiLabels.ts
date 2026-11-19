@@ -9,6 +9,7 @@ import type { Locale } from "./i18n";
  */
 export const TOOL_LABELS: Record<string, string> = {
   get_dataset_summary: "数据总览",
+  audit_trend_robustness: "年度趋势稳健性", search_gap_counterevidence: "技术空白反证检索",
   analyze_patent_trend: "公开趋势",
   analyze_lifecycle: "生命周期阶段",
   analyze_ipc_distribution: "IPC 分类分布",
@@ -36,6 +37,7 @@ export const TOOL_LABELS: Record<string, string> = {
 
 const TOOL_LABELS_EN: Record<string, string> = {
   get_dataset_summary: "Dataset overview",
+  audit_trend_robustness: "Annual trend robustness", search_gap_counterevidence: "Gap counterevidence search",
   analyze_patent_trend: "Publication trend",
   analyze_lifecycle: "Lifecycle stage",
   analyze_ipc_distribution: "IPC distribution",
@@ -62,6 +64,7 @@ const TOOL_LABELS_EN: Record<string, string> = {
 };
 
 const PARAMETER_LABELS: Record<string, string> = {
+  technology:"技术手段", effect:"用途或功效", technology_terms:"技术同义词", effect_terms:"功效同义词", ipc_prefixes:"IPC 前缀", cpc_prefixes:"CPC 前缀", example_limit:"最多展示示例",
   date_basis: "统计日期", count_unit: "计数单位", synonym_expansion: "中英同义词扩展", cpc_filter: "CPC 筛选",
   query: "检索词",
   top_k: "返回数量",
@@ -712,6 +715,16 @@ export function httpStatusLabel(status: number, statusText?: string, locale: Loc
 export function localizeErrorMessage(message: string, locale: Locale = "zh-CN"): string {
   if (locale === "en-US" && message === "导入因服务重启中断，请重新上传") return "The service restarted during import. Upload the file again.";
   if (locale === "en-US" && message === "导入记录与已保存版本不一致，请核查后重新上传") return "The import conflicts with stored version data. Review the saved files before uploading again.";
+  const reviewErrors:Record<string,[string,string]> = {
+    source_execution_stale:["原执行已过期，请重新运行原分析。","Source execution is stale. Run the source analysis again."],
+    source_execution_unavailable:["当前会话无法读取该来源执行。","The source execution is unavailable in this session."],
+    source_dataset_changed:["会话数据版本或内容已改变，请重新分析。","The source dataset has changed. Run the source analysis again."],
+    source_result_changed:["来源结果摘要不一致，请重新分析。","The source result has changed. Run the source analysis again."],
+    source_execution_type_mismatch:["该来源执行不支持此次复核。","This review requires a different source analysis."],
+    source_filters_are_fixed:["从图表复核时沿用原筛选条件。","A chart review inherits its source filters."],
+    unknown_matrix_pair:["所选词对不在原矩阵或候选列表中。","The selected pair is absent from this matrix."],
+  };
+  if (reviewErrors[message]) return reviewErrors[message][locale === "en-US" ? 1 : 0];
   const labels: Record<string, string> = {
     "client.network": "无法连接后端服务，请检查后端是否已启动。",
     "client.sse.invalidEvent": "服务器返回了无法解析的 SSE 事件",

@@ -1,11 +1,13 @@
-# 24 工具算法证据矩阵
+# 26 工具算法证据矩阵
 
-> 由 `knowledge/tool_evidence.json` 自动生成；登记版本 `2026.09.01`。请勿手工维护本表。
+> 由 `knowledge/tool_evidence.json` 自动生成；登记版本 `2026.10.16`。请勿手工维护本表。
 
 | 工具 | algorithm_id / 版本 | 证据等级 | 公式或实现 | 字段门槛 | 来源 | 禁止结论 |
 |---|---|---|---|---|---|---|
-| `analyze_patent_trend` | `publication_count_trend` / `2.0` | `descriptive_statistic` | count(records) grouped by publication year/month | publication_date>=90% | — | application trend; technology decline; technology lifecycle |
-| `analyze_lifecycle` | `publication_growth_summary` / `2.0` | `engineering_screening` | annual publication count, cumulative count, year-over-year change | publication_date>=90% | — | S-curve lifecycle stage; decline stage; technology maturity |
+| `audit_trend_robustness` | `audit_trend_robustness` / `1.0` | `descriptive_statistic` | Compare annual earliest-date counts of publications, applications and known families across the same window; compare endpoint and non-tail direction. | patent_number>=100% | — | technology maturity; market growth |
+| `search_gap_counterevidence` | `search_gap_counterevidence` / `1.0` | `engineering_screening` | Same-document dual-axis literal match, declared bilingual expansions and classification leads; publication-level union with family coverage. | patent_number>=100% | — | market opportunity; novelty; freedom to operate |
+| `analyze_patent_trend` | `publication_count_trend` / `3.0.1` | `descriptive_statistic` | count real publication/application/family units at their earliest selected date, grouped by selected year/month | patent_number>=100% | — | technology decline; technology lifecycle |
+| `analyze_lifecycle` | `publication_growth_summary` / `2.0.1` | `engineering_screening` | annual publication count, cumulative count, year-over-year change | publication_date>=90% | — | S-curve lifecycle stage; decline stage; technology maturity |
 | `analyze_ipc_distribution` | `ipc_publication_matrix_assignment_count` / `2.1` | `descriptive_statistic` | count valid A-H IPC section assignments by publication year; optional patent or family deduplication | publication_date>=90%; ipc>=90% | — | exclusive technology share |
 | `generate_wordcloud` | `derwent_phrase_frequency` / `2.0` | `engineering_screening` | cleaned unigram/phrase document frequency with term frequency and document ratio diagnostics | title>=80% | Tseng et al. 2007, Information Processing & Management 43, 1216-1247 | paper-exact text mining pipeline; technology value |
 | `analyze_burst_terms` | `recent_document_frequency_growth` / `2.1` | `engineering_screening` | smoothed recent-vs-history document-frequency ratio with minimum support | publication_date>=90%; title>=80%; abstract>=80% | — | Kleinberg burst detection; validated emerging technology forecast |
@@ -26,7 +28,7 @@
 | `analyze_family_geography` | `separated_family_geography_counts` / `1.1` | `descriptive_statistic` | separate counts for priority origin, first publication office, family publication offices, designated states and authoritative active-right jurisdictions | patent_number>=90% | — | market coverage from PN; export intent; active right without authoritative status |
 | `audit_search_strategy` | `versioned_lexical_search_set_audit` / `1.1` | `engineering_screening` | version hashes, returned-set increments, removals, unique records, known-patent recovery and citation/family snowball candidates | patent_number>=90%; title>=80%; abstract>=80% | — | 100% recall; validated exhaustive prior-art search |
 | `analyze_legal_status` | `dated_authoritative_legal_status_composition` / `1.1` | `descriptive_statistic` | current source status composition separated from dated legal-event counts | legal_status>=80%; legal_status_as_of>=80%; jurisdiction>=80% | — | freedom to operate; non-infringement; validity opinion |
-| `monitor_patent_changes` | `versioned_patent_change_monitor` / `1.1` | `engineering_screening` | persisted strategy baseline set and selected record-field hashes compared to the current content fingerprint | patent_number>=90%; title>=80%; abstract>=80% | — | infringement alert; legal risk event; complete external change coverage |
-| `analyze_claim_elements` | `reversible_claim_element_draft` / `1.1` | `engineering_screening` | source claim dependency tree plus reversible punctuation/conjunction split and literal product-feature matching | claims_json>=80%; legal_status>=80% | — | infringement; doctrine of equivalents; invalidity; FTO opinion |
+| `monitor_patent_changes` | `versioned_patent_change_monitor` / `2.0` | `engineering_screening` | persisted strategy baseline set and selected record-field hashes compared to the current content fingerprint | patent_number>=90%; title>=80%; abstract>=80% | — | infringement alert; legal risk event; complete external change coverage |
+| `analyze_claim_elements` | `reversible_claim_element_draft` / `2.0` | `engineering_screening` | source claim dependency tree plus reversible punctuation/conjunction split and literal product-feature matching | claims_json>=80% | — | infringement; doctrine of equivalents; invalidity; FTO opinion |
 
 证据等级说明：`descriptive_statistic` 为直接描述统计；`paper_adapted` 只表示部分公式有论文依据且偏差已声明；`engineering_screening` 为工程代理。只有完成原数据/手算复现和适用条件核验后才能使用 `paper_exact`，当前登记表没有任何工具达到该等级。

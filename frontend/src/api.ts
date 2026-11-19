@@ -144,9 +144,10 @@ export function fetchSearchStatus(): Promise<SearchCapabilityStatus> {
 }
 
 export function runTool(name: string, params: Record<string, unknown> = {}, sessionId?: string): Promise<ToolResult> {
+  const { reviewSourceId, reviewDigest, ...toolParams } = params;
   return request<ToolResult>(`/tools/${name}`, {
     method: "POST",
-    body: JSON.stringify({ params, session_id: sessionId }),
+    body: JSON.stringify({ params:toolParams, session_id:sessionId, source_execution_id:reviewSourceId, source_digest:reviewDigest }),
   });
 }
 

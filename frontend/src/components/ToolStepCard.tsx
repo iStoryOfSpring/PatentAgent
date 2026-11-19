@@ -1,3 +1,4 @@
+import type { RunReview } from "./ReviewControls";
 import { lazy, Suspense, useState } from "react";
 import { Loader2, CheckCircle2, XCircle, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import type { ToolStep } from "../types";
@@ -8,7 +9,7 @@ const VisualizationPanel = lazy(() => import("./VisualizationPanel").then(module
   default: module.VisualizationPanel,
 })));
 
-export function ToolStepCard({ step, onRetry }: { step: ToolStep; onRetry?: (step: ToolStep) => void }) {
+export function ToolStepCard({ step, onRetry, onReview }: { step: ToolStep; onReview?: RunReview; onRetry?: (step: ToolStep) => void }) {
   const [expanded, setExpanded] = useState(true);
   const [warningsExpanded, setWarningsExpanded] = useState(false);
   const { locale, t } = useI18n();
@@ -65,7 +66,7 @@ export function ToolStepCard({ step, onRetry }: { step: ToolStep; onRetry?: (ste
       )}
       {expanded && (step.result || step.chart_html) && (
         <Suspense fallback={<div className="p-6 text-xs text-slate-500">{t("tool.loadingVisualization")}</div>}>
-          <VisualizationPanel result={step.result} chartHtml={step.chart_html} toolName={step.tool} executionId={step.execution_id}/>
+          <VisualizationPanel result={step.result} chartHtml={step.chart_html} toolName={step.tool} executionId={step.execution_id} onReview={onReview}/>
         </Suspense>
       )}
       {expanded && step.error && (

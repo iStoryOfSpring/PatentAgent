@@ -8,6 +8,41 @@
     "engineering_screening": "Engineering proxy; not the cited paper's full method"
   },
   "tools": {
+  "audit_trend_robustness": {
+    "algorithm_id": "audit_trend_robustness",
+    "version": "1.0",
+    "evidence_type": "descriptive_statistic",
+    "formula": "Compare annual earliest-date counts of publications, applications and known families across the same window; compare endpoint and non-tail direction.",
+    "fields": {
+      "patent_number": 1.0
+    },
+    "sources": [],
+    "conditions": [
+      "Selected dataset version and explicit scope"
+    ],
+    "prohibited_claims": [
+      "technology maturity",
+      "market growth"
+    ]
+  },
+  "search_gap_counterevidence": {
+    "algorithm_id": "search_gap_counterevidence",
+    "version": "1.0",
+    "evidence_type": "engineering_screening",
+    "formula": "Same-document dual-axis literal match, declared bilingual expansions and classification leads; publication-level union with family coverage.",
+    "fields": {
+      "patent_number": 1.0
+    },
+    "sources": [],
+    "conditions": [
+      "Selected dataset version and explicit scope"
+    ],
+    "prohibited_claims": [
+      "market opportunity",
+      "novelty",
+      "freedom to operate"
+    ]
+  },
     "analyze_patent_trend": {
       "algorithm_id": "publication_count_trend",
       "version": "3.0.1",

@@ -2,7 +2,7 @@
 
 Tests the full MCP lifecycle:
   1. initialize → verify server capabilities
-  2. tools/list → verify all 24 tools and algorithm evidence descriptions
+  2. tools/list → verify all 26 tools and algorithm evidence descriptions
   3. tools/call → verify get_dataset_summary works
   4. tools/call → verify error handling for unknown tool
 """
@@ -114,14 +114,14 @@ CR  US10123456B2 2018
             "id": 2,
         })
         tools = resp["result"]["tools"]
-        self.assertEqual(len(tools), 24)
+        self.assertEqual(len(tools), 26)
         for t in tools:
             self.assertIn("name", t)
             self.assertEqual(t["inputSchema"]["type"], "object")
             self.assertIn("算法:", t["description"])
             self.assertIn("禁止结论:", t["description"])
         names = {t["name"] for t in tools}
-        for expected in ["get_dataset_summary", "analyze_patent_trend", "analyze_lifecycle"]:
+        for expected in ["get_dataset_summary", "analyze_patent_trend", "analyze_lifecycle", "audit_trend_robustness", "search_gap_counterevidence"]:
             self.assertIn(expected, names)
 
     def test_03_call_dataset_summary(self):

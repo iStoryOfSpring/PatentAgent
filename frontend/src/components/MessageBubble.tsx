@@ -1,3 +1,4 @@
+import type { RunReview } from "./ReviewControls";
 import { User, Bot, Lightbulb, Loader2, RefreshCw, AlertTriangle, ListChecks } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { ToolStepCard } from "./ToolStepCard";
@@ -6,8 +7,9 @@ import { normalizeAssistantContent } from "../finalAnswer";
 import { intentLabel, localizeErrorMessage, recommendationCategoryLabel, toolLabel, toolOrTextLabel } from "../uiLabels";
 import { useI18n } from "../i18n";
 
-export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: {
+export function MessageBubble({ message, onRetry, onReview, onFollowup, onResynthesize }: {
   message: Message;
+  onReview?: RunReview;
   onRetry?: (step: ToolStep) => void;
   onFollowup?: (text: string, replyToTurnId?: string) => void;
   onResynthesize?: (turnId: string) => void;
@@ -93,7 +95,7 @@ export function MessageBubble({ message, onRetry, onFollowup, onResynthesize }: 
         {message.steps && message.steps.length > 0 && (
           <div className="mb-3">
             {message.steps.map(step => (
-              <ToolStepCard key={step.id} step={step} onRetry={onRetry} />
+              <ToolStepCard key={step.id} step={step} onRetry={onRetry} onReview={onReview} />
             ))}
           </div>
         )}

@@ -1,3 +1,4 @@
+import { ReviewControls, ReviewResults, type RunReview } from "./ReviewControls";
 import { ExecutionEvidence } from "./ExecutionEvidence";
 import { useMemo, useRef, useState } from "react";
 import type { ComponentType } from "react";
@@ -15,6 +16,7 @@ import { useI18n, type TranslationKey } from "../i18n";
 type ResultRecord = Record<string, unknown>;
 
 interface RendererProps {
+  reviewCell?: (technology:string, effect:string) => void;
   result: ResultRecord;
   fit: boolean;
   chartRef: React.RefObject<EChartCanvasHandle | null>;
@@ -308,7 +310,7 @@ function PatentDetailsRenderer({ result }: RendererProps) {
   </details>)}</div>;
 }
 
-function TechMatrixRenderer({ result }: RendererProps) {
+function TechMatrixRenderer({ result, reviewCell }: RendererProps) {
   const { t } = useI18n();
   const functions = strings(result.functions).slice(0, 15);
   const effects = strings(result.effects).slice(0, 10);
@@ -316,7 +318,7 @@ function TechMatrixRenderer({ result }: RendererProps) {
   const max = Math.max(1, ...matrix.flat().map(Number).filter(Number.isFinite));
   const gaps = list(result.gap_recommendations).slice(0, 10);
   return <div className="grid xl:grid-cols-[minmax(720px,1fr)_300px] gap-5 p-4">
-    <div className="overflow-x-auto"><table className="min-w-[720px] w-full text-xs border-separate border-spacing-1"><thead><tr><th className="sticky left-0 bg-white"/>{effects.map(e => <th key={e} className="p-2 text-slate-600 font-medium max-w-24 truncate" title={e}>{e}</th>)}</tr></thead><tbody>{functions.map((f, i) => <tr key={f}><th className="sticky left-0 bg-white p-2 text-left text-slate-700 font-medium max-w-36 truncate" title={f}>{f}</th>{effects.map((e, j) => { const value = Number(matrix[i]?.[j]) || 0; const alpha = .08 + .82 * value / max; return <td key={e} title={t("visual.matrixCellTitle", { function: f, effect: e, count: value })} className="h-10 text-center rounded text-slate-900" style={{ backgroundColor: `rgba(37,99,235,${alpha})`, color: alpha > .55 ? "white" : "#0f172a" }}>{value}</td>; })}</tr>)}</tbody></table></div>
+    <div className="overflow-x-auto"><table className="min-w-[720px] w-full text-xs border-separate border-spacing-1"><thead><tr><th className="sticky left-0 bg-white"/>{effects.map(e => <th key={e} className="p-2 text-slate-600 font-medium max-w-24 truncate" title={e}>{e}</th>)}</tr></thead><tbody>{functions.map((f, i) => <tr key={f}><th className="sticky left-0 bg-white p-2 text-left text-slate-700 font-medium max-w-36 truncate" title={f}>{f}</th>{effects.map((e, j) => { const value = Number(matrix[i]?.[j]) || 0; const alpha = .08 + .82 * value / max; return <td key={e} title={t("visual.matrixCellTitle", { function: f, effect: e, count: value })} className="h-10 text-center rounded text-slate-900" style={{ backgroundColor: `rgba(37,99,235,${alpha})`, color: alpha > .55 ? "white" : "#0f172a" }}>{reviewCell ? <button type="button" className="h-full w-full" aria-label={`${f} × ${e} (${value})`} onClick={()=>reviewCell(f,e)}>{value}</button> : value}</td>; })}</tr>)}</tbody></table></div>
     <div><h4 className="font-semibold text-slate-800 mb-2">{t("visual.lowCooccurrence")}</h4><div className="space-y-2">{gaps.map((g, i) => <div key={i} className="rounded-lg bg-amber-50 border border-amber-100 p-2 text-xs"><div className="font-medium text-amber-900">{String(g.function)} × {String(g.effect)}</div><div className="text-amber-700 mt-1">{t("visual.matrixGap", { count: Number(g.patent_count) || 0 })}</div></div>)}</div></div>
   </div>;
 }
@@ -438,6 +440,8 @@ function ClaimReviewRenderer({ result }: RendererProps) {
 }
 
 const visualizationRegistry: Record<string, ComponentType<RendererProps>> = {
+  trend_robustness: ReviewResults,
+  gap_counterevidence: ReviewResults,
   monthly_trend: TrendRenderer,
   yearly_trend: TrendRenderer,
   s_curve: LifecycleRenderer,
@@ -466,7 +470,7 @@ const visualizationRegistry: Record<string, ComponentType<RendererProps>> = {
   claim_elements: ClaimReviewRenderer,
 };
 
-export function VisualizationPanel({ result, chartHtml, toolName, executionId }: { result?: ResultRecord | null; chartHtml?: string | null; toolName: string; executionId?: string }) {
+export function VisualizationPanel({ result, chartHtml, toolName, executionId, onReview }: { result?: ResultRecord | null; chartHtml?: string | null; toolName: string; executionId?: string; onReview?: RunReview }) {
   const { t } = useI18n();
   const [view, setView] = useState<"visual" | "data">("visual");
   const [fit, setFit] = useState(false);
@@ -500,9 +504,10 @@ export function VisualizationPanel({ result, chartHtml, toolName, executionId }:
         <ToolbarButton onClick={() => setFullscreen(v => !v)} icon={fullscreen ? <Minimize2 className="w-3.5 h-3.5"/> : <Expand className="w-3.5 h-3.5"/>}>{fullscreen ? t("visual.exitFullscreen") : t("visual.fullscreen")}</ToolbarButton>
       </div>
     </div>
+    {result && executionId && onReview && <ReviewControls key={executionId} result={result} executionId={executionId} onRun={onReview}/>}
     {result && ["monthly_trend","yearly_trend"].includes(resultType) && executionId && <ExecutionEvidence executionId={executionId} bins={Object.keys((result.result_metadata as ResultRecord)?.evidence_bins || {})}/>}
     <div className={fullscreen ? "flex-1 overflow-auto p-4" : "overflow-hidden"}>
-      {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef}/> : <EmptyState title={t("visual.legacyTitle")} text={t("visual.legacyDescription")}/>}
+      {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef} reviewCell={executionId && onReview && (result.result_metadata as ResultRecord)?.review_digest ? (technology,effect)=>onReview("search_gap_counterevidence",{technology,effect,reviewSourceId:executionId,reviewDigest:(result.result_metadata as ResultRecord).review_digest}) : undefined}/> : <EmptyState title={t("visual.legacyTitle")} text={t("visual.legacyDescription")}/>}
     </div>
   </div>;
 }

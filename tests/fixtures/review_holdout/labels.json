@@ -1,0 +1,15 @@
+{
+  "task": "Near-infrared sorting for textile recycling (synthetic assessor labels)",
+  "relevance": {
+    "DEMO-01-A1": true,
+    "DEMO-02-A1": true,
+    "DEMO-03-A1": true,
+    "DEMO-04-A1": true,
+    "DEMO-05-A1": false,
+    "DEMO-06-A1": true,
+    "DEMO-07-A1": false,
+    "DEMO-08-A1": false,
+    "DEMO-09-A1": false,
+    "DEMO-10-A1": false
+  }
+}

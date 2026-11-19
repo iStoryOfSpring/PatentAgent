@@ -26,7 +26,7 @@ CAPABILITY_GROUPS = [
     {
         "id": "technology_landscape", "name": "数据与技术态势", "icon": "chart",
         "description": "分析公开趋势、IPC 构成、增长阶段和首个公开局分布。",
-        "tool_names": ["get_dataset_summary", "analyze_patent_trend", "analyze_lifecycle", "analyze_ipc_distribution", "analyze_country_distribution"],
+        "tool_names": ["get_dataset_summary", "analyze_patent_trend", "audit_trend_robustness", "analyze_lifecycle", "analyze_ipc_distribution", "analyze_country_distribution"],
         "prompts": ["概括这个数据集的技术态势", "分析近五年的专利公开趋势"],
     },
     {
@@ -50,7 +50,7 @@ CAPABILITY_GROUPS = [
     {
         "id": "value_opportunity", "name": "价值与机会筛查", "icon": "target",
         "description": "进行数据集内相对价值筛查和代理功效矩阵分析。",
-        "tool_names": ["analyze_patent_valuation", "analyze_tech_matrix"],
+        "tool_names": ["analyze_patent_valuation", "analyze_tech_matrix", "search_gap_counterevidence"],
         "prompts": ["筛选值得进一步人工复核的专利", "分析技术手段与用途效果的低共现组合"],
     },
     {
@@ -143,6 +143,17 @@ async def run_tool(
         tool = tool_registry.get_tool(tool_name)
     except KeyError:
         raise HTTPException(404, f"Unknown tool '{tool_name}'. Available: {tool_registry.get_all_names()}")
+    params = req.params
+    source_info = None
+    if req.source_execution_id or req.source_digest:
+        from patent_agent.application.review_source import bind_review
+        if not container.conversation_store or not req.source_execution_id:
+            raise HTTPException(409, "source_execution_unavailable")
+        execution = await container.conversation_store.get_execution_evidence(req.source_execution_id)
+        try:
+            params, source_info = bind_review(tool_name, execution, req.session_id, dataset.snapshot(), req.source_digest, params)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
     try:
         async with asyncio.timeout(container.settings.max_tool_queue_wait_seconds):
             await container.tool_semaphore.acquire()
@@ -151,7 +162,7 @@ async def run_tool(
     try:
         service = container.tool_execution_service or ToolExecutionService()
         container.tool_execution_service = service
-        result = await service.run_tool(tool, dataset, req.params)
+        result = await service.run_tool(tool, dataset, params)
     except PermissionError as exc:
         raise HTTPException(403, str(exc)) from exc
     except ValueError as exc:
@@ -166,12 +177,18 @@ async def run_tool(
             item.model_dump() if hasattr(item, "model_dump") else item for item in result
         ]}
     payload = result.model_dump(exclude={"chart_html"})
+    if source_info:
+        payload["result_metadata"]["review_source"] = source_info
     if not req.session_id:
         return payload
     if container.conversation_store is None:
         raise HTTPException(503, "会话存储尚未初始化")
     repo = container.conversation_store
     fingerprint = dataset.dataset_fingerprint()
+    if source_info:
+        current = await repo.get_session(req.session_id)
+        if current.get("dataset_version_id") != dataset.snapshot().version_id:
+            raise HTTPException(409, "source_dataset_changed")
     await repo.ensure_session(
         req.session_id, fingerprint,
         dataset_version_id=dataset.snapshot().version_id,
@@ -183,14 +200,21 @@ async def run_tool(
     )
     execution_id = f"quick_{tool_name}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
     metadata = payload.get("result_metadata", {})
-    await repo.record_execution(
-        req.session_id, turn_id, execution_id, tool_name, req.params,
-        "completed", payload,
-        duration_ms=float(metadata.get("elapsed_ms", 0) or 0),
-        algorithm_version=str(metadata.get("algorithm_version", "")),
-        dataset_fingerprint=fingerprint,
-        provenance=payload.get("provenance", {}), metrics=payload.get("metrics", {}),
-    )
+    try:
+        await repo.record_execution(
+            req.session_id, turn_id, execution_id, tool_name, params,
+            "completed", payload,
+            duration_ms=float(metadata.get("elapsed_ms", 0) or 0),
+            algorithm_version=str(metadata.get("algorithm_version", "")),
+            dataset_fingerprint=fingerprint,
+            review_source_id=req.source_execution_id,
+            provenance=payload.get("provenance", {}), metrics=payload.get("metrics", {}),
+        )
+    except ValueError as exc:
+        if str(exc) != "source_execution_stale":
+            raise
+        await repo.finish_turn(req.session_id, turn_id, "", status="failed", error=str(exc))
+        raise HTTPException(409, str(exc)) from exc
     await repo.finish_turn(
         req.session_id, turn_id, payload.get("summary") or f"{tool_name} 已完成。",
         metadata={"origin": "quick_tool", "execution_id": execution_id},

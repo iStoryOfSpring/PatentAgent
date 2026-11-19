@@ -66,6 +66,8 @@ _TOOL_COST_WEIGHTS: dict[str, int] = {
 _TOOL_RESULT_FIELDS: dict[str, list[str]] = {
     "get_dataset_summary": ["total_patents", "year_range", "top_applicants", "field_coverage"],
     "analyze_patent_trend": ["data(year_month/year,count)", "summary", "warnings"],
+    "audit_trend_robustness": ["years","data(unit,annual_counts,direction)","tail_coverage","examples","verdict"],
+    "search_gap_counterevidence": ["data(stage,hits,new,overlap,candidates)","reviewed_records","known_families","unique_hits"],
     "analyze_lifecycle": ["years", "counts", "cumulative", "fitted", "params"],
     "analyze_ipc_distribution": ["years", "sections", "matrix"],
     "generate_wordcloud": ["data(word,count)"],
@@ -265,7 +267,7 @@ class Tool(ABC):
         clean = self.validate_params(params)
         scope = AnalysisScope.model_validate(clean.get("scope", {}))
         filter_scope = scope
-        if self.name == "analyze_patent_trend":
+        if self.name in {"analyze_patent_trend", "audit_trend_robustness"}:
             clean["year_start"] = clean.get("year_start", scope.year_start)
             clean["year_end"] = clean.get("year_end", scope.year_end)
             filter_scope = scope.model_copy(update={"year_start":None,"year_end":None})

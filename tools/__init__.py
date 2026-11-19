@@ -16,6 +16,7 @@ import tools.tech_matrix_tool # noqa: E402, F401  # Phase 6
 import tools.clustering_tool  # noqa: E402, F401  # Phase 6
 import tools.valuation_tool   # noqa: E402, F401  # Phase 6
 import tools.competitor_evolution_tool  # noqa: E402, F401  # Phase 7
+import tools.review_tools  # noqa: E402, F401
 import tools.advanced_tools  # noqa: E402, F401  # Auditable advanced capabilities
 
 __all__ = ["Tool", "ToolRegistry", "tool_registry"]
