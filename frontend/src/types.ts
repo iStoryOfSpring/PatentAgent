@@ -163,6 +163,7 @@ export interface SourceCapabilities {
 }
 
 export interface ImportReport {
+  application_evidence_count?: number;
   source_formats: string[];
   files_seen: number;
   records_expected: number;
@@ -507,4 +508,21 @@ export interface Message {
   clarification?: { turnId: string; missingFields: string[]; allowDefaults: boolean };
   canResynthesize?: boolean;
   plan?: { steps: Record<string, unknown>[]; costWeight?: number };
+}
+
+export interface SourceDefinition {
+  id: string; name: string; documentation_url: string; documentation_verified: boolean;
+  authorization_status: string; invocation_status: string; enabled: boolean;
+  capabilities: string[]; limitations: string[];
+}
+export interface AcquisitionRequest { source_id: string; query: string; limit: number; name: string; dataset_id?: string; acquisition_id?: string; confirmation_token?: string; }
+export interface AcquisitionStatus {
+  id: string; state: string; request: AcquisitionRequest; expires_at: string;
+  confirmation_token?: string; outbound_host?: string; pages?: number; record_count?: number;
+  total_matched?: number; matched_set_complete?: boolean; error?: string; dataset_version_id?: string;
+  field_status?: Record<string,string>; budget?: Record<string,number>;
+}
+export interface ExecutionRecordPage {
+  execution_id:string; bin:string; date_basis:string; count_unit:string; total_units:number; offset:number; limit:number; dataset_version_id:string;
+  groups: Array<{unit_id:string;date:string;publication_numbers:string[];members:Array<{patent_number:string;title:string;language:string;kind_code:string;publication_date:string;dataset_version_id:string;provenance:string}>}>;
 }

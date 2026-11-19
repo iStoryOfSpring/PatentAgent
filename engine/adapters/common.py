@@ -71,7 +71,7 @@ def stable_unique(values: Iterable[Any]) -> list[str]:
 def record_merge_key(record: PatentRecord) -> str:
     application = normalized_application_number(record.application_number)
     publication = record.normalized_patent_number or normalized_document_number(record.patent_number)
-    return f"application:{application}" if application else f"publication:{publication}"
+    return f"publication:{publication}" if publication else f"evidence:{application}:{record.source_record_id}"
 
 
 _SOURCE_PRIORITY = {
@@ -96,6 +96,10 @@ def merge_patent_records(records: Iterable[PatentRecord]) -> tuple[list[PatentRe
     """
     grouped: dict[str, list[PatentRecord]] = {}
     for record in records:
+        if record.legal_status:
+            record.field_provenance.append(FieldProvenance(field_name="legal_status",source=_source_name(record),
+                source_record_id=record.source_record_id,jurisdiction=record.jurisdiction,
+                as_of=record.legal_status_as_of,value=record.legal_status))
         grouped.setdefault(record_merge_key(record), []).append(record)
 
     merged: list[PatentRecord] = []
@@ -121,7 +125,7 @@ def _merge_into(target: PatentRecord, source: PatentRecord) -> None:
     scalar_fields = (
         "application_number", "title", "abstract", "language", "publication_date",
         "filing_date", "grant_date", "priority_date", "description", "family_id",
-        "legal_status", "legal_status_as_of", "jurisdiction", "kind_code", "data_as_of",
+        "jurisdiction", "kind_code", "data_as_of", "claims_source", "claims_structure_status",
     )
     for field in scalar_fields:
         current = getattr(target, field)
@@ -138,6 +142,20 @@ def _merge_into(target: PatentRecord, source: PatentRecord) -> None:
                 kept_source=target_name, rejected_source=source_name,
             ))
 
+    # Legal assertions travel together with their effective date; events never imply current status.
+    if source.legal_status:
+        incoming_newer = bool(source.legal_status_as_of) and (not target.legal_status_as_of or source.legal_status_as_of > target.legal_status_as_of)
+        if target.legal_status and source.legal_status != target.legal_status:
+            target.field_conflicts.append(FieldConflict(field_name="legal_status",
+                kept_value=source.legal_status if incoming_newer else target.legal_status,
+                rejected_value=target.legal_status if incoming_newer else source.legal_status,
+                kept_source=source_name if incoming_newer else target_name,
+                rejected_source=target_name if incoming_newer else source_name))
+        if not target.legal_status or incoming_newer:
+            target.legal_status, target.legal_status_as_of = source.legal_status, source.legal_status_as_of
+            target.field_provenance.append(FieldProvenance(field_name="legal_status", source=source_name,
+                source_record_id=source.source_record_id, jurisdiction=source.jurisdiction, as_of=source.legal_status_as_of, value=source.legal_status))
+
     list_fields = (
         "publication_numbers", "applicants", "inventors", "ipc_codes", "cpc_codes",
         "priority_numbers", "forward_citations", "backward_citations",
@@ -149,6 +167,7 @@ def _merge_into(target: PatentRecord, source: PatentRecord) -> None:
     keyed_lists = (
         ("localized_titles", lambda item: (item.language, item.text)),
         ("localized_abstracts", lambda item: (item.language, item.text)),
+        ("raw_claims", lambda item: (item.language, item.text)),
         ("claims", lambda item: (item.language, item.number, item.text)),
         ("legal_events", lambda item: (item.event_date, item.event_code, item.description)),
         ("classifications", lambda item: (item.scheme, item.code)),

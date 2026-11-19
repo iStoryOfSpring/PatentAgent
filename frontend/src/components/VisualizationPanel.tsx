@@ -1,3 +1,4 @@
+import { ExecutionEvidence } from "./ExecutionEvidence";
 import { useMemo, useRef, useState } from "react";
 import type { ComponentType } from "react";
 import type { EChartsCoreOption as EChartsOption } from "echarts/core";
@@ -9,7 +10,7 @@ import { EChartCanvas, type EChartCanvasHandle } from "./EChartCanvas";
 import {
   fieldLabel, formatDisplayJson, formatDisplayValue, metricLabel,
 } from "../uiLabels";
-import { useI18n } from "../i18n";
+import { useI18n, type TranslationKey } from "../i18n";
 
 type ResultRecord = Record<string, unknown>;
 
@@ -62,18 +63,21 @@ function TrendRenderer({ result, fit, chartRef }: RendererProps) {
   const monthly = result.result_type === "monthly_trend";
   const labels = data.map(d => String(d.year_month ?? d.year ?? ""));
   const values = data.map(d => Number(d.count) || 0);
+  const metadata=(result.result_metadata || {}) as ResultRecord;
+  const unitLabel=t(("unit."+String(metadata.count_unit || "publications")) as TranslationKey);
+  const dateLabel=t(("date."+String(metadata.date_basis || "publication")) as TranslationKey);
   const latest = values.length - 1;
   const option: EChartsOption = {
-    ...baseOption(monthly ? t("visual.monthlyPublications") : t("visual.yearlyPublications")),
+    ...baseOption(`${dateLabel} · ${unitLabel}`),
     grid: { left: 74, right: 34, top: 78, bottom: labels.length > 24 ? 86 : 58 },
     xAxis: { type: "category", data: labels, boundaryGap: false, axisLine, axisLabel: { ...axisLabel, interval: monthly ? 5 : 0 }, axisTick: { show: false } },
-    yAxis: { type: "value", name: t("visual.publicationCount"), nameTextStyle: axisLabel, axisLine: { show: false }, axisLabel, splitLine },
+    yAxis: { type: "value", name: unitLabel, nameTextStyle: axisLabel, axisLine: { show: false }, axisLabel, splitLine },
     dataZoom: labels.length > 24 ? [
       { type: "inside", start: 0, end: 100 },
       { type: "slider", height: 20, bottom: 20, borderColor: "#e2e8f0", fillerColor: "rgba(37,99,235,.12)" },
     ] : undefined,
     series: [{
-      name: t("visual.publicationCount"), type: "line", data: values, smooth: 0.25, showSymbol: values.length <= 18,
+      name: unitLabel, type: "line", data: values, smooth: 0.25, showSymbol: values.length <= 18,
       symbolSize: 7, lineStyle: { width: 3, color: "#2563eb" }, itemStyle: { color: "#2563eb" },
       areaStyle: { color: "rgba(37,99,235,.10)" }, label: { show: values.length <= 12, position: "top", color: "#475569" },
       markPoint: { symbolSize: 48, label: { fontSize: 10 }, data: [
@@ -82,7 +86,7 @@ function TrendRenderer({ result, fit, chartRef }: RendererProps) {
       ] },
     }],
   };
-  return <EChartCanvas ref={chartRef} option={option} fit={fit} />;
+  return <figure aria-label={`${dateLabel} · ${unitLabel}`}><EChartCanvas ref={chartRef} option={option} fit={fit} /></figure>;
 }
 
 function LifecycleRenderer({ result, fit, chartRef }: RendererProps) {
@@ -300,7 +304,7 @@ function PatentDetailsRenderer({ result }: RendererProps) {
   if (!patents.length) return <EmptyState title={t("visual.noDetails")} text={t("visual.noDetailsDescription")} />;
   return <div className="p-4 space-y-2">{patents.map((patent, i) => <details key={i} open={i === 0} className="border border-slate-200 rounded-xl bg-white overflow-hidden">
     <summary className="cursor-pointer px-4 py-3 font-medium text-slate-800 bg-slate-50"><span className="font-mono text-blue-700 mr-2">{String(patent.patent_number || "")}</span>{String(patent.title || "")}</summary>
-    <div className="p-4 grid gap-3 text-sm text-slate-600"><p>{String(patent.abstract || t("visual.unspecifiedAbstract"))}</p><SimpleTable rows={[{ applicants: Array.isArray(patent.applicants) ? strings(patent.applicants).join("；") : patent.applicants, publication_date: patent.publication_date, legal_status: patent.legal_status || t("visual.unavailable"), backward_citations: Array.isArray(patent.backward_citations) ? patent.backward_citations.length : 0 }]} labels={{ applicants: fieldLabel("applicants", locale), publication_date: fieldLabel("publication_date", locale), legal_status: fieldLabel("legal_status", locale), backward_citations: fieldLabel("backward_citations", locale) }}/></div>
+    <div className="p-4 grid gap-3 text-sm text-slate-600"><p>{t("claims.structure")}: {String(patent.claims_structure_status || "unknown")} · {String(patent.claims_source || "unknown")} · {String(patent.language || "und")} · {String(patent.kind_code || "")}</p>{list(patent.raw_claims).map((claim,index)=><details key={index}><summary>{t("claims.raw")} · {String(claim.language || "und")}</summary><p className="whitespace-pre-wrap">{String(claim.text || "")}</p></details>)}<p>{String(patent.abstract || t("visual.unspecifiedAbstract"))}</p><SimpleTable rows={[{ applicants: Array.isArray(patent.applicants) ? strings(patent.applicants).join("；") : patent.applicants, publication_date: patent.publication_date, legal_status: patent.legal_status || t("visual.unavailable"), backward_citations: Array.isArray(patent.backward_citations) ? patent.backward_citations.length : 0 }]} labels={{ applicants: fieldLabel("applicants", locale), publication_date: fieldLabel("publication_date", locale), legal_status: fieldLabel("legal_status", locale), backward_citations: fieldLabel("backward_citations", locale) }}/></div>
   </details>)}</div>;
 }
 
@@ -462,7 +466,7 @@ const visualizationRegistry: Record<string, ComponentType<RendererProps>> = {
   claim_elements: ClaimReviewRenderer,
 };
 
-export function VisualizationPanel({ result, chartHtml, toolName }: { result?: ResultRecord | null; chartHtml?: string | null; toolName: string }) {
+export function VisualizationPanel({ result, chartHtml, toolName, executionId }: { result?: ResultRecord | null; chartHtml?: string | null; toolName: string; executionId?: string }) {
   const { t } = useI18n();
   const [view, setView] = useState<"visual" | "data">("visual");
   const [fit, setFit] = useState(false);
@@ -496,6 +500,7 @@ export function VisualizationPanel({ result, chartHtml, toolName }: { result?: R
         <ToolbarButton onClick={() => setFullscreen(v => !v)} icon={fullscreen ? <Minimize2 className="w-3.5 h-3.5"/> : <Expand className="w-3.5 h-3.5"/>}>{fullscreen ? t("visual.exitFullscreen") : t("visual.fullscreen")}</ToolbarButton>
       </div>
     </div>
+    {result && ["monthly_trend","yearly_trend"].includes(resultType) && executionId && <ExecutionEvidence executionId={executionId} bins={Object.keys((result.result_metadata as ResultRecord)?.evidence_bins || {})}/>}
     <div className={fullscreen ? "flex-1 overflow-auto p-4" : "overflow-hidden"}>
       {view === "data" ? <ResultDataView result={result || {}}/> : hasStructured && result ? <Renderer result={result} fit={fit || fullscreen} chartRef={chartRef}/> : <EmptyState title={t("visual.legacyTitle")} text={t("visual.legacyDescription")}/>}
     </div>

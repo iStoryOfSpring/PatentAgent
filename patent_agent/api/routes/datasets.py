@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 
-from patent_agent.api.dependencies import get_container
+from patent_agent.api.dependencies import get_container, resolve_dataset
 from patent_agent.api.schemas import DatasetUpdateRequest, LoadRequest
 from patent_agent.application import DatasetCatalog, DatasetImportService
 from patent_agent.infrastructure import AppContainer
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/api", tags=["datasets"])
 _ALLOWED_EXTENSIONS = {".txt", ".jsonl", ".json", ".xml"}
 _SOURCE_FORMATS = {
     "auto", "wos_dii", "google_patents_jsonl", "uspto_grant_xml",
-    "uspto_file_wrapper_json",
+    "uspto_file_wrapper_json", "canonical_jsonl",
 }
 _SAFE_DATASET_ID = re.compile(r"^dataset_[A-Za-z0-9_-]{6,80}$")
 
@@ -66,15 +66,19 @@ async def data_load(req: LoadRequest, container: AppContainer = Depends(get_cont
     }
 
 
-@router.get("/data/summary")
-def data_summary(container: AppContainer = Depends(get_container)):
-    if not container.store or container.store.is_empty:
-        raise HTTPException(404, "No patent data loaded. POST /api/data/load first.")
+def dataset_summary_payload(container: AppContainer, dataset):
+    if dataset is None or (dataset.is_empty and not dataset._import_report.get("application_evidence")):
+        raise HTTPException(404, "No patent data loaded or session is unbound.")
     return {
-        **DatasetCatalog().summary(container.store),
+        **DatasetCatalog().summary(dataset),
         "datasets": dataset_inventory(container.settings.data_root),
         "trace_id": current_trace_id(),
     }
+
+
+@router.get("/data/summary")
+async def data_summary(container: AppContainer = Depends(get_container), session_id: str | None = None):
+    return dataset_summary_payload(container, await resolve_dataset(container, session_id))
 
 
 @router.get("/datasets")
@@ -214,64 +218,19 @@ async def _process_upload(
         service = container.dataset_service or DatasetImportService()
         container.dataset_service = service
         store = await asyncio.to_thread(service.load, str(source_root), source_format)
-        if store.is_empty:
+        if store.is_empty and not store._import_report.get("application_evidence"):
             report = store.audit().get("import_report", {})
             issues = report.get("issues", [])
             detail = issues[0].get("message") if issues else "没有解析出专利记录"
             raise ValueError(detail)
-        content_version_id = store.snapshot().version_id
-        existing = await repo.get_dataset_version(content_version_id)
-        if existing:
-            shutil.rmtree(stage_root, ignore_errors=True)
-            metrics.update({
-                "progress": 100, "stage": "completed", "deduplicated": True,
-                "dataset_id": existing["dataset_id"],
-                "dataset_version_id": existing["id"],
-                "record_count": existing.get("record_count", 0),
-            })
-            await repo.update_import(
-                import_id, status="completed", dataset_version_id=existing["id"],
-                metrics_json=metrics,
-            )
-            return
-
-        final_source = (
-            container.settings.data_root / ".patentagent" / "datasets" /
-            dataset_id / content_version_id / "source"
-        ).resolve()
-        final_source.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(source_root), str(final_source))
+        from patent_agent.application.dataset_publication import publish_dataset
+        await publish_dataset(container, store, source_root, dataset_id, name, import_id)
         shutil.rmtree(stage_root, ignore_errors=True)
-        store._source_dir = str(final_source)
-        store._dataset_id_override = dataset_id
-        store._version_id_override = content_version_id
-        snapshot = store.snapshot().model_dump(mode="json")
-        import_report = store.audit().get("import_report", {})
-        await repo.upsert_dataset_snapshot({
-            **snapshot,
-            "name": name,
-            "source_root": str(final_source),
-            "storage_path": str(final_source),
-            "import_id": import_id,
-            "import_report": import_report,
-        })
-        metrics.update({
-            "progress": 100, "stage": "completed", "deduplicated": False,
-            "dataset_id": dataset_id, "dataset_version_id": content_version_id,
-            "record_count": snapshot["record_count"],
-            "file_detections": import_report.get("file_detections", []),
-            "warnings": import_report.get("warnings", []),
-        })
-        await repo.update_import(
-            import_id, status="completed", dataset_version_id=content_version_id,
-            metrics_json=metrics,
-        )
-        if container.dataset_runtime:
-            container.dataset_runtime.register(store)
-        container.store = store
     except Exception as exc:
         shutil.rmtree(stage_root, ignore_errors=True)
         try:
+            if (await repo.get_import(import_id) or {}).get("status") == "completed":
+                return
             await repo.update_import(
                 import_id, status="failed", error_category="import_failed",
                 error=str(exc)[:500], metrics_json={"progress": 100, "stage": "failed"},

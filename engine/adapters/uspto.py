@@ -134,6 +134,7 @@ class USPTOGrantXmlAdapter(PatentAdapter):
                 number=number, text=_text(node), is_independent=not dependencies,
                 depends_on=dependencies, language=language,
                 claim_id=str(node.attrib.get("id", "")),
+                structure_source=self.name, structure_status="source_structured",
             ))
 
         ipc_codes = []
@@ -184,6 +185,8 @@ class USPTOGrantXmlAdapter(PatentAdapter):
             classifications=classifications,
             publication_date=iso_date(publication_date), filing_date=iso_date(filing_date),
             grant_date=iso_date(publication_date), claims=claims, description=description,
+            raw_claims=[LocalizedText(language=language, text=_text(node)) for node in _descendants(root, "claims")],
+            claims_structure_status="source_structured", claims_source=self.name,
             backward_citations=stable_unique(backward),
             non_patent_references=stable_unique(non_patent), jurisdiction=country or "US",
             kind_code=kind, source_file=os.path.basename(filepath), provenance=provenance,
@@ -241,7 +244,8 @@ class USPTOFileWrapperJsonAdapter(PatentAdapter):
     def _parse_row(self, row: dict[str, Any], filepath: str, index: int) -> PatentRecord:
         metadata = _dict_at(row, "applicationMetaData", "applicationMetadata", "metadata")
         application = _value(metadata, "applicationNumberText", "applicationNumber", "application_number")
-        patent_number = _value(metadata, "patentNumber", "grantNumber", "publicationNumber")
+        # A grant serial alone lacks kind code and is not a reliable publication identifier.
+        patent_number = _value(metadata, "publicationNumber")
         publication = normalized_document_number(
             patent_number if str(patent_number).upper().startswith("US") else f"US{patent_number}" if patent_number else ""
         )
@@ -286,6 +290,7 @@ class USPTOFileWrapperJsonAdapter(PatentAdapter):
         )
         return PatentRecord(
             patent_number=publication, normalized_patent_number=publication,
+            record_type="publication" if publication else "application_evidence",
             application_number=application_normalized, source_record_id=source_id,
             publication_numbers=[publication] if publication else [], title=title, abstract="",
             localized_titles=[LocalizedText(language="en", text=title)] if title else [], language="en",

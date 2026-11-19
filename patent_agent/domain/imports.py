@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 SourceFormat = Literal[
     "auto", "wos_dii", "google_patents_jsonl", "uspto_grant_xml",
-    "uspto_file_wrapper_json",
+    "uspto_file_wrapper_json", "canonical_jsonl",
 ]
 
 
@@ -80,3 +80,5 @@ class ImportReport(BaseModel):
     warnings: list[str] = Field(default_factory=list)
     parse_rate: float = 0.0
     quarantine_path: str = ""
+    application_evidence: list[dict] = Field(default_factory=list)
+    application_evidence_count: int = 0

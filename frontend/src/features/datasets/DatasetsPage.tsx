@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Archive, CheckCircle2, Database, Loader2, UploadCloud } from "lucide-react";
-import { bindSessionDataset, fetchImport, loadData, updateDataset, uploadDataset } from "../../api";
-import type { DatasetImportStatus, DatasetRecord } from "../../types";
+import { AcquisitionPanel } from "./AcquisitionPanel";
+import { bindSessionDataset, fetchDatasetVersions, fetchImport, loadData, updateDataset, uploadDataset } from "../../api";
+import type { DatasetImportStatus, DatasetRecord, DatasetVersion } from "../../types";
 import type { SourceFormat } from "../../api";
 import { adapterLabel, importStatusLabel, localizeErrorMessage } from "../../uiLabels";
 import { useI18n } from "../../i18n";
@@ -15,6 +16,7 @@ export function DatasetsPage({ datasets, activeSessionId, activeVersionId, onCha
 }) {
   const { locale, t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [history, setHistory] = useState<Record<string,DatasetVersion[]>>({});
   const [files, setFiles] = useState<File[]>([]);
   const [name, setName] = useState(() => t("datasets.defaultName"));
   const [format, setFormat] = useState<SourceFormat>("auto");
@@ -25,22 +27,27 @@ export function DatasetsPage({ datasets, activeSessionId, activeVersionId, onCha
 
   useEffect(() => {
     if (!job || !["queued", "parsing"].includes(job.status)) return;
-    const timer = window.setInterval(async () => {
+    let active = true;
+    let timer: number;
+    const poll = async () => {
       try {
         const next = await fetchImport(job.id);
+        if (!active) return;
         setJob(next);
-        if (["completed", "failed"].includes(next.status)) {
-          window.clearInterval(timer);
+        if (["completed", "failed", "interrupted"].includes(next.status)) {
           setUploading(false);
           await onChanged();
+        } else {
+          timer = window.setTimeout(poll, 700);
         }
       } catch (error) {
-        window.clearInterval(timer);
+        if (!active) return;
         setUploading(false);
         onError((error as Error).message);
       }
-    }, 700);
-    return () => window.clearInterval(timer);
+    };
+    timer = window.setTimeout(poll, 700);
+    return () => { active = false; window.clearTimeout(timer); };
   }, [job?.id, job?.status]);
 
   const startUpload = async () => {
@@ -82,6 +89,7 @@ export function DatasetsPage({ datasets, activeSessionId, activeVersionId, onCha
     <div className="h-full overflow-y-auto p-5 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <div><h1 className="text-2xl font-bold text-slate-900">{t("datasets.title")}</h1><p className="mt-1 text-sm text-slate-500">{t("datasets.subtitle")}</p></div>
+        <AcquisitionPanel onChanged={onChanged} onError={onError}/>
         <section className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr_360px]">
           <button type="button" onClick={() => inputRef.current?.click()} className="min-h-44 rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-6 text-center hover:border-blue-400">
             <UploadCloud className="mx-auto h-9 w-9 text-blue-600" />
@@ -92,7 +100,7 @@ export function DatasetsPage({ datasets, activeSessionId, activeVersionId, onCha
           </button>
           <div className="space-y-3">
             <label className="block text-xs font-medium text-slate-600">{t("datasets.name")}<input value={name} onChange={event => setName(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label>
-            <label className="block text-xs font-medium text-slate-600">{t("datasets.format")}<select value={format} onChange={event => setFormat(event.target.value as SourceFormat)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"><option value="auto">{t("datasets.autoFormat")}</option><option value="wos_dii">{t("datasets.formatWos")}</option><option value="google_patents_jsonl">{t("datasets.formatGoogle")}</option><option value="uspto_grant_xml">{t("datasets.formatUsptoGrant")}</option><option value="uspto_file_wrapper_json">{t("datasets.formatUsptoWrapper")}</option></select><span className="mt-1 block text-[10px] font-normal text-slate-400">{t("datasets.formatHelp")}</span></label>
+            <label className="block text-xs font-medium text-slate-600">{t("datasets.format")}<select value={format} onChange={event => setFormat(event.target.value as SourceFormat)} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"><option value="canonical_jsonl">{adapterLabel("canonical_jsonl",locale)}</option><option value="auto">{t("datasets.autoFormat")}</option><option value="wos_dii">{t("datasets.formatWos")}</option><option value="google_patents_jsonl">{t("datasets.formatGoogle")}</option><option value="uspto_grant_xml">{t("datasets.formatUsptoGrant")}</option><option value="uspto_file_wrapper_json">{t("datasets.formatUsptoWrapper")}</option></select><span className="mt-1 block text-[10px] font-normal text-slate-400">{t("datasets.formatHelp")}</span></label>
             <button onClick={startUpload} disabled={!files.length || uploading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}{t("datasets.upload")}</button>
             {job && <div className={`rounded-lg p-3 text-xs ${job.status === "failed" ? "bg-rose-50 text-rose-700" : "bg-slate-50 text-slate-600"}`}><div className="flex justify-between"><span>{importStatusLabel(job.status, locale)}</span><span>{job.metrics?.progress || 0}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-blue-600 transition-all" style={{ width: `${job.metrics?.progress || 0}%` }} /></div>{job.error && <p className="mt-2">{localizeErrorMessage(job.error, locale)}</p>}</div>}
           </div>
@@ -114,6 +122,7 @@ export function DatasetsPage({ datasets, activeSessionId, activeVersionId, onCha
                 <div className="flex items-start justify-between"><div className="rounded-lg bg-slate-100 p-2 text-slate-600"><Database className="h-5 w-5" /></div>{active && <span className="flex items-center gap-1 text-[10px] text-emerald-600"><CheckCircle2 className="h-3 w-3" />{t("datasets.currentSession")}</span>}</div>
                 <h3 className="mt-3 truncate font-semibold text-slate-800">{dataset.name}</h3>
                 <p className="mt-1 text-xs text-slate-500">{t("datasets.versions", { records: dataset.latest_version.record_count.toLocaleString(), versions: dataset.version_count, adapter: adapterLabel(dataset.latest_version.adapter, locale) })}</p>
+                <details className="mt-3 text-xs" onToggle={async e=>{if(e.currentTarget.open && !history[dataset.id]){try{const result=await fetchDatasetVersions(dataset.id);setHistory(previous=>({...previous,[dataset.id]:result.versions}));}catch(error){onError((error as Error).message);}}}}><summary className="cursor-pointer text-blue-700">{t("datasets.history")}</summary>{(history[dataset.id] || []).map(version=>{const id=version.id || version.version_id || "";return <div key={id} className="mt-2 space-y-1 rounded border p-2"><p className="break-all font-mono">{id}</p><p>{version.created_at} · {version.record_count}</p><pre className="overflow-auto">{JSON.stringify(version.field_coverage,null,2)}</pre><button disabled={id===activeVersionId} onClick={()=>bind(id)} className="rounded bg-blue-50 px-2 py-1">{id===activeVersionId?t("datasets.bound"):t("datasets.bind")}</button></div>;})}</details>
                 <div className="mt-4 grid grid-cols-2 gap-2"><button disabled={active || !versionId} onClick={() => bind(versionId)} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white disabled:bg-slate-200 disabled:text-slate-500">{active ? t("datasets.bound") : t("datasets.bind")}</button><button onClick={async () => { await updateDataset(dataset.id, { status: "archived" }); await onChanged(); }} className="flex items-center justify-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600"><Archive className="h-3.5 w-3.5" />{t("datasets.archive")}</button></div>
               </article>;
             })}

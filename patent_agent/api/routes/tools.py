@@ -5,7 +5,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from patent_agent.api.dependencies import get_container
+from patent_agent.api.dependencies import get_container, resolve_dataset
 from patent_agent.api.schemas import ToolRequest
 from patent_agent.application import SearchIndexService, ToolExecutionService
 from retrieval.embedding import MULTILINGUAL_BETA_MODEL
@@ -74,8 +74,7 @@ CAPABILITY_GROUPS = [
 ]
 
 
-@router.get("/tools")
-def list_tools(container: AppContainer = Depends(get_container)):
+def tools_catalog(dataset, unavailable_reason="尚未加载数据"):
     return {"tools": [{
         "name": tool.name,
         "description": tool.description,
@@ -86,22 +85,29 @@ def list_tools(container: AppContainer = Depends(get_container)):
         "cost_weight": tool.cost_weight,
         "returned_fields": tool.returned_fields,
         "definition": tool.definition.model_dump(mode="json"),
-        "availability": tool.availability(container.store) if container.store else {
-            "available": False, "reason": "尚未加载数据",
+        "availability": tool.availability(dataset) if dataset is not None else {
+            "available": False, "reason": unavailable_reason,
         },
     } for tool in tool_registry.list_tools()]}
 
 
+@router.get("/tools")
+async def list_tools(container: AppContainer = Depends(get_container), session_id: str | None = None):
+    dataset = await resolve_dataset(container, session_id)
+    return tools_catalog(dataset, "会话未绑定数据集" if session_id is not None else "尚未加载数据")
+
+
 @router.get("/capabilities")
-def list_capabilities(container: AppContainer = Depends(get_container)):
+async def list_capabilities(container: AppContainer = Depends(get_container), session_id: str | None = None):
+    dataset = await resolve_dataset(container, session_id)
     tools = {tool.name: tool for tool in tool_registry.list_tools()}
     groups = []
     for definition in CAPABILITY_GROUPS:
         statuses = []
         for name in definition["tool_names"]:
             tool = tools[name]
-            availability = tool.availability(container.store) if container.store else {
-                "available": False, "reason": "尚未加载数据",
+            availability = tool.availability(dataset) if dataset is not None else {
+                "available": False, "reason": "会话未绑定数据集" if session_id is not None else "尚未加载数据",
             }
             statuses.append({"name": name, **availability})
         available_count = sum(bool(item.get("available")) for item in statuses)
@@ -128,12 +134,7 @@ async def run_tool(
     tool_name: str, req: ToolRequest = ToolRequest(),
     container: AppContainer = Depends(get_container),
 ):
-    dataset = container.store
-    if req.session_id and container.dataset_runtime:
-        try:
-            dataset = await container.dataset_runtime.for_session(req.session_id, dataset)
-        except (KeyError, ValueError) as exc:
-            raise HTTPException(409, f"会话绑定的数据集不可用: {exc}") from exc
+    dataset = await resolve_dataset(container, req.session_id)
     if not dataset or dataset.is_empty:
         raise HTTPException(400, "No patent data. Call /api/data/load first.")
     if len(container.active_generation_turns) >= container.settings.max_agent_concurrency:
@@ -151,6 +152,8 @@ async def run_tool(
         service = container.tool_execution_service or ToolExecutionService()
         container.tool_execution_service = service
         result = await service.run_tool(tool, dataset, req.params)
+    except PermissionError as exc:
+        raise HTTPException(403, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     except Exception as exc:
@@ -197,3 +200,43 @@ async def run_tool(
         "execution_id": execution_id, "origin": "quick_tool",
     })
     return payload
+
+
+@router.get("/executions/{execution_id}/records")
+async def execution_records(execution_id: str, bin: str, offset: int = 0, limit: int = 25, container: AppContainer = Depends(get_container)):
+    """Only registered execution selectors can resolve publication evidence."""
+    from engine.trend import select_trend_population
+    from patent_agent.domain import AnalysisScope
+    if offset < 0 or limit < 1 or limit > 100:raise HTTPException(422,"invalid_pagination")
+    if container.conversation_store is None or container.dataset_runtime is None:raise HTTPException(503,"evidence_store_unavailable")
+    execution = await container.conversation_store.get_execution_evidence(execution_id)
+    if not execution:raise HTTPException(404,"execution_not_found")
+    result = execution.get("result") or {}
+    metadata = result.get("result_metadata") or {}
+    if execution.get("stale") or execution.get("status") != "completed":raise HTTPException(409,"stale_execution_evidence")
+    if execution.get("tool_name") != "analyze_patent_trend" or metadata.get("evidence_selector_version") != "trend-units-v1":
+        raise HTTPException(422,"该图表未登记精确分组证据；不能用全库替代")
+    selector = metadata.get("evidence_bins", {}).get(bin)
+    if selector is None:raise HTTPException(422,"unregistered_evidence_selector")
+    provenance = execution.get("provenance") or result.get("provenance") or {}
+    try:store = await container.dataset_runtime.get(provenance["dataset_version_id"])
+    except (KeyError,ValueError) as exc:raise HTTPException(409,"requires_reimport: execution_dataset_unavailable") from exc
+    if provenance.get("dataset_content_hash") != store.dataset_fingerprint():raise HTTPException(409,"evidence_content_hash_conflict")
+    params = dict(execution.get("parameters") or {})
+    scope = AnalysisScope.model_validate(params.pop("scope", {}))
+    if scope.year_start is not None:params.setdefault("year_start",scope.year_start)
+    if scope.year_end is not None:params.setdefault("year_end",scope.year_end)
+    filtered = store.filtered_by_scope(scope.model_copy(update={"year_start":None,"year_end":None}))
+    _, membership, descriptors = select_trend_population(filtered, **params)
+    if descriptors.get("evidence_bins", {}).get(bin) != selector:raise HTTPException(409,"evidence_membership_conflict")
+    groups = membership[bin]
+    rows = store.get_all().set_index("patent_number",drop=False)
+    page = []
+    for group in groups[offset:offset+limit]:
+        members = []
+        for number in group["publication_numbers"]:
+            row = rows.loc[number]
+            if getattr(row,"ndim",1)>1:row=row.iloc[0]
+            members.append({"patent_number":number,"title":str(row.get("title","")),"publication_date":str(row.get("publication_date","")),"kind_code":str(row.get("kind_code","")),"language":str(row.get("language","und")),"source_file":str(row.get("source_file","")),"provenance":str(row.get("record_provenance_json","")),"dataset_version_id":provenance["dataset_version_id"]})
+        page.append({**group,"members":members})
+    return {"execution_id":execution_id,"bin":bin,"date_basis":metadata.get("date_basis"),"count_unit":metadata.get("count_unit"),"total_units":len(groups),"offset":offset,"limit":limit,"groups":page,"dataset_version_id":provenance["dataset_version_id"]}

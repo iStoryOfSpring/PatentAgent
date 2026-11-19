@@ -49,9 +49,9 @@ def test_schema_v7_creates_remediation_tables_and_external_evidence_is_immutable
             "record_hashes", "entities", "entity_aliases", "patent_party_roles",
             "analysis_scopes", "evidence_values", "taxonomies", "taxonomy_labels",
             "record_annotations", "search_strategies", "search_strategy_versions",
-            "monitor_runs", "monitor_events", "external_evidence",
+            "monitor_runs", "monitor_events", "external_evidence", "acquisitions",
         } <= tables
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 8
         values = dict(db.execute(
             "SELECT json_path,scalar_json FROM evidence_values WHERE execution_id='exec-1'"
         ))

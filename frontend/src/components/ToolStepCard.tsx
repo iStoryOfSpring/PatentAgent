@@ -65,7 +65,7 @@ export function ToolStepCard({ step, onRetry }: { step: ToolStep; onRetry?: (ste
       )}
       {expanded && (step.result || step.chart_html) && (
         <Suspense fallback={<div className="p-6 text-xs text-slate-500">{t("tool.loadingVisualization")}</div>}>
-          <VisualizationPanel result={step.result} chartHtml={step.chart_html} toolName={step.tool}/>
+          <VisualizationPanel result={step.result} chartHtml={step.chart_html} toolName={step.tool} executionId={step.execution_id}/>
         </Suspense>
       )}
       {expanded && step.error && (

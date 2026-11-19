@@ -52,9 +52,6 @@ async def list_sessions(container: AppContainer = Depends(get_container)):
 async def get_session(session_id: str, container: AppContainer = Depends(get_container)):
     try:
         detail = await _service(container).get(session_id, _fingerprint(container))
-        version_id = detail.get("session", {}).get("dataset_version_id")
-        if version_id and container.dataset_runtime:
-            container.store = await container.dataset_runtime.get(version_id)
         return detail
     except KeyError as exc:
         raise HTTPException(404, "会话不存在") from exc

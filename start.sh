@@ -1,102 +1,74 @@
-#!/bin/bash
-# PatentAgent 一键启动脚本 — 同时启动后端 (FastAPI) 和前端 (Vite)
-# 用法: bash start.sh
-
-set -e
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FRONTEND_DIR="$SCRIPT_DIR/frontend"
-DATA_DIR="${MCP_INPUT_DIR:-$SCRIPT_DIR/my_patents}"
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+#!/usr/bin/env bash
+# Local single-process development launcher.
+set -eu
+cd "$(dirname "$0")"
+ROOT=$(pwd -P)
+DATA_DIR=${MCP_INPUT_DIR:-$ROOT/my_patents}
+BACKEND_PORT=${PATENTAGENT_BACKEND_PORT:-8000}
+FRONTEND_PORT=${PATENTAGENT_FRONTEND_PORT:-5173}
+BACKEND_URL="http://127.0.0.1:$BACKEND_PORT"
+FRONTEND_URL="http://127.0.0.1:$FRONTEND_PORT"
+backend_pid=
+frontend_pid=
 
 cleanup() {
-    echo ""
-    echo -e "${BLUE}正在关闭服务...${NC}"
-    if [ -n "${BACKEND_PID:-}" ]; then
-        kill "$BACKEND_PID" 2>/dev/null || true
-        wait "$BACKEND_PID" 2>/dev/null || true
-    fi
-    if [ -n "${FRONTEND_PID:-}" ]; then
-        kill "$FRONTEND_PID" 2>/dev/null || true
-        wait "$FRONTEND_PID" 2>/dev/null || true
-    fi
-    echo -e "${GREEN}PatentAgent 已停止${NC}"
-    exit 0
+    for pid in "$frontend_pid" "$backend_pid"; do
+        if [ -n "$pid" ]; then kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; fi
+    done
 }
-trap cleanup SIGINT SIGTERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+fail() { echo "$*" >&2; exit 1; }
 
-# ── 检查依赖 ──
-echo -e "${BLUE}检查 Python 依赖...${NC}"
-if command -v uv >/dev/null 2>&1; then
-    PYTHON_RUN=(uv run --frozen python)
-elif [ -x "$SCRIPT_DIR/.venv/bin/python" ]; then
-    PYTHON_RUN=("$SCRIPT_DIR/.venv/bin/python")
-else
-    PYTHON_RUN=(python3)
-fi
-"${PYTHON_RUN[@]}" -c "import fastapi, uvicorn" 2>/dev/null || {
-    echo -e "${RED}缺少锁定环境，请先运行: uv sync --frozen --all-extras --group dev${NC}"
-    exit 1
+command -v uv >/dev/null || fail "缺少 uv。安装 uv 后运行 uv sync --frozen --extra mcp --group dev"
+[ -x "$ROOT/.venv/bin/python" ] || fail "缺少项目环境。请运行 uv sync --frozen --extra mcp --group dev"
+PYTHON=$(uv run --frozen --no-sync python -c 'import fastapi, uvicorn, sys; print(sys.executable)') || fail "后端依赖缺失。请运行 uv sync --frozen --extra mcp --group dev"
+VITE="$ROOT/frontend/node_modules/.bin/vite"
+[ -x "$VITE" ] || fail "前端依赖缺失。请在 frontend/ 运行 npm ci"
+
+port_busy() {
+    "$PYTHON" -c 'import socket,sys
+with socket.socket() as sock:
+    sock.settimeout(0.3)
+    sys.exit(sock.connect_ex(("127.0.0.1",int(sys.argv[1]))) != 0)' "$1"
 }
-
-if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
-    echo -e "${BLUE}安装前端依赖 (首次运行)...${NC}"
-    cd "$FRONTEND_DIR" && npm ci --cache /tmp/npm-cache 2>/dev/null
-fi
-
-# ── 启动后端 ──
-echo -e "${GREEN}启动后端 → http://localhost:8000${NC}"
-echo -e "  API 文档: http://localhost:8000/docs"
-echo -e "  数据目录: $DATA_DIR"
-cd "$SCRIPT_DIR"
-BACKEND_PID=""
-if lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
-    if curl -fsS http://127.0.0.1:8000/api/health 2>/dev/null | grep -q '"status":"ok"'; then
-        echo -e "${BLUE}端口 8000 上已有可用的 PatentAgent 后端，本次直接复用。${NC}"
-    else
-        echo -e "${RED}端口 8000 已被其他进程占用，未自动终止该进程。${NC}"
-        lsof -nP -iTCP:8000 -sTCP:LISTEN
-        echo -e "${RED}请关闭上方进程，或确认已有 PatentAgent 后端后再运行 start.sh。${NC}"
-        exit 1
-    fi
+healthy() {
+    curl --noproxy '*' -fsS --max-time 1 "$BACKEND_URL/api/health" 2>/dev/null |
+        "$PYTHON" -c 'import json,sys
+try: data=json.load(sys.stdin)
+except ValueError: sys.exit(1)
+sys.exit(data.get("application") != "PatentAgent" or data.get("status") != "ok")'
+}
+port_busy "$FRONTEND_PORT" && fail "前端端口 $FRONTEND_PORT 已占用"
+if port_busy "$BACKEND_PORT"; then
+    healthy || fail "后端端口 $BACKEND_PORT 被其他服务或旧版本占用"
+    [ "${PATENTAGENT_REQUIRE_NEW_BACKEND:-0}" != 1 ] || fail "验收需要独立后端；端口 $BACKEND_PORT 已占用"
+    echo "复用 PatentAgent 后端 $BACKEND_URL"
 else
-    MCP_INPUT_DIR="$DATA_DIR" PATENT_DATA_ROOT="$DATA_DIR" "${PYTHON_RUN[@]}" -m uvicorn server:app --host 127.0.0.1 --port 8000 &
-    BACKEND_PID=$!
-    sleep 2
-
-    if ! kill -0 "$BACKEND_PID" 2>/dev/null; then
-        echo -e "${RED}后端启动失败，请检查错误信息${NC}"
-        exit 1
+    MCP_INPUT_DIR="$DATA_DIR" PATENT_DATA_ROOT="${PATENT_DATA_ROOT:-$DATA_DIR}" "$PYTHON" -m uvicorn server:app --host 127.0.0.1 --port "$BACKEND_PORT" &
+    backend_pid=$!
+fi
+(cd frontend && export VITE_API_TARGET="$BACKEND_URL" && exec "$VITE" --host 127.0.0.1 --strictPort --port "$FRONTEND_PORT") &
+frontend_pid=$!
+deadline=$((SECONDS + 30))
+while true; do
+    if [ -n "$backend_pid" ]; then kill -0 "$backend_pid" 2>/dev/null || fail "后端提前退出"; fi
+    kill -0 "$frontend_pid" 2>/dev/null || fail "前端提前退出"
+    if healthy && curl --noproxy '*' -fsS --max-time 1 "$FRONTEND_URL/" >/dev/null 2>&1; then break; fi
+    if [ "$SECONDS" -ge "$deadline" ]; then
+        healthy || fail "后端在 30 秒内未就绪"
+        fail "前端在 30 秒内未就绪"
     fi
+    sleep 0.25
+done
+echo "PatentAgent 已启动  前端 $FRONTEND_URL  后端 $BACKEND_URL"
+if [ "${PATENTAGENT_OPEN_BROWSER:-1}" != 0 ]; then
+    if command -v open >/dev/null; then open "$FRONTEND_URL"
+    elif command -v xdg-open >/dev/null; then xdg-open "$FRONTEND_URL"; fi
 fi
-
-# ── 启动前端 ──
-echo -e "${GREEN}启动前端 → http://localhost:5173${NC}"
-cd "$FRONTEND_DIR"
-npx vite --host 127.0.0.1 --port 5173 &
-FRONTEND_PID=$!
-sleep 2
-
-echo ""
-echo -e "${GREEN}══════════════════════════════════════════${NC}"
-echo -e "${GREEN}  PatentAgent 已启动${NC}"
-echo -e "${GREEN}  前端: http://localhost:5173${NC}"
-echo -e "${GREEN}  后端: http://localhost:8000${NC}"
-echo -e "${GREEN}  API文档: http://localhost:8000/docs${NC}"
-echo -e "${GREEN}  按 Ctrl+C 停止所有服务${NC}"
-echo -e "${GREEN}══════════════════════════════════════════${NC}"
-
-# ── 自动打开浏览器 ──
-sleep 1
-if command -v open &>/dev/null; then
-    open http://localhost:5173
-elif command -v xdg-open &>/dev/null; then
-    xdg-open http://localhost:5173
-fi
-
-# ── 等待退出 ──
-wait
+while kill -0 "$frontend_pid" 2>/dev/null; do
+    if [ -n "$backend_pid" ]; then kill -0 "$backend_pid" 2>/dev/null || fail "后端已退出"; fi
+    sleep 1
+done
+fail "前端已退出"

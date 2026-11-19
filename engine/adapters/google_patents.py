@@ -70,14 +70,6 @@ class GooglePatentsExportAdapter(PatentAdapter):
         title = _preferred_text(titles)
         abstract = _preferred_text(abstracts)
         claims = []
-        if claims_text:
-            from models.patent import Claim
-            # Google exposes localized claim-text blobs rather than structural
-            # dependency data. Do not invent dependent-claim relationships.
-            claims = [Claim(
-                number=1, text=item.text, is_independent=True,
-                language=item.language, claim_id=f"localized_blob:{item.language}",
-            ) for item in claims_text]
 
         ipc_codes, classifications = _classification_values(row.get("ipc"), "IPC")
         cpc_codes, cpc_records = _classification_values(row.get("cpc"), "CPC")
@@ -137,7 +129,8 @@ class GooglePatentsExportAdapter(PatentAdapter):
                 item.get("publication_number") or item.get("application_number") or ""
                 for item in (row.get("priority_claim") or []) if isinstance(item, dict)
             ),
-            claims=claims,
+            claims=claims, raw_claims=claims_text, claims_source=self.name,
+            claims_structure_status="unknown",
             description=_preferred_text(_localized(
                 row.get("description_localized") or row.get("description")
             )),

@@ -28,7 +28,7 @@ def test_request_limit_and_trace_header_are_transport_level_guards():
     guarded.add_middleware(TraceMiddleware)
     async def scenario():
         async with AsyncClient(
-            transport=ASGITransport(app=guarded), base_url="http://test",
+            transport=ASGITransport(app=guarded), base_url="http://testserver",
         ) as client:
             accepted = await client.post(
                 "/echo", content=b"12345678", headers={"X-Request-ID": "case-17"},
@@ -53,7 +53,7 @@ def test_create_app_owns_an_isolated_container(tmp_path, monkeypatch):
     async def scenario():
         async with isolated.router.lifespan_context(isolated):
             async with AsyncClient(
-                transport=ASGITransport(app=isolated), base_url="http://test",
+                transport=ASGITransport(app=isolated), base_url="http://testserver",
             ) as client:
                 return await client.get(
                     "/api/health", headers={"X-Request-ID": "factory-test"},

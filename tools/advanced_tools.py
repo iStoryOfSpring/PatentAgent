@@ -600,7 +600,7 @@ class PatentMonitorTool(Tool):
         "strategy_version": {"type": "integer", "minimum": 1, "required": True},
         "query": {"type": "string", "required": True},
         "top_k": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 500},
-        "update_baseline": {"type": "boolean", "default": True},
+        "update_baseline": {"type": "boolean", "default": False},
         "notification_policy": {
             "type": "string", "enum": ["all_changes", "threshold"],
             "default": "all_changes",
@@ -624,103 +624,14 @@ class PatentMonitorTool(Tool):
             failures.append("持续监测必须使用可识别、可重复导入的外部数据源")
         return failures
 
-    async def execute(
-        self, storage, strategy_id, strategy_version, query, top_k=500,
-        update_baseline=True, notification_policy="all_changes",
-        minimum_event_count=1,
-    ):
-        from tools.search_tool import _get_searcher
-        results = _get_searcher(storage, "lexical").hybrid_search(query=query, top_k=top_k)
-        frame = storage.get_all().set_index("patent_number", drop=False)
-        snapshot = {}
-        for item in results:
-            row = frame.loc[item.patent_number]
-            if isinstance(row, pd.DataFrame):
-                row = row.iloc[0]
-            fields = {
-                key: str(row.get(key, "") or "") for key in (
-                    "family_members", "backward_citations", "forward_citations",
-                    "legal_events_json", "applicants",
-                )
-            }
-            snapshot[item.patent_number] = {
-                "record_hash": hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest(),
-                "fields": fields,
-            }
-        db_path = Path(os.getenv("PATENTAGENT_MONITOR_DB", ".patentagent/monitoring.db")).resolve()
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(db_path) as db:
-            db.execute("CREATE TABLE IF NOT EXISTS monitor_baselines (strategy_id TEXT, strategy_version INTEGER, query TEXT, dataset_hash TEXT, snapshot_json TEXT, updated_at TEXT, PRIMARY KEY(strategy_id,strategy_version))")
-            db.execute("CREATE TABLE IF NOT EXISTS monitor_runs (run_id TEXT PRIMARY KEY, strategy_id TEXT, strategy_version INTEGER, dataset_hash TEXT, event_count INTEGER, created_at TEXT)")
-            db.execute("CREATE TABLE IF NOT EXISTS monitor_events (event_id TEXT PRIMARY KEY, run_id TEXT, strategy_id TEXT, strategy_version INTEGER, event_type TEXT, patent_number TEXT, created_at TEXT)")
-            db.execute("CREATE TABLE IF NOT EXISTS monitor_audit_log (audit_id TEXT PRIMARY KEY, run_id TEXT, action TEXT, details_json TEXT, created_at TEXT)")
-            row = db.execute("SELECT snapshot_json FROM monitor_baselines WHERE strategy_id=? AND strategy_version=?", (strategy_id, strategy_version)).fetchone()
-            baseline = json.loads(row[0]) if row else {}
-            events = []
-            for patent_number in sorted(set(snapshot) - set(baseline)):
-                events.append({"event_type": "new_publication", "patent_number": patent_number})
-            for patent_number in sorted(set(baseline) - set(snapshot)):
-                events.append({"event_type": "no_longer_returned", "patent_number": patent_number})
-            for patent_number in sorted(set(snapshot) & set(baseline)):
-                for field, event_type in (
-                    ("family_members", "family_changed"), ("backward_citations", "citation_changed"),
-                    ("forward_citations", "forward_citation_changed"),
-                    ("legal_events_json", "legal_event_changed"), ("applicants", "applicant_changed"),
-                ):
-                    if snapshot[patent_number]["fields"][field] != baseline[patent_number]["fields"].get(field, ""):
-                        events.append({"event_type": event_type, "patent_number": patent_number})
-            now = datetime.now(timezone.utc).isoformat()
-            run_id = hashlib.sha256(f"{strategy_id}\0{strategy_version}\0{storage.dataset_fingerprint()}".encode()).hexdigest()
-            db.execute("INSERT OR IGNORE INTO monitor_runs VALUES (?,?,?,?,?,?)", (run_id, strategy_id, strategy_version, storage.dataset_fingerprint(), len(events), now))
-            persisted_events = []
-            for event in events:
-                event_id = hashlib.sha256(
-                    f"{run_id}\0{event['event_type']}\0{event['patent_number']}".encode()
-                ).hexdigest()
-                cursor = db.execute(
-                    "INSERT OR IGNORE INTO monitor_events VALUES (?,?,?,?,?,?,?)",
-                    (event_id, run_id, strategy_id, strategy_version,
-                     event["event_type"], event["patent_number"], now),
-                )
-                if cursor.rowcount:
-                    persisted_events.append({**event, "event_id": event_id})
-            if update_baseline:
-                db.execute("INSERT OR REPLACE INTO monitor_baselines VALUES (?,?,?,?,?,?)", (strategy_id, strategy_version, query, storage.dataset_fingerprint(), json.dumps(snapshot, ensure_ascii=False, sort_keys=True), now))
-            should_notify = bool(baseline) and (
-                len(persisted_events) > 0 if notification_policy == "all_changes"
-                else len(persisted_events) >= minimum_event_count
-            )
-            audit_details = {
-                "query_sha256": hashlib.sha256(query.encode()).hexdigest(),
-                "baseline_existed": bool(baseline),
-                "baseline_updated": update_baseline,
-                "notification_policy": notification_policy,
-                "minimum_event_count": minimum_event_count,
-                "should_notify": should_notify,
-            }
-            audit_id = hashlib.sha256(f"{run_id}\0execution_completed".encode()).hexdigest()
-            db.execute(
-                "INSERT OR IGNORE INTO monitor_audit_log VALUES (?,?,?,?,?)",
-                (audit_id, run_id, "execution_completed",
-                 json.dumps(audit_details, ensure_ascii=False, sort_keys=True), now),
-            )
-            db.commit()
-        return GenericAnalysisResult(
-            result_type="patent_monitor", data=persisted_events,
-            summary=f"策略 {strategy_id} v{strategy_version} 检测到 {len(persisted_events)} 个新增去重数据变化事件。",
-            result_metadata={
-                "strategy_id": strategy_id, "strategy_version": strategy_version,
-                "strategy_hash": hashlib.sha256(query.encode()).hexdigest(),
-                "baseline_existed": bool(baseline), "baseline_updated": update_baseline,
-                "dataset_content_hash": storage.dataset_fingerprint(), "run_id": run_id,
-                "returned_count": len(snapshot), "analyzed_record_count": len(storage.get_all()),
-                "notification_policy": notification_policy,
-                "minimum_event_count": minimum_event_count,
-                "should_notify": should_notify,
-                "audit_log_id": audit_id,
-            },
-            warnings=["预警仅表示数据变化或规则命中，不表示已经发生侵权风险。"],
-        )
+    cpu_bound = False
+
+    async def execute(self, storage, strategy_id, strategy_version, query, top_k=500,
+                      update_baseline=False, notification_policy="all_changes", minimum_event_count=1):
+        from patent_agent.application.monitoring import monitor
+        return await monitor(self, storage, dict(strategy_id=strategy_id, strategy_version=strategy_version,
+            query=query, top_k=top_k, update_baseline=update_baseline,
+            notification_policy=notification_policy, minimum_event_count=minimum_event_count))
 
 
 def _claim_items(value: Any) -> list[dict]:
@@ -748,8 +659,6 @@ class ClaimElementsTool(Tool):
     def _dataset_gate_failures(self, storage):
         failures = super()._dataset_gate_failures(storage)
         df = storage.get_all()
-        if storage.field_coverage("legal_status") < .8:
-            failures.append("至少 80% 记录需要可识别的授权/申请法律状态")
         version_recognized = 0
         structured_claims = 0
         claim_count = 0
@@ -762,7 +671,10 @@ class ClaimElementsTool(Tool):
                 claim_count += 1
                 language = str(claim.get("language", "") or "").strip().lower()
                 if (
-                    str(claim.get("number", "")).isdigit()
+                    claim.get("structure_status") in {"verified", "source_structured"}
+                    and bool(str(claim.get("structure_source", "")).strip())
+                    and not str(claim.get("claim_id", "")).startswith("localized_blob:")
+                    and str(claim.get("number", "")).isdigit()
                     and language not in {"", "und", "unknown"}
                     and isinstance(claim.get("is_independent"), bool)
                     and isinstance(claim.get("depends_on"), list)
@@ -793,7 +705,7 @@ class ClaimElementsTool(Tool):
                     matched = [index + 1 for index, part in enumerate(parts) if str(feature).casefold() in part.casefold()]
                     mappings.append({"feature": str(feature), "matched_element_numbers": matched, "match_method": "literal_substring"})
                 rendered.append({
-                    "claim_number": number, "is_independent": bool(claim.get("is_independent", not claim.get("depends_on"))),
+                    "claim_number": number, "is_independent": claim.get("is_independent"),
                     "depends_on": [int(item) for item in claim.get("depends_on", []) if str(item).isdigit()],
                     "language": claim.get("language", "und"),
                     "elements": [{"element_number": index + 1, "text": part} for index, part in enumerate(parts)],
@@ -813,10 +725,8 @@ class ClaimElementsTool(Tool):
         version_differences = []
         grouped: defaultdict[str, list[dict]] = defaultdict(list)
         for _, row in df.iterrows():
-            group_key = str(
-                row.get("application_number", "") or
-                row.get("family_id", "") or ""
-            ).strip()
+            from engine.adapters.common import normalized_application_number
+            group_key = normalized_application_number(row.get("application_number", ""))
             if not group_key:
                 continue
             claim_hashes = [
@@ -827,10 +737,13 @@ class ClaimElementsTool(Tool):
                 "patent_number": str(row.get("patent_number", "")),
                 "kind_code": str(row.get("kind_code", "") or ""),
                 "claim_hashes": claim_hashes,
+                "publication_date": str(row.get("publication_date", "") or ""),
             })
         for group_key, versions in sorted(grouped.items()):
-            ordered = sorted(versions, key=lambda item: (item["kind_code"], item["patent_number"]))
+            ordered = sorted([v for v in versions if v["publication_date"]], key=lambda item: (item["publication_date"], item["patent_number"]))
             for left, right in zip(ordered, ordered[1:]):
+                if left["publication_date"] == right["publication_date"]:
+                    continue  # Date ties do not establish a version order.
                 left_hashes, right_hashes = set(left["claim_hashes"]), set(right["claim_hashes"])
                 version_differences.append({
                     "version_group": group_key,
@@ -838,7 +751,8 @@ class ClaimElementsTool(Tool):
                     "to_patent_number": right["patent_number"],
                     "removed_claim_hashes": sorted(left_hashes - right_hashes),
                     "added_claim_hashes": sorted(right_hashes - left_hashes),
-                    "comparison_method": "exact_claim_text_sha256",
+                    "comparison_method": "same_application_chronological_exact_claim_text_sha256",
+                    "from_date": left["publication_date"], "to_date": right["publication_date"],
                 })
         return GenericAnalysisResult(
             result_type="claim_elements", data=output,

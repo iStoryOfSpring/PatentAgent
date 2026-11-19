@@ -3,7 +3,7 @@
   "tools": {
     "analyze_burst_terms": {
       "result_type": "burst_terms",
-      "sha256": "52fbd4b5f79d258a6a380fa71103b644471b0de8d6263683a4efd476e20de577",
+      "sha256": "5a7b4908fd9bafcb3859ef4c33f7ab89aa41f5d6d6e07b46cc757b95a0f25c9d",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "recent_document_frequency_growth",
@@ -158,6 +158,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -185,9 +186,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -261,8 +262,8 @@
           "algorithm_id": "recent_document_frequency_growth",
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
@@ -357,7 +358,7 @@
     },
     "analyze_clustering": {
       "result_type": "clustering",
-      "sha256": "63d3a9fc2c2bd73588b8e86fca13e053c3ec1a72c5bc43cd3ac1e0bdbb924af4",
+      "sha256": "abed0ae3f587774fff4de23a189f27e64561238f60c5d2a65d886fb28b1e7f33",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
@@ -890,6 +891,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -917,9 +919,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -1302,8 +1304,8 @@
           "algorithm_id": "multilingual_char_ngram_kmeans_cc05",
           "algorithm_version": "3.2",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
@@ -1796,7 +1798,7 @@
     },
     "analyze_co_network": {
       "result_type": "co_occurrence",
-      "sha256": "20e9ec47863fd4beea156191652575028d130994960c78afeef3a012b7e4567d",
+      "sha256": "9ba1e487665d4b799dae67a51971fced6420499d92f2b1e50486d50124888d9e",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "co_applicant_network",
@@ -1809,6 +1811,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -1836,9 +1839,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2214,8 +2217,8 @@
           "algorithm_id": "co_applicant_network",
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "applicants": 1.0
@@ -2298,7 +2301,7 @@
     },
     "analyze_competitor_evolution": {
       "result_type": "competitor_evolution",
-      "sha256": "01872d71914ef45ec8772e7be181d630fb1a24ec91de9a1690414d613387313c",
+      "sha256": "850c74f260aae96d0eae15175207764b79fd3e5073ff28f4d91b43d371154972",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "ipc_profile_evolution",
@@ -2612,6 +2615,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -2639,9 +2643,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2715,8 +2719,8 @@
           "algorithm_id": "ipc_profile_evolution",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "applicants": 1.0,
@@ -2809,7 +2813,7 @@
     },
     "analyze_country_distribution": {
       "result_type": "country_distribution",
-      "sha256": "2c45074f36f6e640db5fb913f9178d37e0f70f3b51129e2920d6e4fcfe9d062b",
+      "sha256": "fb234e6b24a90b33760848340ed64ecbf6666210d28e429cca9f656435079f4d",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "primary_publication_office_count",
@@ -2828,6 +2832,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -2855,9 +2860,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -2930,8 +2935,8 @@
           "algorithm_id": "primary_publication_office_count",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "family_members": 1.0,
@@ -3015,7 +3020,7 @@
     },
     "analyze_ipc_distribution": {
       "result_type": "ipc_matrix",
-      "sha256": "9a638de31184d3cdb40a83623764e047fb1109aad987a539fe1fed37e6138b1f",
+      "sha256": "02e6f3613df98fea0a00be937922965dea5f2bde7f35d91eba8ab8dd1c23d2df",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "ipc_publication_matrix_assignment_count",
@@ -3030,6 +3035,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -3057,9 +3063,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3176,8 +3182,8 @@
           "algorithm_id": "ipc_publication_matrix_assignment_count",
           "algorithm_version": "2.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "ipc": 1.0,
@@ -3290,11 +3296,11 @@
     },
     "analyze_lifecycle": {
       "result_type": "s_curve",
-      "sha256": "365b6ad02a638af31850b0b5882f2d3d110ce3fd58e0065ef718c1803bf1e43b",
+      "sha256": "8f3fcf714abefbf325078b680b7bf546a923f36008dd8e82923e48874d18445d",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "publication_growth_summary",
-          "algorithm_version": "2.0",
+          "algorithm_version": "2.0.1",
           "fallback_reason": null,
           "mode_requested": "default",
           "mode_used": "default",
@@ -3319,6 +3325,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -3346,9 +3353,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3427,10 +3434,10 @@
         "provenance": {
           "adapter": "wos_derwent",
           "algorithm_id": "publication_growth_summary",
-          "algorithm_version": "2.0",
+          "algorithm_version": "2.0.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "publication_date": 1.0
@@ -3446,14 +3453,14 @@
         "result_metadata": {
           "algorithm_execution": {
             "algorithm_id": "publication_growth_summary",
-            "algorithm_version": "2.0",
+            "algorithm_version": "2.0.1",
             "fallback_reason": null,
             "mode_requested": "default",
             "mode_used": "default",
             "parameters": {}
           },
           "algorithm_id": "publication_growth_summary",
-          "algorithm_version": "2.0",
+          "algorithm_version": "2.0.1",
           "cagr_pct": 0.0,
           "cagr_period_years": 5,
           "confidence": "high",
@@ -3483,7 +3490,8 @@
           "scope": {},
           "source_capabilities": {},
           "time_coverage": {
-            "data_as_of": "2024-01-02",
+            "coverage_reference_date": "2024-01-02",
+            "data_as_of": "",
             "historical_missing_months": {
               "2019": [
                 2,
@@ -3557,7 +3565,8 @@
             "latest_year_months_covered": [
               1
             ],
-            "publication_lag_possible": true
+            "publication_lag_possible": true,
+            "reference_basis": "observed_publication_max"
           },
           "tool_name": "analyze_lifecycle",
           "unsupported_conclusions": [
@@ -3597,6 +3606,7 @@
           "基于完整外部前向引证的影响力结论"
         ],
         "warnings": [
+          "来源数据截止日期未知；最大公开日期仅用作观测月份参考，不代表来源更新时点。",
           "尾年 2024 覆盖 1/12 个月，属于部分自然年；不得把尾年下降解释为技术衰退。",
           "5 个历史年份存在缺月，年度比较可能受批次缺口影响。",
           "专利公开存在法定与数据库收录滞后，近期公开量通常会低估最终水平。"
@@ -3613,16 +3623,18 @@
     },
     "analyze_patent_trend": {
       "result_type": "yearly_trend",
-      "sha256": "874af9ce5f6f23d4640bf8f03913be5981e5c801125823c51ded86b03411476f",
+      "sha256": "c848e309b543cf15853d0d59bf1d9a7f3f41c653a844429cdda5db08df266434",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "publication_count_trend",
-          "algorithm_version": "2.0",
+          "algorithm_version": "3.0.1",
           "fallback_reason": null,
           "mode_requested": "default",
           "mode_used": "default",
           "parameters": {
-            "chart_type": "yearly"
+            "chart_type": "yearly",
+            "year_end": null,
+            "year_start": null
           }
         },
         "data": [
@@ -3654,6 +3666,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -3681,9 +3694,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -3710,7 +3723,7 @@
           "tool_field_coverage": {
             "applicants": 1.0,
             "ipc": 1.0,
-            "publication_date": 1.0
+            "patent_number": 1.0
           },
           "total_patents": 300,
           "unsupported_conclusions": [
@@ -3745,7 +3758,7 @@
           ]
         },
         "evidence_level": "descriptive_statistic",
-        "methodology": "按 WoS PD 公开日期聚合；尾年月份不完整时不解释为技术衰退。",
+        "methodology": "按指定日期和计数单位聚合；尾年月份不完整时不解释为技术衰退。",
         "metrics": {
           "cache_hit": false,
           "input_tokens": null,
@@ -3755,19 +3768,21 @@
         "provenance": {
           "adapter": "wos_derwent",
           "algorithm_id": "publication_count_trend",
-          "algorithm_version": "2.0",
+          "algorithm_version": "3.0.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "applicants": 1.0,
             "ipc": 1.0,
-            "publication_date": 1.0
+            "patent_number": 1.0
           },
           "input_record_count": 300,
           "parameters": {
-            "chart_type": "yearly"
+            "chart_type": "yearly",
+            "year_end": null,
+            "year_start": null
           },
           "sample_size": null,
           "sampled": false,
@@ -3778,30 +3793,65 @@
         "result_metadata": {
           "algorithm_execution": {
             "algorithm_id": "publication_count_trend",
-            "algorithm_version": "2.0",
+            "algorithm_version": "3.0.1",
             "fallback_reason": null,
             "mode_requested": "default",
             "mode_used": "default",
             "parameters": {
-              "chart_type": "yearly"
+              "chart_type": "yearly",
+              "year_end": null,
+              "year_start": null
             }
           },
           "algorithm_id": "publication_count_trend",
-          "algorithm_version": "2.0",
+          "algorithm_version": "3.0.1",
           "confidence": "high",
+          "count_unit": "publications",
           "data_as_of": "",
+          "date_basis": "publication",
           "date_semantics": "publication_date",
+          "evidence_bins": {
+            "2019": {
+              "membership_sha256": "653f116fed88c27eadad7a29006dfc9d53a83b76d3d8a13b1b426041c2e17a6c",
+              "unit_count": 50
+            },
+            "2020": {
+              "membership_sha256": "ef729bc4d7953d9facebe7d245573973c8614dd1e2016cd24e3b615c3a74817c",
+              "unit_count": 50
+            },
+            "2021": {
+              "membership_sha256": "a8a1f5851c4ffa5d6c8077db94650884751fb8b2893558dcb01dae24c0a887a7",
+              "unit_count": 50
+            },
+            "2022": {
+              "membership_sha256": "eb04787974bf2c68b958f4fe9af80b054306f3c411cb7ab44a77cd39a69bfd86",
+              "unit_count": 50
+            },
+            "2023": {
+              "membership_sha256": "129ace7c94aabdf019a3234aa0050739598c910e921a7036d9ee2d9d0341eb4a",
+              "unit_count": 50
+            },
+            "2024": {
+              "membership_sha256": "4dac5fa28c35923f4701c0d55ea82f78aa62defefdde18f020ae2fea25ad24de",
+              "unit_count": 50
+            }
+          },
           "evidence_level": "descriptive_statistic",
+          "evidence_selector_version": "trend-units-v1",
           "evidence_sources": [],
+          "excluded_missing_unit_or_date": true,
+          "missing_date_records": 0,
+          "missing_identity_records": 0,
           "parameters": {
-            "chart_type": "yearly"
+            "chart_type": "yearly",
+            "year_end": null,
+            "year_start": null
           },
           "population_after_family_deduplication": 300,
           "population_after_filters": 300,
           "population_after_scope": 300,
           "population_before_scope": 300,
           "prohibited_claims": [
-            "application trend",
             "technology decline",
             "technology lifecycle"
           ],
@@ -3818,7 +3868,8 @@
           "scope": {},
           "source_capabilities": {},
           "time_coverage": {
-            "data_as_of": "2024-01-02",
+            "coverage_reference_date": "2024-01-02",
+            "data_as_of": "",
             "historical_missing_months": {
               "2019": [
                 2,
@@ -3892,7 +3943,8 @@
             "latest_year_months_covered": [
               1
             ],
-            "publication_lag_possible": true
+            "publication_lag_possible": true,
+            "reference_basis": "observed_publication_max"
           },
           "tool_name": "analyze_patent_trend",
           "unsupported_conclusions": [
@@ -3913,7 +3965,7 @@
         },
         "result_type": "yearly_trend",
         "source_capabilities": {},
-        "summary": "按专利公开日期生成 yearly 趋势，共 6 个时间点，筛选后 300 件记录。",
+        "summary": "按 publication 日期、publications 单位生成 yearly 趋势，共 6 个时间点，筛选后 300 件记录。",
         "unsupported_conclusions": [
           "正式专利价值或交易价格结论",
           "权利要求范围判断",
@@ -3924,6 +3976,7 @@
           "基于完整外部前向引证的影响力结论"
         ],
         "warnings": [
+          "来源数据截止日期未知；最大公开日期仅用作观测月份参考，不代表来源更新时点。",
           "尾年 2024 覆盖 1/12 个月，属于部分自然年；不得把尾年下降解释为技术衰退。",
           "5 个历史年份存在缺月，年度比较可能受批次缺口影响。",
           "专利公开存在法定与数据库收录滞后，近期公开量通常会低估最终水平。"
@@ -3932,7 +3985,7 @@
     },
     "analyze_patent_valuation": {
       "result_type": "value_indicators",
-      "sha256": "243c862448c809d95c7b241db5884d589296883a7487863bb8a3fe2a231e1b8b",
+      "sha256": "b8024792ddd52c34e3e785a821144ed8788ebd19b8e630a1aaf2f817050eac5a",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "patent_family_citation_screening",
@@ -4379,6 +4432,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -4406,9 +4460,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -4485,8 +4539,8 @@
           "algorithm_id": "patent_family_citation_screening",
           "algorithm_version": "3.1",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "backward_citations": 0.9967,
@@ -4669,7 +4723,7 @@
     },
     "analyze_tech_matrix": {
       "result_type": "tech_effect_matrix",
-      "sha256": "3a478d05aa3b5f3ec407bf9a278c0c2ffe8c4d8e0fd0a049480607b86a9a6025",
+      "sha256": "ba8df2276a8113058dec4611b4f15aa65430eee6d7f7b265b2cb58ba967694e7",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "derwent_abstract_proxy_te_matrix",
@@ -4684,6 +4738,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -4711,9 +4766,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -5058,8 +5113,8 @@
           "algorithm_id": "derwent_abstract_proxy_te_matrix",
           "algorithm_version": "2.3",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0
@@ -5167,7 +5222,7 @@
     },
     "analyze_tech_roadmap": {
       "result_type": "roadmap",
-      "sha256": "014632d40c5db653c66728006c449217e0964123ffffa6045d2e6955600e35b2",
+      "sha256": "b559299032d451a179d53278fb33ff2a94e08d25950cab0123a62a3609bdfb62",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "annual_theme_timeline",
@@ -5343,6 +5398,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -5370,9 +5426,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -5449,8 +5505,8 @@
           "algorithm_id": "annual_theme_timeline",
           "algorithm_version": "2.2",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "backward_citations": 0.9967,
@@ -5560,7 +5616,7 @@
     },
     "analyze_yearly_keywords": {
       "result_type": "yearly_keywords",
-      "sha256": "c3449d1e8878f6a8ac9f3a20a775bc917630358ec4f965404b65e2b0a2667d30",
+      "sha256": "d8809a47faf630103c18ef506789c529eac60539029303a08a6874cb0b26860c",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "yearly_phrase_frequency",
@@ -5829,6 +5885,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -5856,9 +5913,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -5932,8 +5989,8 @@
           "algorithm_id": "yearly_phrase_frequency",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
@@ -6031,7 +6088,7 @@
     },
     "generate_wordcloud": {
       "result_type": "word_freq",
-      "sha256": "8da75c491e94c37a04c4c8b7979cf64f3cf65df972db9dc6b8a0439ed3c1e77e",
+      "sha256": "4857197aa94819e933191e13e4f4ff0df45ee3fd667ce3f42d87e859a239ee09",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "derwent_phrase_frequency",
@@ -6240,6 +6297,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -6267,9 +6325,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -6342,8 +6400,8 @@
           "algorithm_id": "derwent_phrase_frequency",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
@@ -6436,7 +6494,7 @@
     },
     "get_dataset_summary": {
       "result_type": "dataset_summary",
-      "sha256": "b776d3c662f1792d30a0fd4ee3cff40886f11cefd7307101ae8e86c7f1f72476",
+      "sha256": "066a0fcc40891d3b2ff7c86756dd3bc1165195686b5e89a0ea698c1d8a9ac8d8",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "dataset_field_audit",
@@ -6449,6 +6507,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -6476,9 +6535,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -6555,8 +6614,8 @@
           "algorithm_id": "dataset_field_audit",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {},
           "input_record_count": 300,
@@ -6681,7 +6740,7 @@
     },
     "read_patent_details": {
       "result_type": "patent_details",
-      "sha256": "3a5ff867b362b2a401873c8f7f18b20841453c2488bf371241e9154fdc40823d",
+      "sha256": "c1b775243bfe86f7ef3bf7568f0ef3bf8204a5d08ffec0caa7d7bd79b6218173",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "structured_record_lookup",
@@ -6698,6 +6757,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -6725,9 +6785,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -6800,7 +6860,30 @@
         "patents": [
           {
             "abstract": "NOVELTY - improved solid electrolyte battery structure generation 0. USE - energy storage. ADVANTAGE - stable efficiency and reduced energy loss.",
-            "applicant_parties": [],
+            "applicant_parties": [
+              {
+                "aliases": [],
+                "country": "",
+                "human_review_required": false,
+                "name": "Applicant 00 Corp",
+                "normalization_rule": "",
+                "normalized_name": "",
+                "role": "applicant",
+                "source": "",
+                "source_role": "AE"
+              },
+              {
+                "aliases": [],
+                "country": "",
+                "human_review_required": false,
+                "name": "Research Institute 00",
+                "normalization_rule": "",
+                "normalized_name": "",
+                "role": "applicant",
+                "source": "",
+                "source_role": "AE"
+              }
+            ],
             "applicants": [
               "Applicant 00 Corp",
               "Research Institute 00"
@@ -6810,6 +6893,8 @@
             "backward_citations": [],
             "citation_records": [],
             "claims": [],
+            "claims_source": "",
+            "claims_structure_status": "unknown",
             "classifications": [],
             "cpc_codes": [],
             "current_rights_holder_parties": [],
@@ -6825,7 +6910,19 @@
             "filing_date": "",
             "forward_citations": [],
             "grant_date": "",
-            "inventor_parties": [],
+            "inventor_parties": [
+              {
+                "aliases": [],
+                "country": "",
+                "human_review_required": false,
+                "name": "Inventor 00",
+                "normalization_rule": "",
+                "normalized_name": "",
+                "role": "inventor",
+                "source": "",
+                "source_role": "AU"
+              }
+            ],
             "inventors": [
               "Inventor 00"
             ],
@@ -6847,14 +6944,26 @@
             "patent_number": "EP2019000000-A1",
             "priority_date": "2018-01-01",
             "priority_numbers": [],
-            "provenance": null,
+            "provenance": {
+              "raw_record_hash": "d28ac721175e35168d91576c6815ca75a53cc7d17b0a9781feeeb9c725778f56",
+              "source": {
+                "adapter": "wos",
+                "license_note": "User-supplied Derwent export; redistribution is not implied.",
+                "source_name": "Web of Science Derwent",
+                "source_uri": "https://www.webofscience.com/"
+              },
+              "source_file": "synthetic_wos.txt",
+              "source_record_id": "SYNTHETIC:0000"
+            },
             "publication_date": "2019-01-02",
             "publication_numbers": [
               "EP2019000000-A1",
               "WO2019000000-A1"
             ],
-            "schema_version": 3,
-            "source_file": "",
+            "raw_claims": [],
+            "record_type": "publication",
+            "schema_version": 4,
+            "source_file": "synthetic_wos.txt",
             "source_record_id": "SYNTHETIC:0000",
             "title": "Solid Electrolyte Battery apparatus generation 0"
           }
@@ -6864,8 +6973,8 @@
           "algorithm_id": "structured_record_lookup",
           "algorithm_version": "2.0",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "claims_json": 0.0,
@@ -6967,7 +7076,7 @@
     },
     "search_patents": {
       "result_type": "patent_search",
-      "sha256": "5e64326f7231e2222260a6da49cbb81be43ce1c1d0a9663142bdef556104f56f",
+      "sha256": "2d17b9aae4f076928cf72cca96b9218d388dec5475a22cfd9084128f35c23d52",
       "projection": {
         "algorithm_execution": {
           "algorithm_id": "tfidf_cosine_retrieval",
@@ -6982,6 +7091,7 @@
         "data_as_of": "",
         "data_quality": {
           "adapter": "wos_derwent",
+          "application_evidence_count": 0,
           "batch_completeness": {},
           "citation_availability": 0.9967,
           "claims_availability": 0.0,
@@ -7009,9 +7119,9 @@
             "forward_citations": 0.0,
             "inventors": 1.0,
             "ipc": 1.0,
-            "legal_events": 1.0,
+            "legal_events": 0.0,
             "legal_status": 0.0,
-            "multilingual_text": 1.0,
+            "multilingual_text": 0.0,
             "non_patent_references": 1.0,
             "patent_number": 1.0,
             "priority_numbers": 0.0,
@@ -7127,8 +7237,8 @@
           "algorithm_id": "tfidf_cosine_retrieval",
           "algorithm_version": "2.2",
           "analyzed_record_count": 300,
-          "dataset_content_hash": "2f5ecbe54ecd5fea8010934a38c9f12d3296f322cda50643d8c6acababc29713",
-          "dataset_version_id": "version_2f5ecbe54ecd5fea8010934a",
+          "dataset_content_hash": "6cb09245ca20f77e276316c279beb65f3f133f122353cc9f3ad798b3f57d61a8",
+          "dataset_version_id": "version_6cb09245ca20f77e276316c2",
           "family_deduplicated_record_count": 300,
           "field_coverage": {
             "abstract": 1.0,
@@ -7161,11 +7271,15 @@
           "algorithm_version": "2.2",
           "beta_fallback": false,
           "confidence": "high",
+          "cpc_filter": [],
           "data_as_of": "",
           "embedding_model": "",
           "evidence_level": "engineering_screening",
           "evidence_sources": [],
+          "expanded_query": "solid electrolyte battery",
+          "expansion_terms": [],
           "index": {},
+          "original_query": "solid electrolyte battery",
           "parameters": {
             "query": "solid electrolyte battery",
             "top_k": 5
@@ -7192,6 +7306,7 @@
           },
           "scope": {},
           "source_capabilities": {},
+          "synonym_dictionary_version": null,
           "tool_name": "search_patents",
           "unsupported_conclusions": [
             "正式专利价值或交易价格结论",

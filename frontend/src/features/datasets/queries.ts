@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDataSummary, fetchDatasets } from "../../api";
+import { ApiError, fetchDataSummary, fetchDatasets } from "../../api";
 
 export const datasetKeys = {
   all: ["datasets"] as const,
@@ -10,6 +10,16 @@ export function useDatasetsQuery() {
   return useQuery({ queryKey: datasetKeys.all, queryFn: fetchDatasets });
 }
 
-export function useDataSummaryQuery(enabled: boolean) {
-  return useQuery({ queryKey: datasetKeys.summary, queryFn: fetchDataSummary, enabled });
+export function useDataSummaryQuery(enabled: boolean, sessionId?: string) {
+  return useQuery({
+    queryKey: [...datasetKeys.summary, sessionId ?? null],
+    queryFn: async () => {
+      try { return await fetchDataSummary(sessionId); }
+      catch (error) {
+        if (error instanceof ApiError && error.status === 404) return null;
+        throw error;
+      }
+    },
+    enabled,
+  });
 }

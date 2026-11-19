@@ -59,7 +59,7 @@ def test_fingerprint_is_row_and_multivalue_order_independent():
 def test_snapshot_declares_content_fingerprint_scheme():
     snapshot = PatentDataStore(_frame()).snapshot()
     assert snapshot.schema_version == 2
-    assert snapshot.fingerprint_scheme == "patent-content-v2"
+    assert snapshot.fingerprint_scheme == "patent-content-v3"
     assert snapshot.version_id.endswith(snapshot.content_hash[:24])
 
 

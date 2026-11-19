@@ -62,6 +62,7 @@ const TOOL_LABELS_EN: Record<string, string> = {
 };
 
 const PARAMETER_LABELS: Record<string, string> = {
+  date_basis: "统计日期", count_unit: "计数单位", synonym_expansion: "中英同义词扩展", cpc_filter: "CPC 筛选",
   query: "检索词",
   top_k: "返回数量",
   top_n: "展示数量",
@@ -98,6 +99,10 @@ const PARAMETER_LABELS: Record<string, string> = {
 };
 
 const PARAMETER_HELP: Record<string, string> = {
+  date_basis: "选择公开、申请、优先权或授权日期；年份筛选使用此日期。",
+  count_unit: "按公开文献、真实申请号或真实同族号计数，分组使用最早所选日期；缺字段明确排除。",
+  synonym_expansion: "显式启用固定 zh-en-v1 中英技术词表；结果显示原始和扩展检索词，不自动调用语言模型补词。",
+  cpc_filter: "独立按 CPC 前缀筛选，例如 H01M；不会将 CPC 与 IPC 混为同一字段。",
   query: "输入技术主题、产品名称或限定词；多个条件可直接写在同一检索式中。",
   top_k: "最多返回多少条相关专利，数值越大结果越全面但处理时间可能更长。",
   top_n: "图表或列表中展示的前 N 项。",
@@ -134,6 +139,8 @@ const PARAMETER_HELP: Record<string, string> = {
 };
 
 const ENUM_LABELS: Record<string, string> = {
+  publication: "公开日期", filing: "申请日期", priority: "优先权日期", grant: "授权日期", applications: "申请",
+  first_observed: "首次观测", entered_returned_set: "进入返回集", no_longer_returned: "不再返回", fields_changed: "字段变化",
   lexical: "词法检索",
   multilingual_hybrid_beta: "多语言混合检索（测试版）",
   monthly: "按月",
@@ -351,6 +358,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 const ADAPTER_LABELS: Record<string, string> = {
+  canonical_jsonl: "标准文献 JSONL v4", epo_ops: "EPO OPS 题录采集",
   wos_dii: "WoS / Derwent 标记文本（TXT）",
   google_patents_jsonl: "Google Patents JSONL",
   uspto_grant_xml: "USPTO 授权 XML",
@@ -368,6 +376,7 @@ const PROBE_STAGE_LABELS: Record<string, string> = {
 };
 
 const PARAMETER_LABELS_EN: Record<string, string> = {
+  date_basis: "Date basis", count_unit: "Counting unit", synonym_expansion: "Chinese-English synonyms", cpc_filter: "CPC filter",
   query: "Query", top_k: "Results", top_n: "Displayed items", n_clusters: "Clusters",
   year_start: "Start year", year_end: "End year", ipc_filter: "IPC filter",
   applicant_filter: "Applicant filter", jurisdiction_filter: "Jurisdiction filter",
@@ -383,6 +392,10 @@ const PARAMETER_LABELS_EN: Record<string, string> = {
 };
 
 const PARAMETER_HELP_EN: Record<string, string> = {
+  date_basis: "Choose publication, filing, priority, or grant date; year filters use this date.",
+  count_unit: "Count publications, real applications, or real families at the earliest selected date; missing identities/dates are excluded explicitly.",
+  synonym_expansion: "Explicitly enable the fixed zh-en-v1 technical dictionary. Original and expanded terms are shown; no implicit LLM expansion.",
+  cpc_filter: "Filter CPC prefixes independently from IPC, e.g. H01M.",
   query: "Enter a technical topic, product name, or qualifier; multiple conditions may be written in one query.",
   top_k: "Maximum related patents to return. Larger values are more comprehensive but may take longer.",
   top_n: "Number of top items shown in a chart or list.",
@@ -418,6 +431,8 @@ const PARAMETER_HELP_EN: Record<string, string> = {
 };
 
 const ENUM_LABELS_EN: Record<string, string> = {
+  publication: "Publication date", filing: "Filing date", priority: "Priority date", grant: "Grant date", applications: "Applications",
+  first_observed: "First observed", entered_returned_set: "Entered result set", no_longer_returned: "No longer returned", fields_changed: "Fields changed",
   lexical: "Lexical search", multilingual_hybrid_beta: "Multilingual hybrid (Beta)", monthly: "Monthly", yearly: "Yearly",
   title: "Title", abstract: "Abstract", char_ngram_tfidf: "Character n-gram TF-IDF", segmented_word_tfidf: "Segmented-word TF-IDF",
   assignment_count: "IPC assignments", unique_patents: "Unique patents", family_normalized: "Family-normalized",
@@ -471,6 +486,7 @@ const FIELD_LABELS_EN: Record<string, string> = {
 };
 
 const ADAPTER_LABELS_EN: Record<string, string> = {
+  canonical_jsonl: "Canonical publication JSONL v4", epo_ops: "EPO OPS bibliographic acquisition",
   wos_dii: "WoS / Derwent tagged text (TXT)", google_patents_jsonl: "Google Patents JSONL", uspto_grant_xml: "USPTO grant XML",
   uspto_file_wrapper_json: "USPTO File Wrapper JSON (prosecution file)", unknown: "Unknown source",
 };
@@ -694,6 +710,8 @@ export function httpStatusLabel(status: number, statusText?: string, locale: Loc
 }
 
 export function localizeErrorMessage(message: string, locale: Locale = "zh-CN"): string {
+  if (locale === "en-US" && message === "导入因服务重启中断，请重新上传") return "The service restarted during import. Upload the file again.";
+  if (locale === "en-US" && message === "导入记录与已保存版本不一致，请核查后重新上传") return "The import conflicts with stored version data. Review the saved files before uploading again.";
   const labels: Record<string, string> = {
     "client.network": "无法连接后端服务，请检查后端是否已启动。",
     "client.sse.invalidEvent": "服务器返回了无法解析的 SSE 事件",

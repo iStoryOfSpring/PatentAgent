@@ -7,10 +7,13 @@ import json
 import os
 from pathlib import Path
 import tempfile
+from collections import defaultdict
+from copy import deepcopy
 from typing import Iterable
 
 from engine.adapters.base import PatentAdapter
-from engine.adapters.common import merge_patent_records
+from engine.adapters.canonical import CanonicalJsonlAdapter
+from engine.adapters.common import merge_patent_records, normalized_application_number, _merge_into
 from engine.adapters.google_patents import GooglePatentsExportAdapter
 from engine.adapters.uspto import USPTOFileWrapperJsonAdapter, USPTOGrantXmlAdapter
 from engine.adapters.wos_adapter import WoSAdapter
@@ -21,6 +24,7 @@ from patent_agent.domain import (
 
 
 FORMAT_ADAPTERS: dict[str, type[PatentAdapter]] = {
+    "canonical_jsonl": CanonicalJsonlAdapter,
     "wos_dii": WoSAdapter,
     "google_patents_jsonl": GooglePatentsExportAdapter,
     "uspto_grant_xml": USPTOGrantXmlAdapter,
@@ -28,6 +32,7 @@ FORMAT_ADAPTERS: dict[str, type[PatentAdapter]] = {
 }
 
 SOURCE_CAPABILITIES: dict[str, SourceCapabilities] = {
+    "epo_ops": SourceCapabilities(multilingual_text=True, classifications=True),
     "wos": SourceCapabilities(
         classifications=True, citations=True, family=True,
     ),
@@ -48,7 +53,7 @@ class PatentDatasetImporter:
     def __init__(self, adapters: Iterable[PatentAdapter] | None = None):
         self.adapters = list(adapters or (
             WoSAdapter(), GooglePatentsExportAdapter(), USPTOGrantXmlAdapter(),
-            USPTOFileWrapperJsonAdapter(),
+            USPTOFileWrapperJsonAdapter(), CanonicalJsonlAdapter(),
         ))
 
     def import_directory(
@@ -118,7 +123,28 @@ class PatentDatasetImporter:
                     message=f"{type(exc).__name__}: {exc}", sample_hash=_sha256(path),
                 ))
 
-        merged, duplicates, conflicts = merge_patent_records(parsed)
+        publications = [r for r in parsed if r.patent_number and r.record_type == "publication"]
+        application_evidence = [r for r in parsed if not r.patent_number or r.record_type == "application_evidence"]
+        # Keep all application-level evidence replayable even when it has no matching document.
+        report.application_evidence = [r.model_dump(mode="json") for r in application_evidence]
+        report.application_evidence_count = len(application_evidence)
+        by_application = defaultdict(list)
+        for publication in publications:
+            by_application[normalized_application_number(publication.application_number)].append(publication)
+        for evidence in application_evidence:
+            application = normalized_application_number(evidence.application_number)
+            if application:
+                for publication in by_application.get(application, []):
+                    side = PatentRecord(patent_number="", title="", abstract="",
+                        legal_events=deepcopy(evidence.legal_events),
+                        legal_status=evidence.legal_status, legal_status_as_of=evidence.legal_status_as_of,
+                        jurisdiction=evidence.jurisdiction, language=publication.language,
+                        claims_structure_status=publication.claims_structure_status,
+                        claims_source=publication.claims_source, provenance=evidence.provenance,
+                        source_record_id=evidence.source_record_id, field_provenance=deepcopy(evidence.field_provenance),
+                        current_rights_holder_parties=deepcopy(evidence.current_rights_holder_parties))
+                    _merge_into(publication, side)
+        merged, duplicates, conflicts = merge_patent_records(publications)
         report.source_formats = sorted(formats_seen)
         report.records_parsed = len(parsed)
         report.records_imported = len(merged)
@@ -183,7 +209,7 @@ class PatentDatasetImporter:
     ) -> None:
         """Attach dataset-level source facts without overwriting record facts."""
         for record in records:
-            if not record.data_as_of:
+            if not record.data_as_of and not (record.provenance and record.provenance.source.adapter == "epo_ops"):
                 record.data_as_of = manifest.data_as_of or manifest.retrieved_at
             if record.provenance is None:
                 continue
@@ -198,6 +224,8 @@ class PatentDatasetImporter:
     @staticmethod
     def _load_manifest(root: Path) -> ImportManifest | None:
         path = root / "patentagent-import.json"
+        if path.exists():
+            _within_root(path, root)
         if not path.is_file():
             return None
         return ImportManifest.model_validate_json(path.read_text(encoding="utf-8"))
@@ -220,9 +248,12 @@ class PatentDatasetImporter:
                     )
                     specs.append((path, chosen, item.sha256, method))
             return specs
+        for candidate in root.iterdir():
+            if candidate.is_file() or candidate.is_symlink():
+                _within_root(candidate, root)
         return [
             (
-                path, source_format, "",
+                path.resolve(), source_format, "",
                 "user_selected" if source_format != "auto" else "content_signature",
             ) for path in sorted(root.iterdir())
             if path.is_file() and not path.name.startswith(".")
@@ -278,3 +309,10 @@ def _language_distribution(records: list[PatentRecord]) -> dict[str, int]:
         language = record.language or "und"
         counts[language] = counts.get(language, 0) + 1
     return dict(sorted(counts.items()))
+
+
+def _within_root(path: Path, root: Path) -> None:
+    try:
+        path.resolve().relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"导入路径越界: {path.name}") from exc

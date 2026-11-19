@@ -9,6 +9,9 @@ from patent_agent.domain import AlgorithmExecution
 from weakref import WeakKeyDictionary
 
 
+SYNONYM_GROUPS = [("电池", "battery"), ("固态电池", "solid state battery"), ("石墨烯", "graphene"), ("太阳能", "solar"), ("传感器", "sensor"), ("半导体", "semiconductor")]
+
+
 class SearchTool(Tool):
     name = "search_patents"
     description = (
@@ -16,6 +19,8 @@ class SearchTool(Tool):
         "支持按年份、IPC分类、申请人过滤；不等同于语义嵌入或查全检索。"
     )
     parameters = {
+        "synonym_expansion": {"type":"boolean","default":False},
+        "cpc_filter": {"type":"array","items":{"type":"string"},"maxItems":50},
         "query": {
             "type": "string",
             "description": "自然语言检索描述，如'固态电池电解质材料'",
@@ -61,8 +66,24 @@ class SearchTool(Tool):
                       year_end: int = None,
                       ipc_filter: list[str] = None,
                       applicant_filter: str = None,
-                      retrieval_mode: str = "lexical") -> PatentSearchResult:
+                      retrieval_mode: str = "lexical",
+                      synonym_expansion: bool = False, cpc_filter: list[str] = None) -> PatentSearchResult:
         """Run the stable lexical baseline or explicitly selected beta."""
+        original_query = query
+        expansion_terms = []
+        if synonym_expansion:
+            for terms in SYNONYM_GROUPS:
+                if any(term.casefold() in query.casefold() for term in terms):
+                    expansion_terms.extend(term for term in terms if term.casefold() not in query.casefold())
+            query = " ".join([query, *expansion_terms])
+        if cpc_filter:
+            frame = storage.get_all()
+            prefixes = tuple(str(code).upper().strip() for code in cpc_filter if str(code).strip())
+            mask = frame.get("cpc_codes", __import__("pandas").Series("", index=frame.index)).fillna("").astype(str).map(
+                lambda value: any(code.strip().upper().startswith(prefixes) for code in value.split(";") if code.strip()))
+            filtered = storage.filtered()
+            filtered._df = frame.loc[mask].copy()
+            storage = filtered
         year_range = None
         if year_start or year_end:
             year_range = (year_start or 1900, year_end or 2100)
@@ -122,6 +143,9 @@ class SearchTool(Tool):
             query_embedding_time_ms=query_time,
             warnings=warnings,
             result_metadata={
+                "original_query": original_query, "expanded_query": query,
+                "expansion_terms": expansion_terms, "synonym_dictionary_version": "zh-en-v1" if synonym_expansion else None,
+                "cpc_filter": cpc_filter or [],
                 "retrieval_mode_requested": retrieval_mode,
                 "retrieval_mode_used": mode_used,
                 "beta_fallback": retrieval_mode != mode_used,
@@ -201,6 +225,9 @@ class ReadPatentDetailsTool(Tool):
                     claims = [Claim.model_validate(item) for item in json.loads(raw_claims)]
                 except (ValueError, TypeError):
                     claims = []
+            if isinstance(row.get("canonical_record_json"), str) and row["canonical_record_json"]:
+                results.append(FullPatent.model_validate_json(row["canonical_record_json"]))
+                continue
             fp = FullPatent(
                 patent_number=str(row.get("patent_number", "")),
                 normalized_patent_number=str(row.get("normalized_patent_number", "")),

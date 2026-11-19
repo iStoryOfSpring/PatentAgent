@@ -17,6 +17,10 @@ class Party(BaseModel):
     country: str = ""
     role: Literal["applicant", "assignee", "current_rights_holder", "inventor", "unknown"] = "unknown"
     source_role: str = ""
+    source: str = ""
+    aliases: list[str] = Field(default_factory=list)
+    normalization_rule: str = ""
+    human_review_required: bool = False
 
 
 class Classification(BaseModel):
@@ -52,6 +56,9 @@ class FieldProvenance(BaseModel):
     source_record_id: str = ""
     source_path: str = ""
     observed_at: str = ""
+    jurisdiction: str = ""
+    as_of: str = ""
+    value: str = ""
 
 
 class FieldConflict(BaseModel):
@@ -74,10 +81,12 @@ class Claim(BaseModel):
     """权利要求"""
     number: int
     text: str
-    is_independent: bool
+    is_independent: bool | None = None
     depends_on: list[int] = Field(default_factory=list)
     language: str = "und"
     claim_id: str = ""
+    structure_source: str = ""
+    structure_status: Literal["verified", "source_structured", "unknown"] = "unknown"
 
 
 class Citation(BaseModel):
@@ -92,8 +101,9 @@ class Citation(BaseModel):
 
 
 class FullPatent(BaseModel):
-    """Canonical patent record v3 with legacy flat-field compatibility."""
-    schema_version: int = 3
+    """Canonical patent record v4 with legacy flat-field compatibility."""
+    schema_version: int = 4
+    record_type: Literal["publication", "application_evidence"] = "publication"
     patent_number: str
     normalized_patent_number: str = ""
     application_number: str = ""
@@ -114,6 +124,9 @@ class FullPatent(BaseModel):
     priority_date: str = ""
     priority_numbers: list[str] = Field(default_factory=list)
     claims: list[Claim] = Field(default_factory=list)
+    raw_claims: list[LocalizedText] = Field(default_factory=list)
+    claims_structure_status: Literal["source_structured", "unknown", "not_fetched"] = "unknown"
+    claims_source: str = ""
     description: str = ""
     forward_citations: list[str] = Field(default_factory=list)
     backward_citations: list[str] = Field(default_factory=list)

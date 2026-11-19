@@ -57,7 +57,8 @@ def test_registry_import_merges_exact_application_and_keeps_field_provenance():
     assert manifest is not None
     assert report.records_parsed == 5
     assert report.records_imported == 3
-    assert report.duplicates_merged == 2
+    assert report.duplicates_merged == 1
+    assert len(report.application_evidence) == 1
     carbon = next(item for item in records if item.normalized_patent_number == "US11325075B2")
     assert len(carbon.claims) == 2
     assert len(carbon.legal_events) == 2
@@ -134,7 +135,7 @@ def test_dataset_view_exposes_import_report_and_full_claim_payload():
     assert audit["source_capabilities"]["google_patents"]["multilingual_text"]
     assert "正式 FTO 意见" in audit["unsupported_conclusions"]
     assert "实时有效性判断" in audit["unsupported_conclusions"]
-    assert store.field_coverage("claims_json") == pytest.approx(1.0, abs=0.0001)
+    assert store.field_coverage("claims_json") == pytest.approx(1 / 3, abs=0.0001)
     claim_json = store.get_all().loc[
         store.get_all()["normalized_patent_number"].eq("US11325075B2"), "claims_json"
     ].iloc[0]
@@ -204,7 +205,7 @@ def test_data_load_api_accepts_source_format_and_returns_import_report(tmp_path,
     async def scenario():
         async with application.router.lifespan_context(application):
             async with AsyncClient(
-                transport=ASGITransport(app=application), base_url="http://test",
+                transport=ASGITransport(app=application), base_url="http://testserver",
             ) as client:
                 loaded = await client.post("/api/data/load", json={
                     "input_dir": str(FIXTURE), "source_format": "auto",

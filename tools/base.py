@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from datetime import date
 import time
 from typing import Any
 
@@ -263,10 +264,18 @@ class Tool(ABC):
         """统一执行入口：参数校验、能力门禁、结果质量和追踪元数据。"""
         clean = self.validate_params(params)
         scope = AnalysisScope.model_validate(clean.get("scope", {}))
+        filter_scope = scope
+        if self.name == "analyze_patent_trend":
+            clean["year_start"] = clean.get("year_start", scope.year_start)
+            clean["year_end"] = clean.get("year_end", scope.year_end)
+            filter_scope = scope.model_copy(update={"year_start":None,"year_end":None})
         execution_storage = (
-            storage.filtered_by_scope(scope) if self.supports_scope and scope.canonical()
+            storage.filtered_by_scope(filter_scope) if self.supports_scope and filter_scope.canonical()
             else storage
         )
+        if self.name == "monitor_patent_changes" and execution_storage is not storage:
+            execution_storage._version_id_override = storage.snapshot().version_id
+            execution_storage._dataset_id_override = storage.snapshot().dataset_id
         capability = self.availability(execution_storage)
         if not capability["available"]:
             raise ValueError(capability["reason"] or "当前数据无法执行该工具")
@@ -296,7 +305,12 @@ class Tool(ABC):
                         self.execute, execution_storage, execute_params,
                     )
                 else:
-                    result = await self.execute(execution_storage, **execute_params)
+                    from patent_agent.application.monitoring import run_parameters
+                    token = run_parameters.set(clean)
+                    try:
+                        result = await self.execute(execution_storage, **execute_params)
+                    finally:
+                        run_parameters.reset(token)
         except TimeoutError as exc:
             raise TimeoutError(
                 f"工具 {self.name} 超过最大执行时间 {self.max_execution_seconds:g} 秒"
@@ -352,7 +366,11 @@ class Tool(ABC):
             )
             result.source_capabilities = audit.get("source_capabilities", {})
             result.unsupported_conclusions = audit.get("unsupported_conclusions", [])
-            result.data_as_of = audit.get("data_as_of", "")
+            # Observed publication maxima are never a substitute for a source cutoff.
+            try:
+                result.data_as_of = date.fromisoformat(str(audit.get("data_as_of", ""))[:10]).isoformat()
+            except (TypeError, ValueError):
+                result.data_as_of = ""
             result.result_metadata = {
                 "tool_name": self.name,
                 "parameters": clean,

@@ -7,6 +7,7 @@ import server
 from server import ChatRequest, ToolRequest
 from storage.conversation_store import ConversationStore
 from storage.datastore import PatentDataStore
+from patent_agent.application import DatasetRuntimeManager, DatasetImportService
 
 
 def _store():
@@ -89,6 +90,11 @@ def test_server_stream_converts_post_tool_failure_to_text_and_done(tmp_path, mon
         monkeypatch.setattr(server.app.state.container, "store", _store())
         monkeypatch.setattr(server.app.state.container, "agent", _BrokenAfterStepAgent())
 
+        store = server.app.state.container.store
+        runtime = DatasetRuntimeManager(repo, DatasetImportService())
+        runtime.register(store)
+        monkeypatch.setattr(server.app.state.container, "dataset_runtime", runtime)
+        await repo.create_session("contract", store.dataset_fingerprint(), "contract-session", store.snapshot().version_id)
         response = await server.agent_chat(ChatRequest(
             message="test", session_id="contract-session",
         ))
@@ -111,7 +117,11 @@ def test_quick_tool_result_is_attached_to_session_without_chart_html(tmp_path, m
         await repo.initialize()
         monkeypatch.setattr(server.app.state.container, "conversation_store", repo)
         monkeypatch.setattr(server.app.state.container, "store", _store())
-        await repo.create_session("quick", server._dataset_fingerprint(), "quick-session")
+        store = server.app.state.container.store
+        runtime = DatasetRuntimeManager(repo, DatasetImportService())
+        runtime.register(store)
+        monkeypatch.setattr(server.app.state.container, "dataset_runtime", runtime)
+        await repo.create_session("quick", server._dataset_fingerprint(), "quick-session", store.snapshot().version_id)
         payload = await server.run_tool(
             "get_dataset_summary",
             ToolRequest(params={}, session_id="quick-session"),
@@ -134,6 +144,11 @@ def test_sse_boundary_never_streams_raw_json_and_preserves_followups(tmp_path, m
         monkeypatch.setattr(server.app.state.container, "store", _store())
         monkeypatch.setattr(server.app.state.container, "agent", _RawJsonFinalAgent())
 
+        store = server.app.state.container.store
+        runtime = DatasetRuntimeManager(repo, DatasetImportService())
+        runtime.register(store)
+        monkeypatch.setattr(server.app.state.container, "dataset_runtime", runtime)
+        await repo.create_session("raw", store.dataset_fingerprint(), "raw-session", store.snapshot().version_id)
         response = await server.agent_chat(ChatRequest(
             message="最近三年", session_id="raw-session",
         ))

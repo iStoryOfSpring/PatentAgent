@@ -25,7 +25,7 @@ _FIELD_MAP = {
     "multilingual_text": "localized_titles_json",
 }
 
-_FINGERPRINT_SCHEME = "patent-content-v2"
+_FINGERPRINT_SCHEME = "patent-content-v3"
 _UNORDERED_MULTI_VALUE_FIELDS = {
     "applicants", "inventors", "ipc", "cpc_codes", "publication_numbers",
     "priority_numbers", "forward_citations", "backward_citations", "cited_refs",
@@ -34,7 +34,7 @@ _UNORDERED_MULTI_VALUE_FIELDS = {
     "inventor_entity_ids", "inventor_canonical_names",
 }
 _VOLATILE_FINGERPRINT_FIELDS = {
-    "imported_at",
+    "imported_at", "observed_at",
 }
 
 
@@ -48,7 +48,7 @@ def _is_null(value: Any) -> bool:
     return bool(result) if isinstance(result, (bool, type(pd.NA))) else False
 
 
-def _canonical_fingerprint_value(value: Any, *, unordered: bool = False) -> Any:
+def _canonical_fingerprint_value(value: Any, *, unordered: bool = False, json_encoded: bool = False) -> Any:
     """Return a deterministic JSON-compatible value for dataset identity."""
     if _is_null(value):
         return None
@@ -59,16 +59,20 @@ def _canonical_fingerprint_value(value: Any, *, unordered: bool = False) -> Any:
             pass
     if isinstance(value, (datetime, date, pd.Timestamp)):
         return value.isoformat()
+    if json_encoded and isinstance(value, str) and value.lstrip().startswith(("{", "[")):
+        try: value = json.loads(value)
+        except (ValueError, TypeError): pass
     if isinstance(value, dict):
         return {
             str(key): _canonical_fingerprint_value(item)
             for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))
+            if str(key) not in _VOLATILE_FINGERPRINT_FIELDS
         }
     if hasattr(value, "tolist") and not isinstance(value, (str, bytes)):
         value = value.tolist()
     if isinstance(value, (list, tuple, set)):
         items = [_canonical_fingerprint_value(item) for item in value]
-        if unordered or isinstance(value, set):
+        if unordered or isinstance(value, (set, list)):
             items.sort(key=lambda item: json.dumps(
                 item, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
             ))
@@ -134,6 +138,8 @@ class PatentDataStore:
         except (TypeError, ValueError):
             pass
         if isinstance(value, str):
+            if value.strip() in {"[]", "{}", "null"}:
+                return False
             return bool(value.strip())
         return True
 
@@ -209,6 +215,7 @@ class PatentDataStore:
             "dataset_manifest": self._load_manifest(),
             "batch_completeness": self._load_diagnostics,
             "import_report": self._import_report,
+            "application_evidence_count": len(self._import_report.get("application_evidence", [])),
             "source_capabilities": self._import_report.get("source_capabilities", {}),
             "data_as_of": self._data_as_of(),
             "unsupported_conclusions": self._unsupported_conclusions(
@@ -591,7 +598,7 @@ class PatentDataStore:
 
     def dataset_fingerprint(self) -> str:
         """Stable analysis-content identity used to invalidate cached evidence."""
-        if self._df.empty:
+        if self._df.empty and not self._import_report.get("application_evidence"):
             return "empty"
         columns = sorted(
             str(column) for column in self._df.columns
@@ -599,6 +606,7 @@ class PatentDataStore:
             and str(column) not in _VOLATILE_FINGERPRINT_FIELDS
         )
         digest = hashlib.sha256()
+        digest.update(json.dumps(_canonical_fingerprint_value(self._import_report.get("application_evidence", [])), sort_keys=True, ensure_ascii=False).encode())
         digest.update(_FINGERPRINT_SCHEME.encode("ascii"))
         digest.update(b"\0")
         digest.update((self.adapter_name or "unknown").encode("utf-8"))
@@ -612,6 +620,7 @@ class PatentDataStore:
             record = {
                 column: _canonical_fingerprint_value(
                     value, unordered=column in _UNORDERED_MULTI_VALUE_FIELDS,
+                    json_encoded=column.endswith("_json"),
                 )
                 for column, value in zip(columns, values)
             }

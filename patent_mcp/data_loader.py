@@ -50,29 +50,15 @@ class MCPDataStoreManager:
             logger.warning("Input directory does not exist: %s", input_dir)
             return PatentDataStore()
 
-        # REST 与 MCP 共用同一 WoSAdapter、缓存版本和 DataFrame 契约。
-        from engine.adapters.wos_adapter import WoSAdapter
-        adapter = WoSAdapter()
-
-        # batch_process() prints progress to stdout. In MCP stdio mode,
-        # stdout is the JSON-RPC transport — print() output would corrupt
-        # the protocol stream. Redirect stdout to stderr while loading.
+        from patent_agent.application.services import DatasetImportService
         try:
             with _redirect_stdout_to_stderr():
-                df = await asyncio.to_thread(adapter.batch_parse, input_dir)
+                return await asyncio.to_thread(DatasetImportService().load, input_dir, "auto")
+        except ValueError:
+            raise
         except Exception as exc:
-            logger.error("Failed to load patent data: %s", exc)
+            logger.error("Failed to load patent data (%s)", type(exc).__name__)
             return PatentDataStore()
-
-        if df is None or df.empty:
-            logger.warning("No patent data found in %s", input_dir)
-            return PatentDataStore()
-
-        store = PatentDataStore()
-        store.load_dataframe(df)
-        store._adapter_name = adapter.name
-        logger.info("Loaded %d patents from %s", len(df), input_dir)
-        return store
 
 
 @contextlib.contextmanager

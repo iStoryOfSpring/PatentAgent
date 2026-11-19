@@ -31,11 +31,13 @@ export interface ApiErrorDetail {
 
 export class ApiError extends Error {
   detail?: ApiErrorDetail;
+  status?: number;
 
-  constructor(message: string, detail?: ApiErrorDetail) {
+  constructor(message: string, detail?: ApiErrorDetail, status?: number) {
     super(message);
     this.name = "ApiError";
     this.detail = detail;
+    this.status = status;
   }
 }
 
@@ -56,7 +58,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     const message = typeof raw === "string"
       ? raw
       : detail?.message || clientHttpErrorCode(res.status, res.statusText);
-    throw new ApiError(message, detail);
+    throw new ApiError(message, detail, res.status);
   }
   return res.json();
 }
@@ -69,11 +71,15 @@ export function fetchHealth(): Promise<HealthResponse> {
 
 // ── Data ──
 
-export function fetchDataSummary(): Promise<DataSummary> {
-  return request<DataSummary>("/data/summary");
+function sessionQuery(sessionId?: string): string {
+  return sessionId === undefined ? "" : `?session_id=${encodeURIComponent(sessionId)}`;
 }
 
-export type SourceFormat = "auto" | "wos_dii" | "google_patents_jsonl" | "uspto_grant_xml" | "uspto_file_wrapper_json";
+export function fetchDataSummary(sessionId?: string): Promise<DataSummary> {
+  return request<DataSummary>("/data/summary" + sessionQuery(sessionId));
+}
+
+export type SourceFormat = "auto" | "wos_dii" | "google_patents_jsonl" | "uspto_grant_xml" | "uspto_file_wrapper_json" | "canonical_jsonl";
 
 export function loadData(inputDir: string, sourceFormat: SourceFormat = "auto"): Promise<DataSummary> {
   return request<DataSummary>("/data/load", {
@@ -125,12 +131,12 @@ export function fetchDatasetVersions(id: string): Promise<{ versions: DatasetVer
 
 // ── Tools ──
 
-export function fetchTools(): Promise<{ tools: Tool[] }> {
-  return request<{ tools: Tool[] }>("/tools");
+export function fetchTools(sessionId?: string): Promise<{ tools: Tool[] }> {
+  return request<{ tools: Tool[] }>("/tools" + sessionQuery(sessionId));
 }
 
-export function fetchCapabilities(): Promise<{ capabilities: CapabilityDefinition[] }> {
-  return request<{ capabilities: CapabilityDefinition[] }>("/capabilities");
+export function fetchCapabilities(sessionId?: string): Promise<{ capabilities: CapabilityDefinition[] }> {
+  return request<{ capabilities: CapabilityDefinition[] }>("/capabilities" + sessionQuery(sessionId));
 }
 
 export function fetchSearchStatus(): Promise<SearchCapabilityStatus> {
@@ -410,3 +416,9 @@ export function fetchReports(): Promise<{ reports: ReportSummary[] }> {
 export function reportUrl(id: string): string {
   return `${BASE}/reports/${id}`;
 }
+
+export function fetchSources() { return request<{ sources: import("./types").SourceDefinition[] }>("/sources"); }
+export function createAcquisition(body: import("./types").AcquisitionRequest) { return request<{acquisition: import("./types").AcquisitionStatus}>("/acquisitions", {method:"POST",body:JSON.stringify(body)}); }
+export function fetchAcquisition(id:string) { return request<{acquisition:import("./types").AcquisitionStatus}>(`/acquisitions/${encodeURIComponent(id)}`); }
+export function cancelAcquisition(id:string) { return request<{acquisition:import("./types").AcquisitionStatus}>(`/acquisitions/${encodeURIComponent(id)}/cancel`,{method:"POST"}); }
+export function fetchExecutionRecords(id:string,bin:string,offset=0) { return request<import("./types").ExecutionRecordPage>(`/executions/${encodeURIComponent(id)}/records?bin=${encodeURIComponent(bin)}&offset=${offset}&limit=25`); }

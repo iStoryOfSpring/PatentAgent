@@ -58,7 +58,7 @@ def execution_cache_key(
 class ConversationStore:
     """Small aiosqlite repository with explicit, versioned schema."""
 
-    SCHEMA_VERSION = 7
+    SCHEMA_VERSION = 8
 
     def __init__(self, db_path: str | Path):
         self.db_path = Path(db_path)
@@ -70,6 +70,13 @@ class ConversationStore:
             await db.execute("PRAGMA foreign_keys=ON")
             await db.executescript(
                 """
+                CREATE TABLE IF NOT EXISTS acquisitions (
+                    id TEXT PRIMARY KEY, state TEXT NOT NULL, request_hash TEXT NOT NULL,
+                    token_hash TEXT NOT NULL, expires_at TEXT NOT NULL,
+                    request_json TEXT NOT NULL, result_json TEXT NOT NULL DEFAULT '{}',
+                    cancel_requested INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS sessions (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -677,6 +684,29 @@ class ConversationStore:
             await db.commit()
         return cache_key
 
+    async def interrupt_turn_if_running(self, turn_id: str) -> bool:
+        """A closed transport cannot overwrite completed or approval-waiting work."""
+        active = ("created", "queued", "planning", "planned", "running", "executing",
+                  "validating", "synthesizing", "cancelling")
+        placeholders = ",".join("?" for _ in active)
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                f"UPDATE turns SET status=CASE WHEN cancel_requested=1 THEN 'cancelled' ELSE 'interrupted' END,"
+                f"error_category=CASE WHEN cancel_requested=1 THEN '' ELSE 'system_failure' END,"
+                f"updated_at=?,state_version=state_version+1 WHERE id=? "
+                f"AND status IN ({placeholders})",
+                (_now(), turn_id, *active),
+            )
+            if cursor.rowcount:
+                await db.execute(
+                    "UPDATE sessions SET status=(SELECT status FROM turns WHERE id=?),updated_at=? "
+                    "WHERE id=(SELECT session_id FROM turns WHERE id=?) "
+                    "AND status IN ('executing','running','planning','synthesizing')",
+                    (turn_id, _now(), turn_id),
+                )
+            await db.commit()
+            return bool(cursor.rowcount)
+
     async def mark_inflight_interrupted(self) -> int:
         """Make process crashes explicit without replaying an LLM request."""
         inflight = (
@@ -684,6 +714,7 @@ class ConversationStore:
             "validating", "synthesizing", "cancelling",
         )
         async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("UPDATE acquisitions SET state='interrupted',updated_at=? WHERE state IN ('queued','running','publishing')", (_now(),))
             placeholders = ",".join("?" for _ in inflight)
             cursor = await db.execute(
                 f"UPDATE turns SET status='interrupted',error_category='system_failure',"
@@ -758,31 +789,35 @@ class ConversationStore:
         return self._decode_row(row) if row else None
 
     async def upsert_dataset_snapshot(self, snapshot: dict[str, Any]) -> None:
-        now = _now()
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA foreign_keys=ON")
-            await db.execute(
-                "INSERT INTO datasets(id,name,source_root,status,created_at,updated_at) "
-                "VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
-                "name=excluded.name,source_root=excluded.source_root,status=excluded.status,"
-                "updated_at=excluded.updated_at",
-                (snapshot["dataset_id"], snapshot.get("name") or snapshot["dataset_id"],
-                 snapshot.get("source_root") or (snapshot.get("sources") or [""])[0],
-                 snapshot.get("status", "ready"), now, now),
-            )
-            await db.execute(
-                "INSERT OR IGNORE INTO dataset_versions "
-                "(id,dataset_id,content_hash,fingerprint_scheme,schema_version,adapter,record_count,"
-                "field_coverage_json,sources_json,storage_path,import_id,import_report_json,created_at) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (snapshot["version_id"], snapshot["dataset_id"], snapshot["content_hash"],
-                 snapshot.get("fingerprint_scheme", "legacy-identity-v1"),
-                 snapshot.get("schema_version", 1), snapshot.get("adapter", ""),
-                 snapshot.get("record_count", 0), _json(snapshot.get("field_coverage", {})),
-                 _json(snapshot.get("sources", [])), snapshot.get("storage_path", ""),
-                 snapshot.get("import_id", ""), _json(snapshot.get("import_report", {})), now),
-            )
+            await self.write_dataset_snapshot(db, snapshot)
             await db.commit()
+
+    async def write_dataset_snapshot(self, db, snapshot):
+        """Register a version within the caller's transaction."""
+        now = _now()
+        await db.execute(
+            "INSERT INTO datasets(id,name,source_root,status,created_at,updated_at) "
+            "VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET "
+            "name=excluded.name,source_root=excluded.source_root,status=excluded.status,"
+            "updated_at=excluded.updated_at",
+            (snapshot["dataset_id"], snapshot.get("name") or snapshot["dataset_id"],
+             snapshot.get("source_root") or (snapshot.get("sources") or [""])[0],
+             snapshot.get("status", "ready"), now, now),
+        )
+        await db.execute(
+            "INSERT OR IGNORE INTO dataset_versions "
+            "(id,dataset_id,content_hash,fingerprint_scheme,schema_version,adapter,record_count,"
+            "field_coverage_json,sources_json,storage_path,import_id,import_report_json,created_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (snapshot["version_id"], snapshot["dataset_id"], snapshot["content_hash"],
+             snapshot.get("fingerprint_scheme", "legacy-identity-v1"),
+             snapshot.get("schema_version", 1), snapshot.get("adapter", ""),
+             snapshot.get("record_count", 0), _json(snapshot.get("field_coverage", {})),
+             _json(snapshot.get("sources", [])), snapshot.get("storage_path", ""),
+             snapshot.get("import_id", ""), _json(snapshot.get("import_report", {})), now),
+        )
 
     async def update_dataset(self, dataset_id: str, **values: Any) -> dict[str, Any]:
         allowed = {"name", "status"}
@@ -935,6 +970,13 @@ class ConversationStore:
                 (session_id, limit),
             )
         return [self._decode_row(row) for row in rows]
+
+    async def get_execution_evidence(self, execution_id: str):
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute("SELECT e.*,s.result_json,s.stale FROM tool_executions e JOIN evidence_snapshots s ON s.execution_id=e.id WHERE e.id=?", (execution_id,))
+            row = await cursor.fetchone()
+        return self._decode_row(row) if row else None
 
     async def find_reusable(
         self, session_id: str, cache_key: str,
