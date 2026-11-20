@@ -100,10 +100,27 @@ class TrendReview(Tool):
         tail = "unknown" if not cutoff or not years else "partial" if cutoff < date(years[-1],12,31) else "through_year_end"
         valid = {row["direction"] for row in rows} - {"incomparable"}
         verdict = "divergent" if len(valid)>1 else "insufficient" if any(row["direction"]=="incomparable" for row in rows) else "consistent"
+        unit_names = {"publications":"公开文献数", "applications":"申请数", "families":"专利族数"}
+        directions = {"increase":"增长", "decrease":"下降", "flat":"持平", "incomparable":"不可比"}
+        outcomes = []
+        for row in rows:
+            unit = unit_names[row["unit"]]
+            subset = f"（缺标识 {row['missing_ids']} 件，仅统计标识已知记录）" if row["missing_ids"] else ""
+            outcomes.append(f"{unit}{subset}{directions[row['direction']]}")
+        window = f"{years[0]}–{years[-1]} 年" if years else "无可观察年份"
+        conclusion = {"divergent":"可比口径的方向存在分歧", "insufficient":"现有记录不足以比较全部口径",
+                      "consistent":"三种口径的首末变化方向一致"}[verdict]
+        if not cutoff:
+            tail_note = "来源截止日期未知，尾年覆盖无法核实"
+        elif tail == "partial":
+            tail_note = f"来源截止于 {cutoff.isoformat()}，尾年覆盖不完整"
+        else:
+            tail_note = f"来源截止于 {cutoff.isoformat()}"
+        summary = f"当前范围（{window}）的首末变化为" + "、".join(outcomes) + f"。{conclusion}。{tail_note}。"
         return GenericAnalysisResult(result_type="trend_robustness", data=rows, years=years, date_basis=date_basis,
             verdict=verdict, cutoff=cutoff.isoformat() if cutoff else "", tail_coverage=tail, examples=examples,
             example_total=example_total, examples_truncated=example_total>len(examples),
-            summary=f"比较 {len(years)} 个年度的三种统计口径，示例来自当前范围。",
+            summary=summary,
             warnings=["计数方向只描述当前数据范围。缺标识、无端点观察和不完整尾年限制结论。"])
 
 
@@ -179,7 +196,7 @@ class GapReview(Tool):
         rounds = [dict(stage=stage, hits=0, new=0, overlap=0, missing_family=0, candidates=[])
                   for stage in ("original","expanded","classification")]
         families = [set() for _ in rounds]
-        total_missing = unique_hits = missing_title = missing_abstract = 0
+        total_missing = unique_hits = missing_title = missing_abstract = single_axis_leads = 0
         frame = storage.get_columns(["patent_number","family_id","title","abstract","ipc","cpc_codes"])
         frame = frame.sort_values("patent_number",kind="stable").drop_duplicates("patent_number")
         for row in frame.itertuples(index=False):
@@ -195,6 +212,7 @@ class GapReview(Tool):
             if not any(match):
                 continue
             unique_hits += 1
+            single_axis_leads += bool(match[2] and not (left and right))
             family = _text(getattr(row,"family_id","")).strip()
             total_missing += not family
             for index, hit in enumerate(match):
@@ -227,7 +245,10 @@ class GapReview(Tool):
             technology_terms=axes[0], effect_terms=axes[1], class_prefixes=prefixes, reviewed_records=len(frame),
             unique_hits=unique_hits, known_families=len(prior), missing_family=total_missing,
             missing_title=missing_title, missing_abstract=missing_abstract, has_expansions=any(len(axis)>1 for axis in axes),
-            summary=f"检索 {len(frame)} 件，去重后 {unique_hits} 件候选需复核。",
+            single_axis_leads=single_axis_leads,
+            summary=(f"当前范围共 {len(frame)} 件，原词双轴命中 {rounds[0]['hits']} 件，同义及双语扩展新增 "
+                     f"{rounds[1]['new']} 件，分类线索再新增 {rounds[2]['new']} 件。去重后共 {unique_hits} 件待复核，"
+                     f"其中 {single_axis_leads} 件仅有单侧文本与分类支持。"),
             warnings=["零命中受语料覆盖和检索式限制，不能据此判断市场空白、新颖性或自由实施。"])
 
 

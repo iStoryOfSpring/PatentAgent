@@ -30,6 +30,7 @@ async def test_trend_directions_evidence_missingness_and_cutoff():
     assert publications["annual_counts"]==[1,0,2] and not publications["sustained_growth"]
     assert applications["annual_counts"]==[1,0,1] and applications["direction"]=="flat"
     assert families["direction"]=="incomparable" and families["missing_ids"]==3
+    assert all(text in result.summary for text in ("2020–2022", "公开文献数增长", "申请数持平", "专利族数（缺标识 3 件，仅统计标识已知记录）不可比", "方向存在分歧", "截止日期未知"))
     assert result.verdict=="divergent" and result.tail_coverage=="unknown"
     assert any(r.get("cross_year") and r["publication_numbers"]==["P1","P2"] for r in result.examples)
     assert {r["publication_numbers"][0] for r in result.examples if r.get("reason")=="missing_identity"}=={"P1","P2","P3"}
@@ -52,6 +53,7 @@ async def test_gap_labels_snippets_class_leads_and_truncation():
     params=dict(technology="near infrared",effect="sorting",ipc_prefixes=["B07C"])
     result=await tool.run(store,**params)
     df=store.get_all().set_index("patent_number")
+    assert all(text in result.summary for text in ("原词双轴命中 2 件", "扩展新增 3 件", "分类线索再新增 3 件", "3 件仅有单侧文本与分类支持"))
     assert result.missing_abstract==1 and result.unique_hits==8
     assert any(r["level"]=="single_axis_lead" and r["classifications"] for r in result.data[2]["candidates"])
     assert "DEMO-08-A1" not in {r["publication"] for stage in result.data for r in stage["candidates"]}
