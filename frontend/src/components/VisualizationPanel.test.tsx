@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { forwardRef, useImperativeHandle } from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./EChartCanvas", () => ({
@@ -10,6 +10,7 @@ vi.mock("./EChartCanvas", () => ({
   }),
 }));
 
+import { I18nProvider, LOCALE_STORAGE_KEY } from "../i18n";
 import { escapeTooltipHtml, VisualizationPanel } from "./VisualizationPanel";
 
 const cases: Record<string, Record<string, unknown>> = {
@@ -61,6 +62,53 @@ describe("VisualizationPanel registry", () => {
       unmount();
     });
   }
+
+  it("links full publication numbers in search without rewriting the displayed identifiers", () => {
+    const unsupported = ["DEMO-01-A1", "US14/166,502", "US9014905B1 CN309064108S", "https://example.org/US9014905B1", ""];
+    const patents = ["cn-309064108-s", ...unsupported].map((patent_number, index) => ({
+      patent_number,
+      title: `Local title ${index}`,
+    }));
+    const { unmount } = render(
+      <VisualizationPanel toolName="patent_search" result={{ result_type: "patent_search", patents }} />,
+    );
+    expect(screen.getByText("cn-309064108-s")).toBeTruthy();
+    for (const number of unsupported.filter(Boolean)) expect(screen.getByText(number)).toBeTruthy();
+
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(1);
+    const link = screen.getByRole("link", { name: "在 Google Patents 查看 CN309064108S（新标签页）" });
+    expect(link.getAttribute("href")).toBe("https://patents.google.com/patent/CN309064108S");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")?.split(" ")).toEqual(expect.arrayContaining(["noopener", "noreferrer"]));
+    unmount();
+  });
+
+  it("shows a localized lookup in the patent details body", () => {
+    const previousLanguage = document.documentElement.lang;
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => key === LOCALE_STORAGE_KEY ? "en-US" : null,
+    });
+    try {
+      render(
+        <I18nProvider>
+          <VisualizationPanel toolName="patent_details" result={{
+            result_type: "patent_details",
+            patents: [{ patent_number: "US 9014905 B1", title: "Local details", abstract: "Local abstract" }],
+          }} />
+        </I18nProvider>,
+      );
+      const link = screen.getByRole("link", { name: "View US9014905B1 on Google Patents (new tab)" });
+      expect(link.getAttribute("href")).toBe("https://patents.google.com/patent/US9014905B1");
+      expect(link.closest("details")?.open).toBe(true);
+      expect(link.closest("summary")).toBeNull();
+      expect(screen.getByText("Local abstract")).toBeTruthy();
+    } finally {
+      cleanup();
+      vi.unstubAllGlobals();
+      document.documentElement.lang = previousLanguage;
+    }
+  });
 
   it("does not execute chart_html for unknown result types", () => {
     const { container } = render(

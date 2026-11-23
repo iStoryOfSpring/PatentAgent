@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { fetchExecutionRecords } from "../api";
 import type { ExecutionRecordPage } from "../types";
 import { useI18n, type TranslationKey } from "../i18n";
+import { PublicationLookupLink } from "./PublicationLookupLink";
 
 interface Props { executionId: string; bins: string[] }
 
@@ -63,6 +64,7 @@ function EvidencePanel({ executionId, bins }: Props) {
         {group.members.map(record => <details key={record.patent_number}>
           <summary>{record.patent_number} · {record.title}</summary>
           <p>{record.publication_date} · {record.kind_code} · {record.language}</p>
+          <PublicationLookupLink publicationNumber={record.patent_number} />
           <pre className="overflow-auto whitespace-pre-wrap break-all">{record.provenance}</pre>
         </details>)}
       </article>)}

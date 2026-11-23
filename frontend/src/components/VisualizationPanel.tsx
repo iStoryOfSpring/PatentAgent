@@ -1,5 +1,6 @@
 import { ReviewControls, ReviewResults, type RunReview } from "./ReviewControls";
 import { ExecutionEvidence } from "./ExecutionEvidence";
+import { PublicationLookupLink } from "./PublicationLookupLink";
 import { useMemo, useRef, useState } from "react";
 import type { ComponentType } from "react";
 import type { EChartsCoreOption as EChartsOption } from "echarts/core";
@@ -296,6 +297,7 @@ function SearchRenderer({ result }: RendererProps) {
     return <div key={`${patent.patent_number}-${i}`} className="border border-slate-200 rounded-xl p-4 bg-white">
       <div className="flex flex-wrap gap-3 justify-between"><div className="min-w-0"><span className="font-mono text-xs text-blue-700">{String(patent.patent_number || "")}</span><h4 className="font-medium text-slate-800 mt-1">{String(patent.title || "")}</h4></div><span className="shrink-0 text-xs font-semibold text-blue-700">{t("visual.sortScore", { score: score.toFixed(4) })}</span></div>
       <p className="text-xs text-slate-500 mt-2 line-clamp-2">{String(patent.abstract || patent.applicants || "")}</p>
+      <PublicationLookupLink publicationNumber={patent.patent_number} />
     </div>;
   })}</div>;
 }
@@ -306,7 +308,9 @@ function PatentDetailsRenderer({ result }: RendererProps) {
   if (!patents.length) return <EmptyState title={t("visual.noDetails")} text={t("visual.noDetailsDescription")} />;
   return <div className="p-4 space-y-2">{patents.map((patent, i) => <details key={i} open={i === 0} className="border border-slate-200 rounded-xl bg-white overflow-hidden">
     <summary className="cursor-pointer px-4 py-3 font-medium text-slate-800 bg-slate-50"><span className="font-mono text-blue-700 mr-2">{String(patent.patent_number || "")}</span>{String(patent.title || "")}</summary>
-    <div className="p-4 grid gap-3 text-sm text-slate-600"><p>{t("claims.structure")}: {String(patent.claims_structure_status || "unknown")} · {String(patent.claims_source || "unknown")} · {String(patent.language || "und")} · {String(patent.kind_code || "")}</p>{list(patent.raw_claims).map((claim,index)=><details key={index}><summary>{t("claims.raw")} · {String(claim.language || "und")}</summary><p className="whitespace-pre-wrap">{String(claim.text || "")}</p></details>)}<p>{String(patent.abstract || t("visual.unspecifiedAbstract"))}</p><SimpleTable rows={[{ applicants: Array.isArray(patent.applicants) ? strings(patent.applicants).join("；") : patent.applicants, publication_date: patent.publication_date, legal_status: patent.legal_status || t("visual.unavailable"), backward_citations: Array.isArray(patent.backward_citations) ? patent.backward_citations.length : 0 }]} labels={{ applicants: fieldLabel("applicants", locale), publication_date: fieldLabel("publication_date", locale), legal_status: fieldLabel("legal_status", locale), backward_citations: fieldLabel("backward_citations", locale) }}/></div>
+    <div className="p-4 grid gap-3 text-sm text-slate-600">
+      <PublicationLookupLink publicationNumber={patent.patent_number} />
+      <p>{t("claims.structure")}: {String(patent.claims_structure_status || "unknown")} · {String(patent.claims_source || "unknown")} · {String(patent.language || "und")} · {String(patent.kind_code || "")}</p>{list(patent.raw_claims).map((claim,index)=><details key={index}><summary>{t("claims.raw")} · {String(claim.language || "und")}</summary><p className="whitespace-pre-wrap">{String(claim.text || "")}</p></details>)}<p>{String(patent.abstract || t("visual.unspecifiedAbstract"))}</p><SimpleTable rows={[{ applicants: Array.isArray(patent.applicants) ? strings(patent.applicants).join("；") : patent.applicants, publication_date: patent.publication_date, legal_status: patent.legal_status || t("visual.unavailable"), backward_citations: Array.isArray(patent.backward_citations) ? patent.backward_citations.length : 0 }]} labels={{ applicants: fieldLabel("applicants", locale), publication_date: fieldLabel("publication_date", locale), legal_status: fieldLabel("legal_status", locale), backward_citations: fieldLabel("backward_citations", locale) }}/></div>
   </details>)}</div>;
 }
 

@@ -117,4 +117,6 @@ python3 scripts/check_doc_links.py
 - [维护、CI 与发布验收](docs/development/reliability-and-release.md) · [更新日志](CHANGELOG.md)
 - [历史版本验证记录](docs/validation-report-v3.1.md) · [内部算法审计](docs/algorithm-audit.md) · [项目与论文审计](docs/project-audit.md)
 
-PatentAgent 源自 PatentSmelter。作者为 Wu Jinhong、Chen Siyu。项目采用 [GNU AGPL v3](LICENSE)，联系邮箱为 2507380208@wtu.edu.cn。
+PatentAgent 源自 [PatentSmelter](https://github.com/iStoryOfSpring/PatentSmelter)。沿用的解析代码保留了 [PatentSmelter 的 MIT 许可声明](LICENSE-PatentSmelter.md)。专利检索、详情和图表证据中的公开号外查入口受 [IPAgent-OS](https://github.com/iStoryOfSpring/IPAgent-OS) 启发，由 PatentAgent 独立实现。点击 Google Patents 链接时，浏览器会把该条公开号发送给 Google。查询结果取决于 Google Patents 的收录范围。
+
+作者为 Wu Jinhong、Chen Siyu。项目采用 [GNU AGPL v3](LICENSE)，联系邮箱为 2507380208@wtu.edu.cn。

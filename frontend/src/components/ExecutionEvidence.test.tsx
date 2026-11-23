@@ -16,6 +16,26 @@ describe("persisted execution evidence",()=>{
     fireEvent.click(screen.getByText("下一页"));await screen.findByText(/USAPP26/);
     expect(api.fetchExecutionRecords).toHaveBeenLastCalledWith("exec1","2018",25);
   });
+  it("offers the publication link inside the counted record alongside local provenance", async () => {
+    const group = page.groups[0];
+    const record = { ...group.members[0], patent_number: "WO 2020263523 A1", title: "Counted publication" };
+    vi.mocked(api.fetchExecutionRecords).mockResolvedValueOnce({
+      ...page,
+      groups: [{ ...group, publication_numbers: [record.patent_number], members: [record] }],
+    });
+
+    render(<ExecutionEvidence executionId="exec1" bins={["2018"]} />);
+    fireEvent.click(screen.getByText("按统计分组查看原始文献证据"));
+    fireEvent.click(screen.getByText("查看此分组证据"));
+    fireEvent.click(await screen.findByText(/Counted publication/));
+
+    const link = screen.getByRole("link", { name: "在 Google Patents 查看 WO2020263523A1（新标签页）" });
+    expect(link.getAttribute("href")).toBe("https://patents.google.com/patent/WO2020263523A1");
+    expect(link.closest("summary")).toBeNull();
+    expect(screen.getByText("EPO OPS")).toBeTruthy();
+    expect(api.fetchExecutionRecords).toHaveBeenCalledExactlyOnceWith("exec1", "2018", 0);
+  });
+
   it("rejects stale results visibly without falling back to all records",async()=>{
     vi.mocked(api.fetchExecutionRecords).mockRejectedValue(new Error("requires_reimport: conflict"));
     render(<ExecutionEvidence executionId="exec1" bins={["2018"]}/>);
